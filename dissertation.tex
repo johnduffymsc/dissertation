@@ -401,8 +401,9 @@ New package OpenBLASRPI4? for RPI4 specific optimisations?
 
 RESULTS
 
+
 %
-% SECTION
+% APPENDIX A
 %
 \clearpage\section{Appendix A - Raspberry Pi Cluster Build}
 
@@ -433,80 +434,98 @@ Photo
 
 2. Get MAC address
 
+3. Generate keys
 
-%
-% SECTION
-%
-\section{Router/Firewall Configuration}
+4. Amend macbook /etc/hosts file...
 
-Local network behind firewall/switch: 192.168.0.255
 
-% SUBSECTION
-\subsection{Firewall/Switch (Netgear FVS318G)}
+
+\subsubsection{Update Raspberry Pi EE-PROMs}
+
+
+
+\subsubsection{Get Raspberry Pi MAC Addresses}
+
+
+
+\subsubsection{Generate User Key Pair}
+
+On macbook (no passphrase):
+
+\lstset{frameround=tttt}
+\begin{lstlisting}[frame=single]
+ssh-genkey -t rsa -C ucapjbj
+\end{lstlisting}
+
+This will create two files... in ...
+
+
+
+\subsubsection{Amend macbook /etc/hosts}
+
+On macbook, using your favourite editor, add the following to /etc/hosts:
+
+\lstset{frameround=tttt}
+\begin{lstlisting}[frame=single]
+192.168.0.1 node1
+192.168.0.2 node2
+192.168.0.3 node3
+192.168.0.4 node4
+192.168.0.5 node5
+192.168.0.6 node6
+192.168.0.7 node7
+192.168.0.8 node8
+192.168.0.9 node9
+\end{lstlisting}
+
+This enables...
+
+\lstset{frameround=tttt}
+\begin{lstlisting}[frame=single]
+ssh john@node1
+\end{lstlisting}
+
+or, the abbreviated...
+
+\lstset{frameround=tttt}
+\begin{lstlisting}[frame=single]
+ssh node1
+\end{lstlisting}
+
+provided the user name on the macbook is the same as the Linux user created by cloud-init.
+
+
+
+\subsubsection{Router/Firewall Configuration}
+
+Local network behind firewall/switch: 192.168.0.254
+
+WAN address
+LAN address
+
+Firewall/Switch (Netgear FVS318G)
+
 Describe DHCP reservations mapping IP to MAC addresses.
+
+Describe ssh access
 
 Add relevant PDFs.
 
-% SUBSECTION
-\subsection{Nodes /etc/hosts}
-The /etc/hosts file on each node is created by Cloud-Init:
 
-\begin{verbatim}
-192.168.0.1 node1
-192.168.0.2 node2
-192.168.0.3 node3
-192.168.0.4 node4
-192.168.0.5 node5
-192.168.0.6 node6
-192.168.0.7 node7
-192.168.0.8 node8
-192.168.0.9 node9
-\end{verbatim}
+\subsubsection{Create the Raspberry Pi Ubuntu Server Image}
 
-% SUBSECTION
-\subsection{Workstation /etc/hosts}
-On workstation add the following to /etc/hosts:
+On macbook...
 
-\begin{verbatim}
-192.168.0.1 node1
-192.168.0.2 node2
-192.168.0.3 node3
-192.168.0.4 node4
-192.168.0.5 node5
-192.168.0.6 node6
-192.168.0.7 node7
-192.168.0.8 node8
-192.168.0.9 node9
-\end{verbatim}
-
-This reduces the typing of IP addresses, e.g.
-
-\begin{verbatim}
-    ssh ucapjbj@node1
-\end{verbatim}
-
-%
-% SECTION
-%
-\section{Appendix C - Software Configuration}
-
-% SUBSECTION
-\subsection{RPI 4 EEPROM Update}
-
-% SUBSECTION
-\subsection{Ubuntu Server 20.04 LTS}
-
-Ubuntu is a popular Linux distribtion... ... Ubuntu 20.04 LTS 64-bit pre-installed server image for the Raspberry Pi 4...
-
-On my MacBook Pro
-
-Download as .img.xz file...
+Download Ubuntu 20.04 LTS 64-bit pre-installed server image for the Raspberry Pi 4...
 
 Double click to uncompress the .xz file which leaves the .img file. 
 
 Double click to mount the .img in the filesystem...
 
-Amend user-data, vim /Volumes/system-boot/user-data TODO: CHECK THIS!
+Amend /Volumes/system-boot/user-data...
+
+\lstset{frameround=tttt}
+\lstinputlisting[frame=single]{files/user-data}
 
 Eject/unmount .img file
 
@@ -531,19 +550,53 @@ When complete, remove the MicroSD card from the card reader, place it the Raspbe
 The cloud-init configuration process will now start. The Raspberry Pi will acquire its IP address from the router, setup users, update apt, upgrade the system, download software packages, set the hostname (based on the IP address), and finally the system will reboot.
 
 
-% SUBSECTION
 \subsection{Post-Installation Tasks}
 
-\subsubsection{Copy Private Key to node1}
+\subsubsection{Enable No Password Access}
+
+This is required for Open-MPI...
 
 Our public key was installed on each node by cloud-init. So, we can ssh into each node without a password, and use the abbreviated ssh node1, instead of ssh john@node1 (assuming john is the user name on the workstation).
 
-We need to copy our private key to node1 (only node1), so that openmpi can access node2 .. node8 without a password.
+We need to copy our private key to node1 (only node1)...
 
 \lstset{frameround=tttt}
 \begin{lstlisting}[frame=single]
 scp ~/.ssh/id_rsa node1:~/.ssh
 \end{lstlisting}
+
+Then to enable access to nodes node2 to node9 without a password from node1, we need to import the ... keys into the node1 knownhosts file...
+
+This is easily done...
+
+From macbook, ssh into node1...
+
+ssh node1
+
+and then from node1, for each of the nodes node2 to node9:
+
+ssh node2
+
+This will generate...
+
+\lstset{frameround=tttt}
+\begin{lstlisting}[frame=single]
+The authenticity of host 'node2 (192.168.0.2)' can't be established.
+ECDSA key fingerprint is SHA256:5VgsnN2nPvpfbJmALh3aJdOeT/NvDXqN8TCreQyNaFA.
+Are you sure you want to continue connecting (yes/no/[fingerprint])?
+\end{lstlisting}
+
+responding yes, imports the key into the node1 knownhosts file...
+
+\lstset{frameround=tttt}
+\begin{lstlisting}[frame=single]
+exit
+\end{lstlisting}
+
+Next node...
+
+This is only required to be done on intial contact with nodes node2 to node9 (unless the keys on these nodes change)
+
 
 
 \subsubsection{Uninstall unattended-upgrades}
@@ -566,6 +619,7 @@ ssh node5 sudo apt remove unattended-upgrades --yes
 ssh node6 sudo apt remove unattended-upgrades --yes
 ssh node7 sudo apt remove unattended-upgrades --yes
 ssh node8 sudo apt remove unattended-upgrades --yes
+ssh node9 sudo apt remove unattended-upgrades --yes
 \end{lstlisting}
 
 Don't forget to update your cluster regularly at convenient times...
@@ -573,7 +627,10 @@ Don't forget to update your cluster regularly at convenient times...
 See update/upgrade script below...
 
 
+
 \subsubsection{Create a Project Repository}
+
+Xpand upon...
 
 \lstset{frameround=tttt}
 \begin{lstlisting}[frame=single]
@@ -583,20 +640,28 @@ cd picluster
 git init
 \end{lstlisting}
 
+Ensure you do  
 
-\subsection{Create an System Update/Upgrade Script}
+git add
+git commit
+git push
+
+at regular intervals...
+
+
+
+\subsubsection{Create an System Update/Upgrade Script}
+
+Automate...
 
 \lstset{frameround=tttt}
-\begin{lstlisting}[frame=single]
-ssh node1 sudo apt update
-ssh node1 sudo apt full-upgrade --yes
-ssh node1 sudo autoremove --yes
-ssh node1 sudo shutdown -r now
-\end{lstlisting}
+\lstinputlisting[frame=single]{files/picluster-update}
 
 
 
-We have installed two BLAS libraries...
+\subsubsection{Select BLAS Library}
+
+We have installed four BLAS libraries...
 
 Confirm all nodes are using the same one initially...
 
@@ -609,103 +674,74 @@ Confirm option 0, OpenBLAS, is selected. Press return to keep this option and th
 
 
 
+%
+% APPENDIX B
+%
+\clearpage\section{Appendix B - High-Performance Linpack (HPL) Installation}
 
+Download and install the latest version of HPL on node1...
 
-% SUBSECTION
-\subsection{Cloud-Init}
-user-data
-
-% SUBSECTION
-\subsection{MPI Node Authentication}
-MPI requires 'no-user-interaction' to access nodes. This is achieved using public key authentication.
-
-Generate public and private keys on workstation (no passphrase):
-\begin{verbatim}
-    ssh-genkey -t rsa -C ucapjbj
-\end{verbatim}
-
-1. Copy public key for user 'ucapjbj' into cloud-init 'user-data'
-
-2. Copy private key to node1 once up and running.
-\begin{verbatim}
-    scp .ssh/id_rsa ucapjbj@node1:~/.ssh
-\end{verbatim}
-
-The user ucapjbj can now log into the other nodes without a password. Likewise OpenMPI, running under the user ucapjbj, can now access the other nodes from node1.
-
-
-\clearpage\section{High-Performance Linpack Installation}
-Describe specifics of installation procedure on following pages...
-
-\begin{verbatim}
-cd ~/picluster
-mkdir dir hpl
+\lstset{frameround=tttt}
+\begin{lstlisting}[frame=single]
+ssh node1
+cd picluster
+mkdir hpl
 cd hpl
 wget https://www.netlib.org/benchmark/hpl/hpl-2.3.tar.gz
 gunzip hpl-2.3.tar.gz
 tar xvf hpl-2.3.tar
 rm hpl-2.3.tar
 cd hpl-2.3
-\end{verbatim}
+\end{lstlisting}
 
-create Make.rpi4 in top directory
+Create Make.serial file...
 
-Include copy of Make.rpi4 in appendix.
+\lstset{frameround=tttt}
+\begin{lstlisting}[frame=single]
+cd setup
+bash make_generic
+cd ..
+cp setup/Make.UNKNOWN Make.serial
+\end{lstlisting}
 
-To build:
+Amend Make.serial as per...
 
-\begin{verbatim}
-    make arch=rpi4    
-\end{verbatim}
+Build...
 
-This places the 'xhpl' executable in 
+\lstset{frameround=tttt}
+\begin{lstlisting}[frame=single]
+make arch=serial   
+\end{lstlisting}
 
-\begin{verbatim}
-.../hpl-2.3/bin/rpi4
-\end{verbatim}
+This creates xhpl and HPL.dat in bin/serial
 
-To clean up:
+Copy xhpl to all nodes (only xhpl, and not HPL.dat)...
 
-\begin{verbatim}
-    make arch=rpi4 clean
-\end{verbatim}
+\lstset{frameround=tttt}
+\begin{lstlisting}[frame=single]
+ssh node2 mkdir -p picluster/hpl/hpl-2.3/bin/serial
+ssh node3 mkdir -p picluster/hpl/hpl-2.3/bin/serial
+ssh node4 mkdir -p picluster/hpl/hpl-2.3/bin/serial
+ssh node5 mkdir -p picluster/hpl/hpl-2.3/bin/serial
+ssh node6 mkdir -p picluster/hpl/hpl-2.3/bin/serial
+ssh node7 mkdir -p picluster/hpl/hpl-2.3/bin/serial
+ssh node8 mkdir -p picluster/hpl/hpl-2.3/bin/serial
+ssh node9 mkdir -p picluster/hpl/hpl-2.3/bin/serial
 
-Copy 'xhpl' executable to all nodes...
-
-\begin{verbatim}
-    ssh node2 (etc)
-    mkdir -p ~/phas0077/projects/hpl-2.3/bin/rpi4
-    exit
-    scp bin/rpi4/xhpl ucapjbj@node2:~/phas0077/projects/hpl-2.3/bin/rpi4
-\end{verbatim}
-
-The above should be capable of being achieved using the mpirun --preload-binary option. To be further investigated. May need xhpl to be built with static OpenMPI and OpenBLAS libraries.
-
-To run:
-
-\begin{verbatim}
-    cd bin/rpi4
-    mpirun -host node1:4 -np 4 xhpl
-    mpirun -host node1:4,node2:4 -np 8 xhpl
-    etc
-\end{verbatim}
-
-or
-
-\begin{verbatim}
-    cd bin/rpi4
-    mpirun -hostfile nodes -np 32 xhpl
-\end{verbatim}
-
-%\includepdf[pages=-]{pdf/HPL Install.pdf}
+scp bin/serial/xhpl node2:~picluster/hpl/hpl-2.3/bin/serial
+scp bin/serial/xhpl node3:~picluster/hpl/hpl-2.3/bin/serial
+scp bin/serial/xhpl node4:~picluster/hpl/hpl-2.3/bin/serial
+scp bin/serial/xhpl node5:~picluster/hpl/hpl-2.3/bin/serial
+scp bin/serial/xhpl node6:~picluster/hpl/hpl-2.3/bin/serial
+scp bin/serial/xhpl node7:~picluster/hpl/hpl-2.3/bin/serial
+scp bin/serial/xhpl node8:~picluster/hpl/hpl-2.3/bin/serial
+scp bin/serial/xhpl node9:~picluster/hpl/hpl-2.3/bin/serial
+\end{lstlisting}
 
 
-\clearpage\section{High-Performance Linpack Tuning}
-Describe specifics of tuning procedure on following pages...
-%\includepdf[pages=-]{pdf/HPL Tuning.pdf}
 
 %
-% SECTION
+% APPENDIX C
 %
 \clearpage\section{Appendix D - Hints and Tips}
 
