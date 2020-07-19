@@ -6,7 +6,7 @@
 \usepackage{pdfpages}
 
 
-\title{MSc Scientific Computing Dissertation\\ARM Cluster Linpack Benchmark}
+\title{MSc Scientific Computing Dissertation\\ARM Cluster Linpack Benchmarks}
 \author{John Duffy}
 \date{August 2020}
 
@@ -14,55 +14,59 @@
 
 \maketitle
 
-%
-% Introduction
-%
+
+
 \section{Introduction}
 
-Objectives.
-
-1. Best achievable High-Performance Linpack performance.
-
-%\begin{figure}
-%	\centering	
-%	\includegraphics[width=1.0\textwidth]{pdf/gflops_vs_nodes_80_percent_memory_usage.pdf}
-%	\caption{The maximum Linpack Gflops achieved using 80 of total available memory and a block size NB of 128. TODO: ADD %OPENBLAS!}
-%\end{figure}
-
-
-2. An entry in 'The Green500' list!?
-
-3.
-
-etc
-
-This is also intended to be a complete guide for reproducing the build (hardware and software) of the ARM cluster and also for reproducing the results. 
-
-Top Gflops.
-
-Describe setup, referencing appendices for detail.
-
-Diagram of setup.
-
-\emph{node1} is \emph{master} node.
-
-Code at:
-
 \begin{verbatim}
-    https://github.com/johnduffymsc/phas0077.git
+https://github.com/johnduffymsc/picluster
 \end{verbatim}
 
-%
-% SECTION
-%
-\section{Theoretical Maximum Performance (Gflop/s)}
-The Raspberry Pi Model 4B uses the Broadcom BCM2711 System on a Chip (Soc).
+\subsection{Aims}
+
+\subsubsection{Investigate Maximum Achievable Linpack Benchmark}
+
+Efficiency... achieved vs theoretical maximum
+
+\subsubsection{Investigate Gflops/Watt}
+
+Green500 ranking...
+
+\subsubsection{Overview of Competitive Available Gflops/£}
+
+Buy lots of Pi's, or buy a bigger machine...
+
+Plot Gflops vs £...
+
+
+
+\section{Raspberry Pi 4 Model B}
+
+\subsection{Description}
+
+Photo...
+
+Description...
+
+Highlights...
+
+Limitations...
+
+Reference data sheet in Appendix...
+
+
+
+\subsection{Theoretical Maximum Performance (Gflop/s)}
+
+The Raspberry Pi 4 Model B uses the Broadcom BCM2711 System on a Chip (Soc).
+
+Block diagram from Cortex-A72 Software Optimisation Guide
 
 4 cores
 
 1.5 GHz
 
-NEON 128 bit SIMD
+128 bit SIMD
 
 4 GB memory (our chosen model)
 
@@ -75,24 +79,281 @@ Simplistically, ...
 This ignores instructions pipelining benefits...
 
 
+
+\section{Pi Cluster}
+
+Photo...
+
+Description...
+
+Ubuntu 20.04 LTS 64-bit Preinstalled Server...
+
+Reference Appendix A for detailed build instructions...
+
+Limitations...
+
+Software/update management...
+
+Next PXE/NFS boot...
+
+Cluster management tools
+
+BLAS libraries...
+
+BLAS library management... update-alternatives --config libblas.so.3-aarch64-linux-gnu
+
+picluster/tools... appendix ?... use from node1...
+
+
+
+\section{High-Performance Linpack (HPL) Benchmark}
+
+Reference Paper...
+
+https://www.netlib.org/benchmark/hpl/...
+
+Describe algorithm...
+
+Terminology $R_{peak}$, $R_{max}$..., problem size...
+
+Describe methodology for determining main parameters NB, N, P and Q...
+
+N formula...
+
+Reference http://hpl-calculator.sourceforge.net
+
+
+
+\subsection{Building and Installing HPL}
+
+See Appendix...
+
+
+
+\subsection{HPL.dat}
+
+Describe HPL.dat parameters...
+
+\lstinputlisting[frame=single]{files/HPL.dat}
+
+
+
+\subsection{HPL.out}
+
+Describe HPL.out...
+
+
+
+\subsection{Running xhpl}
+
+To run xhpl using the serial version of OpenBLAS...
+
+~/picluster/tools/picluster-set-libblas-openblas-serial
+
+cd ~/picluster/hpl/hpl-2.3/bin/serial
+
+mpirun -host node1:4 -np 4 xhpl
+
+
+
+To run xhpl using the OpenMP version of OpenBLAS...
+
+~/picluster/tools/picluster-set-libblas-openblas-openmp
+
+export OMPNUMTHREADS=4 TODO: SET GLOBALLY AT INSTALLATION
+
+export BLISNUMTHREADS=4 TODO: SET GLOBALLY AT INSTALLATION
+
+cd ~/picluster/hpl/hpl-2.3/bin/serial
+
+
+
+\section{OpenMPI}
+
+What is OpenMPI...
+
+
+
+\section{OpenMP}
+
+What is OpenMP...
+
+
+
+\section{OpenMPI Baseline Benchmarks}
+
+Ubuntu 20.04 LTS 64-bit packages, without any tweaks...
+
+1 core... a single ARM Cortex-A72 core...
+
+1 node... a single Raspberry Pi 4 Model B, 4 x ARM Cortex-A72 cores...
+
+Linpack performance scales with problem size... REFERENCE
+
+80\% of memory a good initial guess... FAQ REFERENCE...
+
+
+Methodology...
+
+1 core... to investigate single core performance... caveats... use 1GB of memory...
+
+1 node... to investigate inter-core performance...
+
+2 nodes... to investigate inter-core and inter-node performance...
+
+1..8 nodes ... to investigate over scaling of performance with node count... with optimal N, NB, P and Q parameters determined from 2 node investigation... caveats...
+
+
+
+\subsection{1 Core Baseline Benchmark}
+
+Problem size restricted to 80\% of 1GB...
+
+NB 32 to 256 in increments of 8...
+
+\begin{center}
+	\begin{tabular}{ |c|c|c|c|c|c|c|c|c|c| } 
+		\hline
+		NB & N & NB & N & NB & N & NB & N & NB & N \\ 
+		\hline
+		32 & 9248 &  80 & 9200 & 128 & 9216 & 176 & 9152 & 224 & 9184 \\ 
+		40 & 9240 &  88 & 9240 & 136 & 9248 & 184 & 9200 & 232 & 9048 \\ 
+ 		48 & 9264 &  96 & 9216 & 144 & 9216 & 192 & 9216 & 240 & 9120 \\
+		56 & 9240 & 104 & 9256 & 152 & 9120 & 200 & 9200 & 248 & 9176 \\ 
+ 		64 & 9216 & 112 & 9184 & 160 & 9120 & 208 & 9152 & 256 & 9216 \\
+		72 & 9216 & 120 & 9240 & 168 & 9240 & 216 & 9072 &   - &    - \\ 
+ 		\hline
+	\end{tabular}
+\end{center}
+
+1x1
+
+%\lstset{frameround=tttt}
+\begin{lstlisting}[frame=single]
+mpirun -np 1 xhpl
+\end{lstlisting}
+
+mpirun does bind to core by default for $np \leq 2$
+
+\begin{figure}
+	\centering	
+	\includegraphics[width=1.0\textwidth]{../gflops_vs_nb_1_core_80_percent_memory.pdf}
+	\caption{1 Core $R_{max}$ vs NB using 80\% of 1GB memory.}
+\end{figure}
+
+4 x 4.7527e+00 = 19 Gflops
+
+Explain...
+
+Cache misses from peak...
+
+A single core is capable of achieving maximum theoretical performance... CAVEATS whole L2 cache, whole node 4 GB memory, although problem size limited to 80\% of 1 GB...  
+
+
+\subsection{1 Node Benchmark}
+
+1x4
+
+\begin{center}
+	\begin{tabular}{ |c|c|c|c|c|c|c|c|c|c| } 
+		\hline
+		NB & N & NB & N & NB & N & NB & N & NB & N \\ 
+		\hline
+		32 & 18528 &  80 & 18480 & 128 & 18432 & 176 & 18480 & 224 & 18368 \\ 
+		40 & 18520 &  88 & 18480 & 136 & 18496 & 184 & 18400 & 232 & 18328 \\ 
+ 		48 & 18528 &  96 & 18528 & 144 & 18432 & 192 & 18432 & 240 & 18480 \\
+		56 & 18536 & 104 & 18512 & 152 & 18392 & 200 & 18400 & 248 & 18352 \\ 
+ 		64 & 18496 & 112 & 18480 & 160 & 18400 & 208 & 18512 & 256 & 18432 \\
+		72 & 18504 & 120 & 18480 & 168 & 18480 & 216 & 18360 &   - &     - \\ 
+ 		\hline
+	\end{tabular}
+\end{center}
+
+%\lstset{frameround=tttt}
+\begin{lstlisting}[frame=single]
+mpirun -np 4 xhpl
+\end{lstlisting}
+
+mpirun does bind to socket by default for $np \geq 2$
+
+\begin{figure}
+	\centering	
+	\includegraphics[width=1.0\textwidth]{../gflops_vs_nb_1_node_80_percent_memory.pdf}
+	\caption{1 Node $R_{max}$ vs NB using 80\% of 4GB memory.}
+\end{figure}
+
+
+
+\subsection{2 Node Baseline Benchmark}
+
+P1 x Q8
+
+P2 x Q4
+
+\begin{center}
+	\begin{tabular}{ |c|c|c|c|c|c|c|c|c|c| } 
+		\hline
+		NB & N & NB & N & NB & N & NB & N & NB & N \\ 
+		\hline
+		32 & 26208 &  80 & 26160 & 128 &  & 176 &  & 224 &  \\ 
+		40 & 26200 &  88 & 26136 & 136 &  & 184 &  & 232 &  \\ 
+ 		48 & 26208 &  96 &  & 144 &  & 192 &  & 240 &  \\
+		56 & 26208 & 104 &  & 152 &  & 200 &  & 248 &  \\ 
+ 		64 & 26176 & 112 &  & 160 &  & 208 &  & 256 &  \\
+		72 & 26208 & 120 &  & 168 &  & 216 &  &   - &    - \\ 
+ 		\hline
+	\end{tabular}
+\end{center}
+
+
+%\begin{figure}
+%	\centering	
+%	\includegraphics[width=1.0\textwidth]{../gflops_vs_nb_2_node_80_percent_memory.pdf}
+%	\caption{2 Node $R_{max}$ vs NB using 80\% memory.}
+%\end{figure}
+
+
+\subsection{8 Node Baseline Benchmark}
+
+1x32
+2x16
+4x8
+
+%\begin{figure}
+%	\centering	
+%	\includegraphics[width=1.0\textwidth]{pdfs/gflops_vs_nodes_80_percent_memory.pdf}
+%	\caption{The maximum Gflops achieved using 80 of total available memory.}
+%\end{figure}
+
+
+
+\subsection{Observations}
+
+Best NB...
+
+PxQ discussion... 1x8 vs 2x4... ethernet comment...
+
+Iperf...
+
+htop...
+
+top...
+
+perf...
+
+cache misses...
+
+software interrupts...
+
+Suggests... improve network efficiency?
+
+
+
 %
-% SECTION
+% OLD STUFF FROM HERE UP TO APPENDICES- WEED!
 %
-\section{High-Performance Linpack (HPL)}
 
-https://www.netlib.org/benchmark/hpl/
 
-% SUBSECTION
-\subsection{Installation}
-
-Reference Appendix... with specifics.
-
-% SUBSECTION
-\subsection{Tuning}
-
-Describe methodology for configuration file parameters
-
-Tool: http://hpl-calculator.sourceforge.net
 
 % SUBSECTION
 \subsection{Baseline Benchmark}
@@ -771,16 +1032,6 @@ If \emph{ssh} reports differing keys in 'known-hosts', and warns of a potential 
 
 'known\_hosts' will be re-populated as you log into each node. 
 
-% SUBSECTION
-\subsection{Package 'unattended-upgrades'}
-
-Unattended upgrades can interfere/stop long running jobs. So, remove the package 'unattended-upgrades' from all nodes:
-
-\begin{verbatim}
-    sudo apt remove unattended-upgrades
-\end{verbatim}
-
-But don't forget to do regular manual upgrades!
 
 % SUBSECTION
 \subsection{tmux}
