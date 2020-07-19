@@ -722,7 +722,7 @@ Photo
 
 On macbook (no passphrase):
 
-\lstset{frameround=tttt}
+%\lstset{frameround=tttt}
 \begin{lstlisting}[frame=single]
 ssh-genkey -t rsa -C ucapjbj
 \end{lstlisting}
@@ -735,7 +735,7 @@ This will create two files... in ...
 
 On macbook, using your favourite editor, add the following to /etc/hosts:
 
-\lstset{frameround=tttt}
+%\lstset{frameround=tttt}
 \begin{lstlisting}[frame=single]
 192.168.0.1 node1
 192.168.0.2 node2
@@ -750,14 +750,14 @@ On macbook, using your favourite editor, add the following to /etc/hosts:
 
 This enables...
 
-\lstset{frameround=tttt}
+%\lstset{frameround=tttt}
 \begin{lstlisting}[frame=single]
 ssh john@node1
 \end{lstlisting}
 
 or, the abbreviated...
 
-\lstset{frameround=tttt}
+%\lstset{frameround=tttt}
 \begin{lstlisting}[frame=single]
 ssh node1
 \end{lstlisting}
@@ -794,7 +794,7 @@ Double click to mount the .img in the filesystem...
 
 Amend /Volumes/system-boot/user-data...
 
-\lstset{frameround=tttt}
+%\lstset{frameround=tttt}
 \lstinputlisting[frame=single]{files/user-data}
 
 Eject/unmount .img file
@@ -830,7 +830,7 @@ Our public key was installed on each node by cloud-init. So, we can ssh into eac
 
 We need to copy our private key to node1 (only node1)...
 
-\lstset{frameround=tttt}
+%\lstset{frameround=tttt}
 \begin{lstlisting}[frame=single]
 scp ~/.ssh/id_rsa node1:~/.ssh
 \end{lstlisting}
@@ -849,7 +849,7 @@ ssh node2
 
 This will generate...
 
-\lstset{frameround=tttt}
+%\lstset{frameround=tttt}
 \begin{lstlisting}[frame=single]
 The authenticity of host 'node2 (192.168.0.2)' can't be established.
 ECDSA key fingerprint is SHA256:5VgsnN2nPvpfbJmALh3aJdOeT/NvDXqN8TCreQyNaFA.
@@ -858,7 +858,7 @@ Are you sure you want to continue connecting (yes/no/[fingerprint])?
 
 responding yes, imports the key into the node1 knownhosts file...
 
-\lstset{frameround=tttt}
+%\lstset{frameround=tttt}
 \begin{lstlisting}[frame=single]
 exit
 \end{lstlisting}
@@ -879,7 +879,7 @@ Remove...
 
 From macbookpro:
 
-\lstset{frameround=tttt}
+%\lstset{frameround=tttt}
 \begin{lstlisting}[frame=single]
 ssh node1 sudo apt remove unattended-upgrades --yes
 ssh node2 sudo apt remove unattended-upgrades --yes
@@ -902,7 +902,7 @@ See update/upgrade script below...
 
 Xpand upon...
 
-\lstset{frameround=tttt}
+%\lstset{frameround=tttt}
 \begin{lstlisting}[frame=single]
 ssh node1
 mkdir picluster
@@ -924,7 +924,7 @@ at regular intervals...
 
 Automate...
 
-\lstset{frameround=tttt}
+%\lstset{frameround=tttt}
 \lstinputlisting[frame=single]{files/picluster-update}
 
 
@@ -951,7 +951,7 @@ Confirm option 0, OpenBLAS, is selected. Press return to keep this option and th
 
 Download and install the latest version of HPL on node1...
 
-\lstset{frameround=tttt}
+%\lstset{frameround=tttt}
 \begin{lstlisting}[frame=single]
 ssh node1
 cd picluster
@@ -966,7 +966,7 @@ cd hpl-2.3
 
 Create Make.serial file...
 
-\lstset{frameround=tttt}
+%\lstset{frameround=tttt}
 \begin{lstlisting}[frame=single]
 cd setup
 bash make_generic
@@ -978,7 +978,7 @@ Amend Make.serial as per...
 
 Build...
 
-\lstset{frameround=tttt}
+%\lstset{frameround=tttt}
 \begin{lstlisting}[frame=single]
 make arch=serial   
 \end{lstlisting}
@@ -987,7 +987,7 @@ This creates xhpl and HPL.dat in bin/serial
 
 Copy xhpl to all nodes (only xhpl, and not HPL.dat)...
 
-\lstset{frameround=tttt}
+%\lstset{frameround=tttt}
 \begin{lstlisting}[frame=single]
 ssh node2 mkdir -p picluster/hpl/hpl-2.3/bin/serial
 ssh node3 mkdir -p picluster/hpl/hpl-2.3/bin/serial
