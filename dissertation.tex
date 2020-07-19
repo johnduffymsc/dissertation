@@ -134,7 +134,7 @@ See Appendix...
 
 Describe HPL.dat parameters...
 
-\lstinputlisting[frame=single, caption=Example HPL.dat]{files/HPL.dat}
+\lstinputlisting[frame=single, numbers=left, caption=Example HPL.dat]{files/HPL.dat}
 
 A detailed description of each line of this file is ...
 
@@ -148,7 +148,7 @@ It is very easy to use \verb grep to find the lines in HPL.out containing the re
 grep WR HPL.out | sort -g -k 4 -k 7 | tr -s ' ' > HPL.out.sorted
 \end{verbatim}
 
-\lstinputlisting[frame=single, caption=Example HPL.out.sorted]{files/HPL.out.sorted}
+\lstinputlisting[frame=single, numbers=left, caption=Example HPL.out.sorted]{files/HPL.out.sorted}
 
 
 
@@ -1058,18 +1058,27 @@ During your cluster build you will accidentally delete files, results etc. After
 
 
 %
-% APPENDIX - F
+% APPENDIX - CLOUD-INIT USER-DATE
 %
-\clearpage\section{Appendix F - Pi Cluster Management Tools}
+\clearpage\section{Appendix ? - cloud-init user-data}
 
-\lstinputlisting[frame=single, language=bash, numbers=left, caption=picluster/tools/picluster-update]{picluster/tools/picluster-update}
-\lstinputlisting[frame=single, language=bash, numbers=left, caption=picluster/tools/picluster-reboot]{picluster/tools/picluster-reboot}
-\lstinputlisting[frame=single, language=bash, numbers=left, caption=picluster/tools/picluster-shutdown]{picluster/tools/picluster-shutdown}
-\lstinputlisting[frame=single, language=bash, numbers=left, caption=picluster/tools/picluster-libblas-query]{picluster/tools/picluster-libblas-query}
-\lstinputlisting[frame=single, language=bash, numbers=left, caption=picluster/tools/picluster-libblas-set-openblas-serial]{picluster/tools/picluster-libblas-set-openblas-serial}
-\lstinputlisting[frame=single, language=bash, numbers=left, caption=picluster/tools/picluster-libblas-set-openblas-openmp]{picluster/tools/picluster-libblas-set-openblas-openmp}
-\lstinputlisting[frame=single, language=bash, numbers=left, caption=picluster/tools/picluster-libblas-set-blis-serial]{picluster/tools/picluster-libblas-set-blis-serial}
-\lstinputlisting[frame=single, language=bash, numbers=left, caption=picluster/tools/picluster-libblas-set-blis-openmp]{picluster/tools/picluster-libblas-set-blis-openmp}
+\lstinputlisting[frame=single, language=bash, numbers=left, caption=picluster/cloudinit/user-data]{picluster/cloudinit/user-data}
+
+
+%
+% APPENDIX - PI CLUSTER MANAGEMENT TOOLS
+%
+\clearpage\section{Appendix ? - Pi Cluster Management Tools}
+
+\lstinputlisting[frame=single, language=bash, tabsize=2, numbers=left, caption=picluster/tools/picluster-update]{picluster/tools/picluster-update}
+\lstinputlisting[frame=single, language=bash, tabsize=2, numbers=left, caption=picluster/tools/picluster-reboot]{picluster/tools/picluster-reboot}
+\lstinputlisting[frame=single, language=bash, tabsize=2, numbers=left, caption=picluster/tools/picluster-shutdown]{picluster/tools/picluster-shutdown}
+\lstinputlisting[frame=single, language=bash, tabsize=2, numbers=left, caption=picluster/tools/picluster-libblas-query]{picluster/tools/picluster-libblas-query}
+\lstinputlisting[frame=single, language=bash, tabsize=2, numbers=left, caption=picluster/tools/picluster-libblas-set-openblas-serial]{picluster/tools/picluster-libblas-set-openblas-serial}
+\lstinputlisting[frame=single, language=bash, tabsize=2, numbers=left, caption=picluster/tools/picluster-libblas-set-openblas-openmp]{picluster/tools/picluster-libblas-set-openblas-openmp}
+\lstinputlisting[frame=single, language=bash, tabsize=2, numbers=left, caption=picluster/tools/picluster-libblas-set-blis-serial]{picluster/tools/picluster-libblas-set-blis-serial}
+\lstinputlisting[frame=single, language=bash, tabsize=2, numbers=left, caption=picluster/tools/picluster-libblas-set-blis-openmp]{picluster/tools/picluster-libblas-set-blis-openmp}
+
 
 %
 % THE END
