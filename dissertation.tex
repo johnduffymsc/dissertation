@@ -142,6 +142,15 @@ A detailed description of each line of this file is ...
 
 Describe HPL.out...
 
+It is very easy to use \verb grep to find the lines in HPL.out containing the results. And to then conduct a general numeric sort, first by P and then by Gflops, to find Rmax for each P and Q pair, squeezing repeated white space down to a single space for readability.
+
+\begin{verbatim}
+grep WR HPL.out | sort -g -k 4 -k 7 | tr -s ' ' > HPL.out.sorted
+\end{verbatim}
+
+\lstinputlisting[frame=single, caption=Example HPL.out.sorted]{files/HPL.out.sorted}
+
+
 
 
 \subsection{Running xhpl}
@@ -295,12 +304,12 @@ P2 x Q4
 		\hline
 		NB & N & NB & N & NB & N & NB & N & NB & N \\ 
 		\hline
-		32 & 26208 &  80 & 26160 & 128 &  & 176 &  & 224 &  \\ 
-		40 & 26200 &  88 & 26136 & 136 &  & 184 &  & 232 &  \\ 
- 		48 & 26208 &  96 &  & 144 &  & 192 &  & 240 &  \\
-		56 & 26208 & 104 &  & 152 &  & 200 &  & 248 &  \\ 
- 		64 & 26176 & 112 &  & 160 &  & 208 &  & 256 &  \\
-		72 & 26208 & 120 &  & 168 &  & 216 &  &   - &    - \\ 
+		32 & 26208 &   80 & 26160 & 128 & 26112 & 176 & 26048 & 224 & 26208 \\ 
+		40 & 26200 &   88 & 26136 & 136 & 26112 & 184 & 26128 & 232 & 25984 \\ 
+ 		48 & 26208 &   96 & 26208 & 144 & 26208 & 192 & 26112 & 240 & 26160 \\
+		56 & 26208 & 104 & 26208 & 152 & 26144 & 200 & 26200 & 248 & 26040 \\ 
+ 		64 & 26176 & 112 & 26208 & 160 & 26080 & 208 & 26208 & 256 & 26112 \\
+		72 & 26208 & 120 & 26160 & 168 & 26208 & 216 & 26136 &     - &         - \\ 
  		\hline
 	\end{tabular}
 \end{center}
@@ -1047,4 +1056,22 @@ Use a \verb|tmux| session to start long running jobs, and then detach from the \
 
 During your cluster build you will accidentally delete files, results etc. After every significant...
 
+
+%
+% APPENDIX - F
+%
+\clearpage\section{Appendix F - Pi Cluster Management Tools}
+
+\lstinputlisting[frame=single, language=bash, numbers=left, caption=picluster/tools/picluster-update]{picluster/tools/picluster-update}
+\lstinputlisting[frame=single, language=bash, numbers=left, caption=picluster/tools/picluster-reboot]{picluster/tools/picluster-reboot}
+\lstinputlisting[frame=single, language=bash, numbers=left, caption=picluster/tools/picluster-shutdown]{picluster/tools/picluster-shutdown}
+\lstinputlisting[frame=single, language=bash, numbers=left, caption=picluster/tools/picluster-libblas-query]{picluster/tools/picluster-libblas-query}
+\lstinputlisting[frame=single, language=bash, numbers=left, caption=picluster/tools/picluster-libblas-set-openblas-serial]{picluster/tools/picluster-libblas-set-openblas-serial}
+\lstinputlisting[frame=single, language=bash, numbers=left, caption=picluster/tools/picluster-libblas-set-openblas-openmp]{picluster/tools/picluster-libblas-set-openblas-openmp}
+\lstinputlisting[frame=single, language=bash, numbers=left, caption=picluster/tools/picluster-libblas-set-blis-serial]{picluster/tools/picluster-libblas-set-blis-serial}
+\lstinputlisting[frame=single, language=bash, numbers=left, caption=picluster/tools/picluster-libblas-set-blis-openmp]{picluster/tools/picluster-libblas-set-blis-openmp}
+
+%
+% THE END
+%
 \end{document}
