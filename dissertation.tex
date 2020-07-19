@@ -134,9 +134,9 @@ See Appendix...
 
 Describe HPL.dat parameters...
 
-\lstinputlisting[frame=single]{files/HPL.dat}
+\lstinputlisting[frame=single, caption=Example HPL.dat]{files/HPL.dat}
 
-
+A detailed description of each line of this file is ...
 
 \subsection{HPL.out}
 
@@ -228,10 +228,10 @@ NB 32 to 256 in increments of 8...
 
 1x1
 
-%\lstset{frameround=tttt}
-\begin{lstlisting}[frame=single]
-mpirun -np 1 xhpl
-\end{lstlisting}
+%\begin{verbatim}[frame=single, backgroundcolor=\color{yellow},basicstyle=\ttfamily]
+\begin{verbatim}
+    $ mpirun -np 1 xhpl
+\end{verbatim}
 
 mpirun does bind to core by default for $np \leq 2$
 
