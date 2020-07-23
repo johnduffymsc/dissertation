@@ -5,6 +5,19 @@
 \usepackage{listings}
 \usepackage{pdfpages}
 
+\definecolor{termcolor}{RGB}{250, 245, 232}
+\definecolor{listingcolor}{RGB}{250, 245, 232}
+
+\lstdefinestyle{dissertationstyle}{
+frame=single,
+backgroundcolor=\color{listingcolor},   
+basicstyle=\verbatim@font,
+numbers=left,                    
+tabsize=2
+}
+
+\lstset{style=dissertationstyle}
+
 
 \title{MSc Scientific Computing Dissertation\\ARM Cluster Linpack Benchmarks}
 \author{John Duffy}
@@ -22,21 +35,44 @@
 https://github.com/johnduffymsc/picluster
 \end{verbatim}
 
+
 \subsection{Aims}
 
-\subsubsection{Investigate Maximum Achievable Linpack Benchmark}
+\subsubsection{Investigate Maximum Achievable Linpack Performance}
 
 Efficiency... achieved vs theoretical maximum
+
 
 \subsubsection{Investigate Gflops/Watt}
 
 Green500 ranking...
+
 
 \subsubsection{Overview of Competitive Available Gflops/£}
 
 Buy lots of Pi's, or buy a bigger machine...
 
 Plot Gflops vs £...
+
+
+\subsection{Typography}
+
+This is a computer name...
+
+\verb|node1|
+
+This is a command to type...
+
+\verb|$ grep|
+
+This is a command output displayed on your screen...
+
+
+% TODO: Change to Ubuntu /etc/hosts...
+This is a file listing...
+
+\lstinputlisting[caption=/etc/hosts]{/etc/hosts}
+
 
 
 
@@ -134,7 +170,7 @@ See Appendix...
 
 Describe HPL.dat parameters...
 
-\lstinputlisting[frame=single, numbers=left, caption=Example HPL.dat]{files/HPL.dat}
+\lstinputlisting[caption=Example HPL.dat]{files/HPL.dat}
 
 A detailed description of each line of this file is ...
 
@@ -214,6 +250,69 @@ Methodology...
 
 
 
+\subsection{OpenBLAS}
+
+
+
+\subsection{BLIS}
+
+
+
+\subsection{ARM Performance Libraries}
+
+THIS DOES NOT WORK YET, BUT WILL ON THE NEXT RELEASE OF ARM PERFORMANCE LIBRARIES. KEEP FOR FUTURE REFERENCE.
+
+"Arm Performance Libraries provides optimized standard core math libraries for high-performance computing applications on Arm processors. This free version of the libraries provides optimized libraries for Arm® Neoverse™ N1-based Armv8 AArch64 implementations that are compatible with various versions of GCC. You do not require a license for this version of the libraries."
+
+For clarity the EULA is included as Appendix ?
+
+Downloaded Arm Performance Libraries 20.2.0 with GCC 9.3 for Ubuntu 16.04+...
+
+Note... need to install environment-modules package...
+
+\begin{lstlisting}[]
+$ ssh node1
+$ sudo apt install environment-modules
+$ mkdir picluster/armpl
+$ cd picluster/armpl
+$ tar xvf arm-performance-libraries_20.2_Ubuntu-16.04_gcc-9.3.tar
+$ rm arm-performance-libraries_20.2_Ubuntu-16.04_gcc-9.3.tar
+$ sudo ./arm-performance-libraries_20.2_Ubuntu-16.04.sh
+\end{lstlisting}
+
+The default installation directory is /opt/arm...
+
+Compile HPL with armpl...
+
+\begin{lstlisting}[]
+$ cd ~/picluster/hpl/hpl-2.3
+$ cp Make.serial Make.armpl-serial
+\end{lstlisting}
+
+Edit Make.armpl-serial...
+
+\begin{lstlisting}[]
+# ----------------------------------------------------------------------
+# - Linear Algebra library (BLAS or VSIPL) -----------------------------
+# ----------------------------------------------------------------------
+# LAinc tells the  C  compiler where to find the Linear Algebra  library
+# header files,  LAlib  is defined  to be the name of  the library to be 
+# used. The variable LAdir is only used for defining LAinc and LAlib.
+#
+LAdir        = /opt/arm/armpl_20.2_gcc-9.3
+LAinc        =
+LAlib        = -L$(LAdir)/lib -larmpl -lgfortran -lamath -lm
+\end{lstlisting}
+
+Compile HPL...
+
+\begin{lstlisting}[]
+$ make arch=armpl-serial
+\end{lstlisting}
+
+
+
+
 \subsection{1 Core Baseline Benchmark}
 
 Problem size restricted to 80\% of 1GB...
@@ -279,7 +378,7 @@ A single core is capable of achieving maximum theoretical performance... CAVEATS
 \end{center}
 
 %\lstset{frameround=tttt}
-\begin{lstlisting}[frame=single]
+\begin{lstlisting}[]
 mpirun -np 4 xhpl
 \end{lstlisting}
 
@@ -723,8 +822,8 @@ Photo
 On macbook (no passphrase):
 
 %\lstset{frameround=tttt}
-\begin{lstlisting}[frame=single]
-ssh-genkey -t rsa -C ucapjbj
+\begin{lstlisting}[]
+$ ssh-genkey -t rsa -C john
 \end{lstlisting}
 
 This will create two files... in ...
@@ -736,7 +835,7 @@ This will create two files... in ...
 On macbook, using your favourite editor, add the following to /etc/hosts:
 
 %\lstset{frameround=tttt}
-\begin{lstlisting}[frame=single]
+\begin{lstlisting}[]
 192.168.0.1 node1
 192.168.0.2 node2
 192.168.0.3 node3
@@ -751,14 +850,14 @@ On macbook, using your favourite editor, add the following to /etc/hosts:
 This enables...
 
 %\lstset{frameround=tttt}
-\begin{lstlisting}[frame=single]
+\begin{lstlisting}[]
 ssh john@node1
 \end{lstlisting}
 
 or, the abbreviated...
 
 %\lstset{frameround=tttt}
-\begin{lstlisting}[frame=single]
+\begin{lstlisting}[]
 ssh node1
 \end{lstlisting}
 
@@ -831,7 +930,7 @@ Our public key was installed on each node by cloud-init. So, we can ssh into eac
 We need to copy our private key to node1 (only node1)...
 
 %\lstset{frameround=tttt}
-\begin{lstlisting}[frame=single]
+\begin{lstlisting}[]
 scp ~/.ssh/id_rsa node1:~/.ssh
 \end{lstlisting}
 
@@ -850,7 +949,7 @@ ssh node2
 This will generate...
 
 %\lstset{frameround=tttt}
-\begin{lstlisting}[frame=single]
+\begin{lstlisting}[]
 The authenticity of host 'node2 (192.168.0.2)' can't be established.
 ECDSA key fingerprint is SHA256:5VgsnN2nPvpfbJmALh3aJdOeT/NvDXqN8TCreQyNaFA.
 Are you sure you want to continue connecting (yes/no/[fingerprint])?
@@ -859,7 +958,7 @@ Are you sure you want to continue connecting (yes/no/[fingerprint])?
 responding yes, imports the key into the node1 knownhosts file...
 
 %\lstset{frameround=tttt}
-\begin{lstlisting}[frame=single]
+\begin{lstlisting}[]
 exit
 \end{lstlisting}
 
@@ -880,7 +979,7 @@ Remove...
 From macbookpro:
 
 %\lstset{frameround=tttt}
-\begin{lstlisting}[frame=single]
+\begin{lstlisting}[]
 ssh node1 sudo apt remove unattended-upgrades --yes
 ssh node2 sudo apt remove unattended-upgrades --yes
 ssh node3 sudo apt remove unattended-upgrades --yes
@@ -897,13 +996,36 @@ Don't forget to update your cluster regularly at convenient times...
 See update/upgrade script below...
 
 
+\subsubsection{Add Source Repositories}
+
+We are going to be rebuilding some packages from source...
+
+\begin{lstlisting}[]
+ssh node1
+sudo touch /etc/apt/sources/list.d/picluster.list
+sudo vim /etc/apt/sources/list.d/picluster.list
+\end{lstlisting}
+
+... and add the following source repositories...
+
+\begin{lstlisting}[caption=/etc/apt/sources.list.d/picluster.list]
+deb-src http://archive.ubuntu.com/ubuntu focal main universe
+deb-src http://archive.ubuntu.com/ubuntu focal-updates main universe
+\end{lstlisting}
+
+... and then update the repository cache? 
+
+\begin{lstlisting}[]
+sudo apt update
+\end{lstlisting}
+
 
 \subsubsection{Create a Project Repository}
 
 Xpand upon...
 
 %\lstset{frameround=tttt}
-\begin{lstlisting}[frame=single]
+\begin{lstlisting}[]
 ssh node1
 mkdir picluster
 cd picluster
@@ -952,7 +1074,7 @@ Confirm option 0, OpenBLAS, is selected. Press return to keep this option and th
 Download and install the latest version of HPL on node1...
 
 %\lstset{frameround=tttt}
-\begin{lstlisting}[frame=single]
+\begin{lstlisting}[]
 ssh node1
 cd picluster
 mkdir hpl
@@ -967,7 +1089,7 @@ cd hpl-2.3
 Create Make.serial file...
 
 %\lstset{frameround=tttt}
-\begin{lstlisting}[frame=single]
+\begin{lstlisting}[]
 cd setup
 bash make_generic
 cd ..
@@ -979,7 +1101,7 @@ Amend Make.serial as per...
 Build...
 
 %\lstset{frameround=tttt}
-\begin{lstlisting}[frame=single]
+\begin{lstlisting}[]
 make arch=serial   
 \end{lstlisting}
 
@@ -988,7 +1110,72 @@ This creates xhpl and HPL.dat in bin/serial
 Copy xhpl to all nodes (only xhpl, and not HPL.dat)...
 
 %\lstset{frameround=tttt}
-\begin{lstlisting}[frame=single]
+\begin{lstlisting}[]
+ssh node2 mkdir -p picluster/hpl/hpl-2.3/bin/serial
+ssh node3 mkdir -p picluster/hpl/hpl-2.3/bin/serial
+ssh node4 mkdir -p picluster/hpl/hpl-2.3/bin/serial
+ssh node5 mkdir -p picluster/hpl/hpl-2.3/bin/serial
+ssh node6 mkdir -p picluster/hpl/hpl-2.3/bin/serial
+ssh node7 mkdir -p picluster/hpl/hpl-2.3/bin/serial
+ssh node8 mkdir -p picluster/hpl/hpl-2.3/bin/serial
+ssh node9 mkdir -p picluster/hpl/hpl-2.3/bin/serial
+
+scp bin/serial/xhpl node2:~picluster/hpl/hpl-2.3/bin/serial
+scp bin/serial/xhpl node3:~picluster/hpl/hpl-2.3/bin/serial
+scp bin/serial/xhpl node4:~picluster/hpl/hpl-2.3/bin/serial
+scp bin/serial/xhpl node5:~picluster/hpl/hpl-2.3/bin/serial
+scp bin/serial/xhpl node6:~picluster/hpl/hpl-2.3/bin/serial
+scp bin/serial/xhpl node7:~picluster/hpl/hpl-2.3/bin/serial
+scp bin/serial/xhpl node8:~picluster/hpl/hpl-2.3/bin/serial
+scp bin/serial/xhpl node9:~picluster/hpl/hpl-2.3/bin/serial
+\end{lstlisting}
+
+
+%
+% APPENDIX ?
+%
+\clearpage\section{Appendix ? - High-Performance Linpack (HPL) Installation}
+
+Download and install the latest version of HPL on node1...
+
+%\lstset{frameround=tttt}
+\begin{lstlisting}[]
+ssh node1
+cd picluster
+mkdir hpl
+cd hpl
+wget https://www.netlib.org/benchmark/hpl/hpl-2.3.tar.gz
+gunzip hpl-2.3.tar.gz
+tar xvf hpl-2.3.tar
+rm hpl-2.3.tar
+cd hpl-2.3
+\end{lstlisting}
+
+Create Make.serial file...
+
+%\lstset{frameround=tttt}
+\begin{lstlisting}[]
+cd setup
+bash make_generic
+cd ..
+cp setup/Make.UNKNOWN Make.serial
+\end{lstlisting}
+
+Amend Make.serial as per...
+
+Build...
+
+%\lstset{frameround=tttt}
+\begin{lstlisting}[]
+make arch=serial   
+\end{lstlisting}
+
+This creates xhpl and HPL.dat in bin/serial
+
+Copy xhpl to all nodes (only xhpl, and not HPL.dat)...
+
+%\lstset{frameround=tttt}
+\begin{lstlisting}[]
 ssh node2 mkdir -p picluster/hpl/hpl-2.3/bin/serial
 ssh node3 mkdir -p picluster/hpl/hpl-2.3/bin/serial
 ssh node4 mkdir -p picluster/hpl/hpl-2.3/bin/serial
@@ -1011,9 +1198,27 @@ scp bin/serial/xhpl node9:~picluster/hpl/hpl-2.3/bin/serial
 
 
 %
-% APPENDIX C
+% APPENDIX ?
 %
-\clearpage\section{Appendix D - Hints and Tips}
+\clearpage\section{Appendix ? - Rebuild Package libblis3-serial:TODO CHECK NAME}
+
+\begin{lstlisting}[]
+ssh node1
+mkdir -p picluster/build/blis
+cd picluster/build/blis
+apt-get source blis
+sudo apt-get build-dep blis
+cd blis-0.6.1
+
+
+\end{lstlisting}
+
+
+
+
+
+
+
 
 Hints from experience... and time savers... for building a development cluster on a local network.
 
@@ -1066,18 +1271,19 @@ During your cluster build you will accidentally delete files, results etc. After
 
 
 %
-% APPENDIX - PI CLUSTER MANAGEMENT TOOLS
+% APPENDIX - PI CLUSTER TOOLS
 %
-\clearpage\section{Appendix ? - Pi Cluster Management Tools}
+\clearpage\section{Appendix ? - Pi Cluster Tools}
 
-\lstinputlisting[frame=single, language=bash, tabsize=2, numbers=left, caption=picluster/tools/picluster-update]{picluster/tools/picluster-update}
-\lstinputlisting[frame=single, language=bash, tabsize=2, numbers=left, caption=picluster/tools/picluster-reboot]{picluster/tools/picluster-reboot}
-\lstinputlisting[frame=single, language=bash, tabsize=2, numbers=left, caption=picluster/tools/picluster-shutdown]{picluster/tools/picluster-shutdown}
-\lstinputlisting[frame=single, language=bash, tabsize=2, numbers=left, caption=picluster/tools/picluster-libblas-query]{picluster/tools/picluster-libblas-query}
-\lstinputlisting[frame=single, language=bash, tabsize=2, numbers=left, caption=picluster/tools/picluster-libblas-set-openblas-serial]{picluster/tools/picluster-libblas-set-openblas-serial}
-\lstinputlisting[frame=single, language=bash, tabsize=2, numbers=left, caption=picluster/tools/picluster-libblas-set-openblas-openmp]{picluster/tools/picluster-libblas-set-openblas-openmp}
-\lstinputlisting[frame=single, language=bash, tabsize=2, numbers=left, caption=picluster/tools/picluster-libblas-set-blis-serial]{picluster/tools/picluster-libblas-set-blis-serial}
-\lstinputlisting[frame=single, language=bash, tabsize=2, numbers=left, caption=picluster/tools/picluster-libblas-set-blis-openmp]{picluster/tools/picluster-libblas-set-blis-openmp}
+\lstinputlisting[caption=picluster/tools/picluster-update]{picluster/tools/picluster-update}
+\lstinputlisting[caption=picluster/tools/picluster-reboot]{picluster/tools/picluster-reboot}
+\lstinputlisting[caption=picluster/tools/picluster-shutdown]{picluster/tools/picluster-shutdown}
+\lstinputlisting[caption=picluster/tools/picluster-libblas-query]{picluster/tools/picluster-libblas-query}
+\lstinputlisting[caption=picluster/tools/picluster-libblas-set-openblas-serial]{picluster/tools/picluster-libblas-set-openblas-serial}
+\lstinputlisting[caption=picluster/tools/picluster-libblas-set-openblas-openmp]{picluster/tools/picluster-libblas-set-openblas-openmp}
+\lstinputlisting[caption=picluster/tools/picluster-libblas-set-blis-serial]{picluster/tools/picluster-libblas-set-blis-serial}
+\lstinputlisting[caption=picluster/tools/picluster-libblas-set-blis-openmp]{picluster/tools/picluster-libblas-set-blis-openmp}
+%\lstinputlisting[caption=picluster/tools/picluster-sort-hpl-out]{picluster/tools/picluster-sort-hpl-out}
 
 
 %
