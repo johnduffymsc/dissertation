@@ -2,21 +2,29 @@
 \usepackage[utf8]{inputenc}
 \setlength{\parindent}{0em}
 \setlength{\parskip}{1em}
+\usepackage[svgnames]{xcolor}
 \usepackage{listings}
 \usepackage{pdfpages}
 
-\definecolor{termcolor}{RGB}{250, 245, 232}
-\definecolor{listingcolor}{RGB}{250, 245, 232}
+%\definecolor{termcolor}{RGB}{1.0, 0.97, 0.86}
+%\definecolor{listingcolor}{RGB}{0.61, 0.87, 1.0}
 
-\lstdefinestyle{dissertationstyle}{
+\lstdefinestyle{termstyle}{
 frame=single,
-backgroundcolor=\color{listingcolor},   
+backgroundcolor=\color{Cornsilk},   
+basicstyle=\verbatim@font,
+numbers=none,
+tabsize=2
+}
+
+\lstdefinestyle{listingstyle}{
+frame=single,
+backgroundcolor=\color{LightSkyBlue},   
 basicstyle=\verbatim@font,
 numbers=left,                    
 tabsize=2
 }
 
-\lstset{style=dissertationstyle}
 
 
 \title{MSc Scientific Computing Dissertation\\ARM Cluster Linpack Benchmarks}
@@ -63,16 +71,33 @@ This is a computer name...
 
 This is a command to type...
 
-\verb|$ grep|
+\lstset{style=termstyle}
+\begin{lstlisting}[]
+$ grep
+\end{lstlisting}
 
 This is a command output displayed on your screen...
 
+\lstset{style=termstyle}
+\begin{lstlisting}[caption=cat /proc/softirqs]
+                    CPU0       CPU1       CPU2       CPU3       
+          HI:          1          0          0          1
+       TIMER:    3835342    3454143    3431155    3431023
+      NET_TX:      36635          0          0          0
+      NET_RX:     509189        146        105        121
+       BLOCK:      95326       4367       4311       4256
+    IRQ_POLL:          0          0          0          0
+     TASKLET:       4900          3          4         25
+       SCHED:     444569     267214     218701     189120
+     HRTIMER:         67          0          0          0
+         RCU:     604466     281455     260784     277699
+\end{lstlisting}
 
 % TODO: Change to Ubuntu /etc/hosts...
 This is a file listing...
 
+\lstset{style=listingstyle}
 \lstinputlisting[caption=/etc/hosts]{/etc/hosts}
-
 
 
 
@@ -170,6 +195,7 @@ See Appendix...
 
 Describe HPL.dat parameters...
 
+\lstset{style=listingstyle}
 \lstinputlisting[caption=Example HPL.dat]{files/HPL.dat}
 
 A detailed description of each line of this file is ...
@@ -180,11 +206,13 @@ Describe HPL.out...
 
 It is very easy to use \verb grep to find the lines in HPL.out containing the results. And to then conduct a general numeric sort, first by P and then by Gflops, to find Rmax for each P and Q pair, squeezing repeated white space down to a single space for readability.
 
-\begin{verbatim}
-grep WR HPL.out | sort -g -k 4 -k 7 | tr -s ' ' > HPL.out.sorted
-\end{verbatim}
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ grep WR HPL.out | sort -g -k 4 -k 7 | tr -s ' ' > HPL.out.sorted
+\end{lstlisting}
 
-\lstinputlisting[frame=single, numbers=left, caption=Example HPL.out.sorted]{files/HPL.out.sorted}
+\lstset{style=listingstyle}
+\lstinputlisting[caption=Example HPL.out.sorted]{files/HPL.out.sorted}
 
 
 
@@ -193,35 +221,31 @@ grep WR HPL.out | sort -g -k 4 -k 7 | tr -s ' ' > HPL.out.sorted
 
 To run xhpl using the serial version of OpenBLAS...
 
-~/picluster/tools/picluster-set-libblas-openblas-serial
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ ~/picluster/tools/picluster-set-libblas-openblas-serial
+\end{lstlisting}
 
+or, with the serial version of BLIS...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ ~/picluster/tools/picluster-set-libblas-blis-serial
+\end{lstlisting}
+
+
+\lstset{style=termstyle}
+\begin{lstlisting}
 cd ~/picluster/hpl/hpl-2.3/bin/serial
+mpirun -np 4 xhpl
+\end{lstlisting}
 
-mpirun -host node1:4 -np 4 xhpl
-
-
-
-To run xhpl using the OpenMP version of OpenBLAS...
-
-~/picluster/tools/picluster-set-libblas-openblas-openmp
-
-export OMPNUMTHREADS=4 TODO: SET GLOBALLY AT INSTALLATION
-
-export BLISNUMTHREADS=4 TODO: SET GLOBALLY AT INSTALLATION
-
-cd ~/picluster/hpl/hpl-2.3/bin/serial
 
 
 
 \section{OpenMPI}
 
 What is OpenMPI...
-
-
-
-\section{OpenMP}
-
-What is OpenMP...
 
 
 
@@ -258,64 +282,9 @@ Methodology...
 
 
 
-\subsection{ARM Performance Libraries}
+\subsection{1 Core Baseline}
 
-THIS DOES NOT WORK YET, BUT WILL ON THE NEXT RELEASE OF ARM PERFORMANCE LIBRARIES. KEEP FOR FUTURE REFERENCE.
-
-"Arm Performance Libraries provides optimized standard core math libraries for high-performance computing applications on Arm processors. This free version of the libraries provides optimized libraries for Arm® Neoverse™ N1-based Armv8 AArch64 implementations that are compatible with various versions of GCC. You do not require a license for this version of the libraries."
-
-For clarity the EULA is included as Appendix ?
-
-Downloaded Arm Performance Libraries 20.2.0 with GCC 9.3 for Ubuntu 16.04+...
-
-Note... need to install environment-modules package...
-
-\begin{lstlisting}[]
-$ ssh node1
-$ sudo apt install environment-modules
-$ mkdir picluster/armpl
-$ cd picluster/armpl
-$ tar xvf arm-performance-libraries_20.2_Ubuntu-16.04_gcc-9.3.tar
-$ rm arm-performance-libraries_20.2_Ubuntu-16.04_gcc-9.3.tar
-$ sudo ./arm-performance-libraries_20.2_Ubuntu-16.04.sh
-\end{lstlisting}
-
-The default installation directory is /opt/arm...
-
-Compile HPL with armpl...
-
-\begin{lstlisting}[]
-$ cd ~/picluster/hpl/hpl-2.3
-$ cp Make.serial Make.armpl-serial
-\end{lstlisting}
-
-Edit Make.armpl-serial...
-
-\begin{lstlisting}[]
-# ----------------------------------------------------------------------
-# - Linear Algebra library (BLAS or VSIPL) -----------------------------
-# ----------------------------------------------------------------------
-# LAinc tells the  C  compiler where to find the Linear Algebra  library
-# header files,  LAlib  is defined  to be the name of  the library to be 
-# used. The variable LAdir is only used for defining LAinc and LAlib.
-#
-LAdir        = /opt/arm/armpl_20.2_gcc-9.3
-LAinc        =
-LAlib        = -L$(LAdir)/lib -larmpl -lgfortran -lamath -lm
-\end{lstlisting}
-
-Compile HPL...
-
-\begin{lstlisting}[]
-$ make arch=armpl-serial
-\end{lstlisting}
-
-
-
-
-\subsection{1 Core Baseline Benchmark}
-
-Problem size restricted to 80\% of 1GB...
+Problem size restricted to 80\% of memory...
 
 NB 32 to 256 in increments of 8...
 
@@ -324,22 +293,22 @@ NB 32 to 256 in increments of 8...
 		\hline
 		NB & N & NB & N & NB & N & NB & N & NB & N \\ 
 		\hline
-		32 & 9248 &  80 & 9200 & 128 & 9216 & 176 & 9152 & 224 & 9184 \\ 
-		40 & 9240 &  88 & 9240 & 136 & 9248 & 184 & 9200 & 232 & 9048 \\ 
- 		48 & 9264 &  96 & 9216 & 144 & 9216 & 192 & 9216 & 240 & 9120 \\
-		56 & 9240 & 104 & 9256 & 152 & 9120 & 200 & 9200 & 248 & 9176 \\ 
- 		64 & 9216 & 112 & 9184 & 160 & 9120 & 208 & 9152 & 256 & 9216 \\
-		72 & 9216 & 120 & 9240 & 168 & 9240 & 216 & 9072 &   - &    - \\ 
+		32 & 18528 &  80 & 18480 & 128 & 18432 & 176 & 18480 & 224 & 18368 \\ 
+		40 & 18520 &  88 & 18480 & 136 & 18496 & 184 & 18400 & 232 & 18328 \\ 
+ 		48 & 18528 &  96 & 18528 & 144 & 18432 & 192 & 18432 & 240 & 18480 \\
+		56 & 18536 & 104 & 18512 & 152 & 18392 & 200 & 18400 & 248 & 18352 \\ 
+ 		64 & 18496 & 112 & 18480 & 160 & 18400 & 208 & 18512 & 256 & 18432 \\
+		72 & 18504 & 120 & 18480 & 168 & 18480 & 216 & 18360 &   - &     - \\ 
  		\hline
 	\end{tabular}
 \end{center}
 
 1x1
 
-%\begin{verbatim}[frame=single, backgroundcolor=\color{yellow},basicstyle=\ttfamily]
-\begin{verbatim}
-    $ mpirun -np 1 xhpl
-\end{verbatim}
+\lstset{style=termstyle}
+\begin{lstlisting}[]
+$ mpirun -np 1 xhpl
+\end{lstlisting}
 
 mpirun does bind to core by default for $np \leq 2$
 
@@ -358,7 +327,7 @@ Cache misses from peak...
 A single core is capable of achieving maximum theoretical performance... CAVEATS whole L2 cache, whole node 4 GB memory, although problem size limited to 80\% of 1 GB...  
 
 
-\subsection{1 Node Benchmark}
+\subsection{1 Node Baseline}
 
 1x4
 
@@ -377,9 +346,9 @@ A single core is capable of achieving maximum theoretical performance... CAVEATS
 	\end{tabular}
 \end{center}
 
-%\lstset{frameround=tttt}
+\lstset{style=termstyle}
 \begin{lstlisting}[]
-mpirun -np 4 xhpl
+$ mpirun -np 4 xhpl
 \end{lstlisting}
 
 mpirun does bind to socket by default for $np \geq 2$
@@ -392,7 +361,7 @@ mpirun does bind to socket by default for $np \geq 2$
 
 
 
-\subsection{2 Node Baseline Benchmark}
+\subsection{2 Node Baseline}
 
 P1 x Q8
 
@@ -421,7 +390,7 @@ P2 x Q4
 %\end{figure}
 
 
-\subsection{8 Node Baseline Benchmark}
+\subsection{8 Node Baseline}
 
 1x32
 2x16
@@ -458,323 +427,280 @@ Suggests... improve network efficiency?
 
 
 %
-% OLD STUFF FROM HERE UP TO APPENDICES- WEED!
+% SECTION - OPTIMISATIONS
 %
+\clearpage\section{Optimisations}
+
+%
+% Single Core
+%
+\subsection{Single Core Optimisation}
+
+Better BLAS library...
+
+\subsubsection{Rebuild libopenblas0-serial}
+
+The Debian Science Wiki suggests...
+
+So, following the instructions in /usr/local/share/
+
+Details are in Appendix ?...
+
+Poking around in the OpenBLAS source code, I noticed...
+
+cpuid\_arm64.c
+
+in function void get\_cpuconfig(void)
 
 
+\lstset{style=listingstyle}
+\begin{lstlisting}[caption=cpuid\_arm64.c, numbers=none]
+...
+	case CPU_CORTEXA57:
+	case CPU_CORTEXA72:
+	case CPU_CORTEXA73:
+		// Common minimum settings for these Arm cores
+		// Can change a lot, but we need to be conservative
+		// TODO: detect info from /sys if possible
+		printf("#define %s\n", cpuname[d]);
+		printf("#define L1_CODE_SIZE 49152\n");
+		printf("#define L1_CODE_LINESIZE 64\n");
+		printf("#define L1_CODE_ASSOCIATIVE 3\n");
+		printf("#define L1_DATA_SIZE 32768\n");
+		printf("#define L1_DATA_LINESIZE 64\n");
+		printf("#define L1_DATA_ASSOCIATIVE 2\n");
+		printf("#define L2_SIZE 524288\n");
+		printf("#define L2_LINESIZE 64\n");
+		printf("#define L2_ASSOCIATIVE 16\n");
+		printf("#define DTB_DEFAULT_ENTRIES 64\n");
+		printf("#define DTB_SIZE 4096\n");
+		break;
+...
+\end{lstlisting}
 
-% SUBSECTION
-\subsection{Baseline Benchmark}
-As per software installation from Ubuntu Server 20.04 LTS.
+REFERENCE: Arm...
 
-OpenBLAS
+The following two lines are incorrect for the Arm Cortex-A72:
 
-OpenMP
+\lstset{style=listingstyle}
+\begin{lstlisting}[numbers=none]
+		printf("#define L2_SIZE 524288\n");
+		printf("#define DTB_DEFAULT_ENTRIES 64\n");
+\end{lstlisting}
 
-OpenMPI
+To reflect the 1MB of L2 cache of the BCM\textcolor{red}{??????}, and the 32 entry L1 Data TLB, they should be:
 
-HPL-2.3 compiled with Make.rpi4.baseline
+\lstset{style=listingstyle}
+\begin{lstlisting}[numbers=none]
+		printf("#define L2_SIZE 1048576\n");
+		printf("#define DTB_DEFAULT_ENTRIES 32\n");
+\end{lstlisting}
 
-NB = 128 (mid-range guess; to be tuned based on L1 cache size)
 
-N for 80\% efficiency (from tool)
+Having changed these to the correct values, the build process now accurately reflects the 1MB of L2 cache on line 18 of 0-serial/config.h from which the libopenblas0-serial package is built:
 
-Recommended: P$\times$Q as square as possible, with Q $>$ P
 
-4 cores per node
-1.5 GHz clock speed
-4 GB memory per node
-2 instructions per cycle (estimated as NEON is 128 bits)
+\lstset{style=listingstyle}
+\begin{lstlisting}[caption=0-serial/config.h]
+#define OS_LINUX 1
+#define ARCH_ARM64 1
+#define C_GCC 1
+#define __64BIT__ 1
+#define PTHREAD_CREATE_FUNC pthread_create
+#define BUNDERSCORE _
+#define NEEDBUNDERSCORE 1
+#define ARMV8
+#define HAVE_NEON
+#define HAVE_VFPV4
+#define CORTEXA72
+#define L1_CODE_SIZE 49152
+#define L1_CODE_LINESIZE 64
+#define L1_CODE_ASSOCIATIVE 3
+#define L1_DATA_SIZE 32768
+#define L1_DATA_LINESIZE 64
+#define L1_DATA_ASSOCIATIVE 2
+#define L2_SIZE 1048576
+#define L2_LINESIZE 64
+#define L2_ASSOCIATIVE 16
+#define DTB_DEFAULT_ENTRIES 64
+#define DTB_SIZE 4096
+#define NUM_CORES 4
+#define CHAR_CORENAME "CORTEXA72"
+#define GEMM_MULTITHREAD_THRESHOLD 4
+\end{lstlisting}
 
-From tool:
 
-%\begin{center}
-%\begin{tabular}{ |c|c|c|c|c|c| } 
-%   \hline
-%    Nodes & P & Q & NB & N & R_{max}\\
-%    1 & 1 & 4 & 128 & 18,432 & 10.0 \\ 
-%    2 & 2 & 4 & 128 & 26,112 & 20.0 \\ 
-%   3 & 2 & 6 & 128 & 32,000 & 30.0 \\ 
-%    4 & 2 & 8 & 128 & 36,992 & 40.0 \\ 
-%   5 & 2 & 5 & 128 & 41,344 & 50.0 \\ 
-%    6 & 4 & 6 & 128 & 45,312 & 60.0 \\ 
-%    7 & 4 & 7 & 128 & 49,024 & 70.0 \\ 
-%    8 & 4 & 8 & 128 & 52,352 & 80.0 \\ 
-%    \hline
-%\end{tabular}
-%\end{center}
+On completion of the build process, and after uninstalling the original libopenblas0-serial package and installing the new one...
 
-Run:
-
-\begin{verbatim}
-mpirun -host node1:4 -np 4 xhpl
-mpirun -host node1:4,node2:4 -np 8 xhpl
-mpirun -host node1:4,node2:4,node3:4 -np 12 xhpl
-etc
-\end{verbatim}
-
-TABLE RESULTS - Gflops vs node count, time vs node count
-GRAPH RESULTS - Gflops vs node count, time vs node count
+% Plot of old and new vs NB...
 
 Discussion...
 
-NB size...
 
-P\\Q Ratio...
+\subsubsection{Rebuild libblis3-serial}
 
-Node number scaling...
-
-
-% SUBSECTION
-\subsection{OpenMPI without OpenMP}
-
-Describe processor grid layout.
-
-hosts-with-slots file.
-
-% SUBSECTION
-\subsection{OpenMPI with OpenMP}
-
-Describe processor grid layout.
-
-hosts-no-slots file.
-
-%
-% SECTION
-%
-\section{Performance Optimisation}
-
-
-% SUBSECTION
-\subsection{Methodology}
-1. Measure
-
-2. Study results and propose theory
-
-3. Change something based on 2.
-
-4. Measure
-
-5. Repeat steps 1 - 4
 
 
 %
-% SECTION
+% Single Node
 %
-\section{Build Kernel with Jumbo Frames Support}
+\subsection{Single Node Optimisation}
 
-Standard MTU is 1500 bytes...
+\subsubsection{Non-Preemtive Kernel}
 
-Maximum payload size is 1472 bytes...
+\subsubsection{Recieve Queues}
 
-NB of 184 (x 8 bytes for Double Precision) = 1472 bytes...
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ sudo perf record mpirun -allow-run-as-root -np 4 xhpl
+\end{lstlisting}
 
-NB $>$ 184 $=>$ packet fragmentation $=>$ reduced network efficiency...
 
-This causes drop of in performance???...
 
-Max MTU on Raspberry Pi 4 Model B is set at build time to 1500...
+Running xhpl on 8 nodes using OpenBLAS...
 
-Not configurable above 1500...
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ mpirun -host node1:4 ... node8:4 -np 32 xhpl
+\end{lstlisting}
 
-TODO: EXAMPLE OF ERROR MSG...
 
-Need to build the kernel with higher MTU...
+SHORTLY AFTER PROGRAM START...
 
+On node1,... where we initiated...
 
-Make source packages available...
+top...
 
-\begin{verbatim}
-    sudo touch /etc/apt/sources.list.d/picluster.list
-    sudo vim /etc/apt/sources.list.d/picluster.list...
-        deb-src http://archive.ubuntu.com/ubuntu focal main
-        deb-src http://archive.ubuntu.com/ubuntu focal-updates main
-    sudo apt update
-\end{verbatim}
+\lstset{style=termstyle}
+\begin{lstlisting}
+top - 20:33:15 up 8 days,  6:02,  1 user,  load average: 4.02, 4.03, 4.00
+Tasks: 140 total,   5 running, 135 sleeping,   0 stopped,   0 zombie
+%Cpu(s): 72.5 us, 21.7 sy,  0.0 ni,  0.0 id,  0.0 wa,  0.0 hi,  5.8 si,  0.0 st
+MiB Mem :   3793.3 total,    330.1 free,   3034.9 used,    428.3 buff/cache
+MiB Swap:      0.0 total,      0.0 free,      0.0 used.    698.7 avail Mem 
 
-Create a kernel build directory with the correct access permissions to prevent source download warnings. 
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND                                                   
+  34884 john      20   0  932964 732156   7980 R 100.3  18.8 106:40.29 xhpl                                                      
+  34881 john      20   0  933692 732272   7916 R 100.0  18.9 107:29.75 xhpl                                                      
+  34883 john      20   0  932932 731720   8136 R  99.3  18.8 107:33.25 xhpl                                                      
+  34882 john      20   0  932932 731784   8208 R  97.7  18.8 107:33.64 xhpl                                                      
+\end{lstlisting}
 
-\begin{verbatim}
-    mkdir kernel
-    sudo chown _apt:root kernel
-    cd kernel
-\end{verbatim}
+SOFTIRQS...
 
-Install the kernel build dependencies...
 
-\begin{verbatim}
-    sudo apt-get build-dep linux linux-image-$(uname -r)
-\end{verbatim}
+NODE 2 - 2 NODES ONLY TO SEE EFFECT...
 
-Download the kernel source...
+IPERF!!!
 
-\begin{verbatim}
-    sudo apt-get source linux-image-$(uname -r)
-\end{verbatim}
+On node8, running the top command...
 
-Make the required changes to the source... as per REFERENCE
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ top
+\end{lstlisting}
 
-\begin{verbatim}
-    cd linux-raspi-5.4.0 
+We can see...
 
-    sudo vim include/linux/if_vlan.h...
-        #define VLAN_ETH_DATA_LEN   9000
-        #define VLAN_ETH_FRAME_LEN  9018
-    
-    sudo vim include/uapi/linux/if_ether.h...
-        #define ETH_DATA_LEN        9000
-        #define ETH_FRAME_LEN       9014
-    
-    sudo vim drivers/net/ethernet/broadcom/genet/bcmgenet.c...
-        #define RX_BUF_LENGTH       10240
-\end{verbatim}
+\lstset{style=termstyle}
+\begin{lstlisting}
+top - 18:58:44 up 8 days,  4:29,  1 user,  load average: 4.00, 3.75, 2.35
+Tasks: 133 total,   5 running, 128 sleeping,   0 stopped,   0 zombie
+%Cpu(s): 50.7 us, 47.8 sy,  0.0 ni,  0.0 id,  0.0 wa,  0.0 hi,  1.4 si,  0.0 st
+MiB Mem :   3793.3 total,    392.7 free,   2832.6 used,    568.0 buff/cache
+MiB Swap:      0.0 total,      0.0 free,      0.0 used.    901.1 avail Mem 
 
-Add a Jumbo Frames identifier, "+jf", to the new kernel name...
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND                                                   
+  23928 john      20   0  883880 682456   8200 R 100.0  17.6  13:14.17 xhpl                                                      
+  23927 john      20   0  883988 682432   7932 R  99.7  17.6  13:12.58 xhpl                                                      
+  23930 john      20   0  883912 682664   7832 R  99.7  17.6  13:17.01 xhpl                                                      
+  23929 john      20   0  883880 682640   8376 R  99.3  17.6  13:16.25 xhpl  
+\end{lstlisting}
 
-\begin{verbatim}
-    sudo vim debian.raspi/changelog...
-        linux (5.4.0-1013.13+jf) focal; urgency=medium
-        
-\end{verbatim}
+Indicates that only 50.7\% of CPU time is being utilised by user programs (us), Linpack/OpenMPI...
 
-Build the kernel...
+I hypothesise that the 1.4\% of software interrupts (si) is responsible 47.8\% of CPU time in the kernel (sy) servicing these interupts...
 
-\begin{verbatim}
-    sudo LANG=C fakeroot debian/rules clean
-    sudo LANG=C fakeroot debian/rules binary
-\end{verbatim}
+Lets have a look at the software interrupts on the system...
 
-Install the new kernel...
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ watch -n 1 cat /proc/softirqs
+\end{lstlisting}
 
-\begin{verbatim}
-    sudo sudo dpkg -i linux*5.4????????.deb
-\end{verbatim}
 
-%TODO: SHOW NEW DEFAULT MTU SETTING = 9000
+\lstset{style=termstyle}
+\begin{lstlisting}
+Every 1.0s: cat /proc/softirqs
 
-%TODO: EXAMPLES OF ABILITY TO SET MTU ABOVE 1500 UP TO 9000
+                    CPU0       CPU1       CPU2       CPU3
+          HI:          0          1          0          1
+       TIMER:  122234556   86872295   85904119   85646345
+      NET_TX:  222717797     228381     147690     144396
+      NET_RX: 1505715680       1132       1294       1048
+       BLOCK:      63160      11906      13148      11223
+    IRQ_POLL:          0          0          0          0
+     TASKLET:   58902273         33          2          6
+       SCHED:    3239933    3988327    2243001    2084571
+     HRTIMER:       8116         55         53         50
+         RCU:    6277982    4069531    4080009    3994395
+\end{lstlisting}
 
-%TODO: WARNING ABOUT ROUTER/SWITCH & OTHER NODE MTU's
+As can be seen...
 
+1. the majority of software interrupts are being generated by network receive (NET\_RX) activity, followed by network transmit activity (NET\_TX)...
 
-%
-% SECTION
-%
-\section{Single Core Optimisation}
+2. these interrupts are being almost exclusively handled by CPU0...
 
-% SUBSECTION
-\subsection{Block Size Optimisation}
+What is there to be done?...
 
-The block size, NB tuning parameter, is used for matrix calculations and also for network transport.
+1. Reduce the numbers of interrupts...
 
-The most efficient block size is related to the L1 cache size. Describe...
+1.1 Each packet produces an interrupt - interrupt coalesing...
 
+1.2 Reduce the number of packets - increase MTU...
 
-%
-% SECTION
-%
-\section{Single Node Optimisation}
-
-
-%
-% SECTION
-%
-\section{Cluster Optimisation}
-
-
-
-
-% SUBSECTION
-\subsection{Recompile HPL for Cortex-A72}
-
-Block size!
-
-RESULTS
-
-% SUBSECTION
-\subsection{Recompile OpenBLAS with OpenMP Support}
-
-As advised by the DebianScience/LinearAlgebraLibraries, OpenBLAS should be recompiled from source for best performance.??? See comflicting statement below.
-
-The Ubuntu/Debian OpenBLAS package is an ARM64 multi-architecture build of OpenBLAS which includes the ARM Cortex-A72. As stated in the README.Debian, performance improvements will be minimal by compiling from source.
-
-However, Ubuntu/Debian build does not include support for OpenMP. So, to test the combination of OpenMPI/OpenMP it is necessary to recompile OpenBLAS from source.
-
-To download the same version of OpenBLAS as Ubuntu 20.04 Server LTS (v0.3.8):
-
-\begin{verbatim}
-    cd ~/phas0077/downloads
-    wget https://github.com/xianyi/OpenBLAS/archive/v0.3.8.zip -O OpenBLAS-0.3.8.zip
-    cp OpenBLAS-0.3.8.zip ~/phas0077/projects
-    cd ~/phas0077/projects
-    unzip OpenBLAS-0.3.8.zip
-    rm OpenBLAS-0.3.8.zip
-    cd OpenBLAS-0.3.8
-    cp Makefile.rule Makefile.rule.original
-    vim Makefile.rule
-    make
-    make install
-    make clean
-\end{verbatim}
-
-PROCESSOR AFFINITY - include later.
-
-Need to edit 'Makefile.rule'.
-
-The file 'Makefile.arm64' already has the following so there is no need to add specific architecture flags to 'Makefile.rule'.
-
-\begin{verbatim}
-    ifeq ($(CORE), CORTEXA72)
-    CCOMMON_OPT += -march=armv8-a -mtune=cortex-a72
-    FCOMMON_OPT += -march=armv8-a -mtune=cortex-a72
-    endif
-\end{verbatim}
-
-
-
-Block size!
-
-TODO: Read DebianScience howto recompile/package
-
-TODO: Check ARM gcc options; -mune, -march for ARM Cortex-A72
-USE LD\_PRELOAD trick to use recompiled libopenblas.so for testing before packaging as a Debian package. WHAT ABOUT THE OTHER NODES - How do they know about the re-compiled package on node1?
-
-LD\_PRELOAD for testing on node1.
-
-ONCE installed as Debian package, prevent it being 'updated/upgraded'.
-
-RESULTS
-
-% SUBSECTION
-\subsection{Recompile OpenMPI for Cortex-A72}
-
-Block size!
-
-TODO: Check ARM gcc options; -mune, -march for ARM Cortex-A72
-
-RESULTS
-
-% SUBSECTION
-\subsection{Network Tuning}
-Is is possible to improve performance looking at network parameter? MTU? 
-
-TODO: Read OpenMPI docs
-
-RESULTS
-
-% SUBSECTION
-\subsection{Perf/Dtrace Linpack}
-See if there are any performance bottlenecks
-
-New package OpenBLASRPI4? for RPI4 specific optimisations?
-
-RESULTS
+2.1 Share the interrupt servicing activity evenly across the CPUs...
 
 
 %
-% APPENDIX A
+% Cluster
 %
-\clearpage\section{Appendix A - Raspberry Pi Cluster Build}
+\subsection{Cluster Optimisation}
+
+On node2 start the Iperf server...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ iperf -s
+\end{lstlisting}
+
+On node1 start the Iperf client...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ iperf -c
+\end{lstlisting}
+
+ping tests of MTU...
+
+
+
+
+iperf network speed...
+
+\subsubsection{Jumbo Frames}
+
+Requires a network switch capable of Jumbo frames...
+
+
+%
+% Appendices ###########################################################
+%
+%
+% Appendix ? - Pi Cluster Build
+%
+\clearpage\section*{Appendix ? - Pi Cluster Build Instructions}
 
 \subsection{Introduction}
 
@@ -1042,15 +968,6 @@ at regular intervals...
 
 
 
-\subsubsection{Create an System Update/Upgrade Script}
-
-Automate...
-
-%\lstset{frameround=tttt}
-\lstinputlisting[frame=single]{files/picluster-update}
-
-
-
 \subsubsection{Select BLAS Library}
 
 We have installed four BLAS libraries...
@@ -1067,9 +984,109 @@ Confirm option 0, OpenBLAS, is selected. Press return to keep this option and th
 
 
 %
-% APPENDIX B
+% Appendix ? - Build Kernel with Jumbo Frames
 %
-\clearpage\section{Appendix B - High-Performance Linpack (HPL) Installation}
+\clearpage\section*{Appendix ? - Build Kernel with Jumbo Frames Support}
+
+Standard MTU is 1500 bytes...
+
+Maximum payload size is 1472 bytes...
+
+NB of 184 (x 8 bytes for Double Precision) = 1472 bytes...
+
+NB $>$ 184 $=>$ packet fragmentation $=>$ reduced network efficiency...
+
+This causes drop of in performance???...
+
+Max MTU on Raspberry Pi 4 Model B is set at build time to 1500...
+
+Not configurable above 1500...
+
+TODO: EXAMPLE OF ERROR MSG...
+
+Need to build the kernel with higher MTU...
+
+
+Make source packages available...
+
+\begin{verbatim}
+    sudo touch /etc/apt/sources.list.d/picluster.list
+    sudo vim /etc/apt/sources.list.d/picluster.list...
+        deb-src http://archive.ubuntu.com/ubuntu focal main
+        deb-src http://archive.ubuntu.com/ubuntu focal-updates main
+    sudo apt update
+\end{verbatim}
+
+Create a kernel build directory with the correct access permissions to prevent source download warnings. 
+
+\begin{verbatim}
+    mkdir kernel
+    sudo chown _apt:root kernel
+    cd kernel
+\end{verbatim}
+
+Install the kernel build dependencies...
+
+\begin{verbatim}
+    sudo apt-get build-dep linux linux-image-$(uname -r)
+\end{verbatim}
+
+Download the kernel source...
+
+\begin{verbatim}
+    sudo apt-get source linux-image-$(uname -r)
+\end{verbatim}
+
+Make the required changes to the source... as per REFERENCE
+
+\begin{verbatim}
+    cd linux-raspi-5.4.0 
+
+    sudo vim include/linux/if_vlan.h...
+        #define VLAN_ETH_DATA_LEN   9000
+        #define VLAN_ETH_FRAME_LEN  9018
+    
+    sudo vim include/uapi/linux/if_ether.h...
+        #define ETH_DATA_LEN        9000
+        #define ETH_FRAME_LEN       9014
+    
+    sudo vim drivers/net/ethernet/broadcom/genet/bcmgenet.c...
+        #define RX_BUF_LENGTH       10240
+\end{verbatim}
+
+Add a Jumbo Frames identifier, "+jf", to the new kernel name...
+
+\begin{verbatim}
+    sudo vim debian.raspi/changelog...
+        linux (5.4.0-1013.13+jf) focal; urgency=medium
+        
+\end{verbatim}
+
+Build the kernel...
+
+\begin{verbatim}
+    sudo LANG=C fakeroot debian/rules clean
+    sudo LANG=C fakeroot debian/rules binary
+\end{verbatim}
+
+Install the new kernel...
+
+\begin{verbatim}
+    sudo sudo dpkg -i linux*5.4????????.deb
+\end{verbatim}
+
+%TODO: SHOW NEW DEFAULT MTU SETTING = 9000
+
+%TODO: EXAMPLES OF ABILITY TO SET MTU ABOVE 1500 UP TO 9000
+
+%TODO: WARNING ABOUT ROUTER/SWITCH & OTHER NODE MTU's
+
+
+
+%
+% Appendix ? - High Performance Linpack Installation
+%
+\clearpage\section*{Appendix B - High-Performance Linpack (HPL) Installation}
 
 Download and install the latest version of HPL on node1...
 
@@ -1131,10 +1148,11 @@ scp bin/serial/xhpl node9:~picluster/hpl/hpl-2.3/bin/serial
 \end{lstlisting}
 
 
+
 %
-% APPENDIX ?
+% Appendix ? - High Performance Linpack Installation
 %
-\clearpage\section{Appendix ? - High-Performance Linpack (HPL) Installation}
+\clearpage\section*{Appendix ? - High Performance Linpack (HPL) Installation}
 
 Download and install the latest version of HPL on node1...
 
@@ -1198,27 +1216,68 @@ scp bin/serial/xhpl node9:~picluster/hpl/hpl-2.3/bin/serial
 
 
 %
-% APPENDIX ?
+% Appendix ? - Rebuild libopenblas0-serial
 %
-\clearpage\section{Appendix ? - Rebuild Package libblis3-serial:TODO CHECK NAME}
+\clearpage\section*{Appendix ? - Rebuild libopenblas0-serial}
 
-\begin{lstlisting}[]
+
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+ssh node1
+mkdir -p build/openblas
+chown -R _apt:root build
+cd build/openblas
+sudo apt-get source openblas
+sudo apt-get build-dep openblas
+\end{lstlisting}
+
+Edit cpuid\_arm64.c...
+
+And, then following the instructions in debian/README...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+TODO:
+\end{lstlisting}
+
+Once the build is complete..
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+cd ..
+sudo apt remove libopenblas0-serial
+sudo dpkg -i libopenblas0-serial...
+\end{lstlisting}
+
+copy to other nodes
+remove old...
+install new...
+
+If more than one BLAS library is installed, check update-alternatives!!!
+
+
+%
+% Appendix ? - Rebuild libblis3-serial
+%
+\clearpage\section*{Appendix ? - Rebuild libblis3-serial}
+
+\lstset{style=termstyle}
+\begin{lstlisting}
 ssh node1
 mkdir -p picluster/build/blis
 cd picluster/build/blis
 apt-get source blis
 sudo apt-get build-dep blis
 cd blis-0.6.1
-
-
 \end{lstlisting}
 
 
 
-
-
-
-
+%
+% Appendix ? - Hints
+%
+\clearpage\section*{Appendix ? - Hints}
 
 Hints from experience... and time savers... for building a development cluster on a local network.
 
@@ -1246,7 +1305,6 @@ If \emph{ssh} reports differing keys in 'known-hosts', and warns of a potential 
 
 'known\_hosts' will be re-populated as you log into each node. 
 
-
 % SUBSECTION
 \subsection{tmux}
 \verb|tmux| is your friend!
@@ -1262,18 +1320,20 @@ Use a \verb|tmux| session to start long running jobs, and then detach from the \
 During your cluster build you will accidentally delete files, results etc. After every significant...
 
 
+
 %
-% APPENDIX - CLOUD-INIT USER-DATE
+% Appendix ? - cloud-init user-data
 %
-\clearpage\section{Appendix ? - cloud-init user-data}
+\clearpage\section*{Appendix ? - cloud-init user-data}
 
 \lstinputlisting[frame=single, language=bash, numbers=left, caption=picluster/cloudinit/user-data]{picluster/cloudinit/user-data}
 
 
+
 %
-% APPENDIX - PI CLUSTER TOOLS
+% Appendix ? - Pi Cluster Tools
 %
-\clearpage\section{Appendix ? - Pi Cluster Tools}
+\clearpage\section*{Appendix ? - Pi Cluster Tools}
 
 \lstinputlisting[caption=picluster/tools/picluster-update]{picluster/tools/picluster-update}
 \lstinputlisting[caption=picluster/tools/picluster-reboot]{picluster/tools/picluster-reboot}
@@ -1284,6 +1344,67 @@ During your cluster build you will accidentally delete files, results etc. After
 \lstinputlisting[caption=picluster/tools/picluster-libblas-set-blis-serial]{picluster/tools/picluster-libblas-set-blis-serial}
 \lstinputlisting[caption=picluster/tools/picluster-libblas-set-blis-openmp]{picluster/tools/picluster-libblas-set-blis-openmp}
 %\lstinputlisting[caption=picluster/tools/picluster-sort-hpl-out]{picluster/tools/picluster-sort-hpl-out}
+
+
+
+%
+% Appendix ? - Arm Performance Libraries
+%
+
+\clearpage\section*{Appendix ? - Arm Performance Libraries}
+
+\textcolor{red}{This does not work yet! HPL will build, but raises an illegal instruction error at runtime. At the time of writing, Arm Performance Libraries release 20.2.0 require a minimum of armv8.1-a. Unfortunately, the Raspberry Pi's Cortex-A72 cores are armv8.0-a. The next release will support armv8.0-a. Appendix included for future reference.}  
+
+"Arm Performance Libraries provides optimized standard core math libraries for high-performance computing applications on Arm processors. This free version of the libraries provides optimized libraries for Arm® Neoverse™ N1-based Armv8 AArch64 implementations that are compatible with various versions of GCC. You do not require a license for this version of the libraries."
+
+Downloaded Arm Performance Libraries 20.2.0 with GCC 9.3 for Ubuntu 16.04+.
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ ssh node1
+$ sudo apt install environment-modules
+$ mkdir picluster/armpl
+$ cd picluster/armpl
+$ tar xvf arm-performance-libraries_20.2_Ubuntu-16.04_gcc-9.3.tar
+$ rm arm-performance-libraries_20.2_Ubuntu-16.04_gcc-9.3.tar
+$ sudo ./arm-performance-libraries_20.2_Ubuntu-16.04.sh
+\end{lstlisting}
+
+The default installation directory is /opt/arm...
+
+TODO: CHANGE TO /usr/local + ldconfig
+
+Compile HPL with armpl...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ cd ~/picluster/hpl/hpl-2.3
+$ cp Make.serial Make.armpl-serial
+\end{lstlisting}
+
+Edit Make.armpl-serial...
+
+\lstset{style=listingstyle}
+\begin{lstlisting}[caption=Make.armpl-serial extract]
+# ----------------------------------------------------------------------
+# - Linear Algebra library (BLAS or VSIPL) -----------------------------
+# ----------------------------------------------------------------------
+# LAinc tells the  C  compiler where to find the Linear Algebra  library
+# header files,  LAlib  is defined  to be the name of  the library to be 
+# used. The variable LAdir is only used for defining LAinc and LAlib.
+#
+LAdir        = /opt/arm/armpl_20.2_gcc-9.3
+LAinc        =
+LAlib        = -L$(LAdir)/lib -larmpl -lgfortran -lamath -lm
+\end{lstlisting}
+
+Compile HPL...
+
+\lstset{style=termstyle}
+\begin{lstlisting}[]
+$ make arch=armpl-serial
+\end{lstlisting}
+
 
 
 %
