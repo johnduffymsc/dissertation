@@ -436,9 +436,11 @@ Suggests... improve network efficiency?
 %
 \subsection{Single Core Optimisation}
 
-Better BLAS library...
+
 
 \subsubsection{Rebuild libopenblas0-serial}
+
+Better BLAS library...
 
 The Debian Science Wiki suggests...
 
@@ -546,7 +548,42 @@ Discussion...
 %
 \subsection{Single Node Optimisation}
 
-\subsubsection{Non-Preemtive Kernel}
+\subsubsection{Kernel Preemption Model}
+
+The Linux kernel has 3 Preemption Models...
+
+1...
+2... The default
+3...
+
+
+As per the Help in the Kernel Configuration...
+
+\lstset{style=listingstyle}
+\begin{lstlisting}[numbers=none, caption=Kernel Configuration Preemption Model Help]
+CONFIG_PREEMPT_NONE:                                                                                                                                                                                                                                                 
+
+This is the traditional Linux preemption model, geared towards
+throughput. It will still provide good latencies most of the
+time, but there are no guarantees and occasional longer delays
+are possible.                                                                                                                       
+
+Select this option if you are building a kernel for a server or
+scientific/computation system, or if you want to maximize the
+raw processing power of the kernel, irrespective of scheduling
+latencies.
+\end{lstlisting}
+
+So, kernel rebuilt with CONFIG\_PREEMPT\_NONE=y
+
+See Appendix ? on how to rebuild the kernel...
+
+Installed on each node...
+
+So, although this optimisation applies to  single node, the benefits of applying this optimisation may not be apparent until the kernel has to juggle networking etc...
+
+RESULTS...
+
 
 \subsubsection{Recieve Queues}
 
@@ -1216,29 +1253,54 @@ scp bin/serial/xhpl node9:~picluster/hpl/hpl-2.3/bin/serial
 
 
 %
-% Appendix ? - Rebuild libopenblas0-serial
+% Appendix ? - Rebuild OpenBLAS
 %
-\clearpage\section*{Appendix ? - Rebuild libopenblas0-serial}
-
-
+\clearpage\section*{Appendix ? - Rebuild OpenBLAS}
 
 \lstset{style=termstyle}
 \begin{lstlisting}
-ssh node1
-mkdir -p build/openblas
-chown -R _apt:root build
-cd build/openblas
-sudo apt-get source openblas
-sudo apt-get build-dep openblas
+$ ssh node1
+$ mkdir -p build/openblas
+$ chown -R _apt:root build
+$ cd build/openblas
+$ sudo apt-get source openblas
+$ sudo apt-get build-dep openblas
+$ cd openblas-0.3.8+ds
 \end{lstlisting}
+
 
 Edit cpuid\_arm64.c...
 
-And, then following the instructions in debian/README...
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ sudo cp cpuid_arm64.c cpuid_arm64.c.original
+$ sudo vim cpuid_arm64.c
+\end{lstlisting}
+
 
 \lstset{style=termstyle}
 \begin{lstlisting}
-TODO:
+$ diff cpuid_arm64.c cpuid_arm64.c.original
+\end{lstlisting}
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+275c275
+<       printf("#define L2_SIZE 1048576\n");
+---
+>       printf("#define L2_SIZE 524288\n");
+278c278
+<       printf("#define DTB_DEFAULT_ENTRIES 32\n");
+---
+>       printf("#define DTB_DEFAULT_ENTRIES 64\n");
+\end{lstlisting}
+
+
+And, then following the instructions in debian/README.Debian
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ DEB_BUILD_OPTIONS=custom dpkg-buildpackage -uc -b
 \end{lstlisting}
 
 Once the build is complete..
@@ -1246,8 +1308,15 @@ Once the build is complete..
 \lstset{style=termstyle}
 \begin{lstlisting}
 cd ..
-sudo apt remove libopenblas0-serial
-sudo dpkg -i libopenblas0-serial...
+$ sudo apt remove libopenblas0-serial
+$ sudo dpkg -i libopenblas0-serial\_0.3.8+ds-1\_arm64.deb
+\end{lstlisting}
+
+Ensure the correct BLAS library is being used...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ sudo update-alternatives --config libblas.so.3-aarch64-linux-gnu
 \end{lstlisting}
 
 copy to other nodes
@@ -1256,6 +1325,14 @@ install new...
 
 If more than one BLAS library is installed, check update-alternatives!!!
 
+ssh node2 .. node8
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ ssh node2 sudo apt remove libblas0-serial
+$ scp libopenblas0-serial\_0.3.8+ds-1\_arm64.deb node2:~
+$ ssh sudo dpkg -i libopenblas0-serial\_0.3.8+ds-1\_arm64.deb
+$ ssh sudo update-alternatives --config libblas.so.3-aarch64-linux-gnu
+\end{lstlisting}
 
 %
 % Appendix ? - Rebuild libblis3-serial
