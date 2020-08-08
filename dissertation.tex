@@ -548,6 +548,7 @@ Discussion...
 %
 \subsection{Single Node Optimisation}
 
+
 \subsubsection{Kernel Preemption Model}
 
 The Linux kernel has 3 Preemption Models...
@@ -701,7 +702,7 @@ What is there to be done?...
 
 
 %
-% Cluster
+% Network Optimisation
 %
 \subsection{Cluster Optimisation}
 
@@ -731,13 +732,48 @@ iperf network speed...
 Requires a network switch capable of Jumbo frames...
 
 
+
+\subsection{Kernel TCP Parameters Tuning}
+
+REFERENCE...
+
+https://www.open-mpi.org/faq/?category=tcp
+
+\lstset{style=listingstyle}
+\begin{lstlisting}[caption=/etc/sysctl.d/picluster.conf]
+net.core.rmem_max = 16777216
+net.core.wmem_max = 16777216
+net.ipv4.tcp_rmem = 4096 87380 16777216
+net.ipv4.tcp_wmem = 4096 65536 16777216
+net.core.netdev_max_backlog = 30000
+net.core.rmem_default = 16777216
+net.core.wmem_default = 16777216
+net.ipv4.tcp_mem= 16777216 16777216 16777216
+net.ipv4.route.flush = 1
+\end{lstlisting}
+
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+sudo sysctl --system
+\end{lstlisting}
+
+or
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+sudo shutdown -r now
+\end{lstlisting}
+
+
 %
 % Appendices ###########################################################
 %
+
 %
-% Appendix ? - Pi Cluster Build
+% Appendix A - Pi Cluster Build Instructions
 %
-\clearpage\section*{Appendix ? - Pi Cluster Build Instructions}
+\clearpage\section*{Appendix A - Pi Cluster Build Instructions}
 
 \subsection{Introduction}
 
@@ -892,7 +928,6 @@ Our public key was installed on each node by cloud-init. So, we can ssh into eac
 
 We need to copy our private key to node1 (only node1)...
 
-%\lstset{frameround=tttt}
 \begin{lstlisting}[]
 scp ~/.ssh/id_rsa node1:~/.ssh
 \end{lstlisting}
@@ -911,7 +946,6 @@ ssh node2
 
 This will generate...
 
-%\lstset{frameround=tttt}
 \begin{lstlisting}[]
 The authenticity of host 'node2 (192.168.0.2)' can't be established.
 ECDSA key fingerprint is SHA256:5VgsnN2nPvpfbJmALh3aJdOeT/NvDXqN8TCreQyNaFA.
@@ -920,7 +954,6 @@ Are you sure you want to continue connecting (yes/no/[fingerprint])?
 
 responding yes, imports the key into the node1 knownhosts file...
 
-%\lstset{frameround=tttt}
 \begin{lstlisting}[]
 exit
 \end{lstlisting}
@@ -933,76 +966,70 @@ This is only required to be done on intial contact with nodes node2 to node9 (un
 
 \subsubsection{Uninstall unattended-upgrades}
 
-The package unattended-upgrades is installed automatically...
+The \verb|unattended-upgrades| package is installed automatically...
 
-Can potentially interferer with long running benchmarks...
+This can potentially interferer with long running benchmarks...
 
 Remove...
 
-From macbookpro:
+From \verb|macbook|:
 
-%\lstset{frameround=tttt}
+\lstset{style=termstyle}
 \begin{lstlisting}[]
-ssh node1 sudo apt remove unattended-upgrades --yes
-ssh node2 sudo apt remove unattended-upgrades --yes
-ssh node3 sudo apt remove unattended-upgrades --yes
-ssh node4 sudo apt remove unattended-upgrades --yes
-ssh node5 sudo apt remove unattended-upgrades --yes
-ssh node6 sudo apt remove unattended-upgrades --yes
-ssh node7 sudo apt remove unattended-upgrades --yes
-ssh node8 sudo apt remove unattended-upgrades --yes
-ssh node9 sudo apt remove unattended-upgrades --yes
+$ ssh node1
+$ ~/picluster/tools/do "sudo apt remove unattended-upgrades"
 \end{lstlisting}
 
-Don't forget to update your cluster regularly at convenient times...
+Don't forget to upgrade your cluster regularly at convenient times with...
 
-See update/upgrade script below...
+\lstset{style=termstyle}
+\begin{lstlisting}[]
+$ ssh node1
+$ ~/picluster/tools/upgrade
+\end{lstlisting}
 
 
 \subsubsection{Add Source Repositories}
 
 We are going to be rebuilding some packages from source...
 
+\lstset{style=termstyle}
 \begin{lstlisting}[]
-ssh node1
-sudo touch /etc/apt/sources/list.d/picluster.list
-sudo vim /etc/apt/sources/list.d/picluster.list
+$ ssh node1
+$ sudo touch /etc/apt/sources/list.d/picluster.list
+$ sudo vim /etc/apt/sources/list.d/picluster.list
 \end{lstlisting}
 
 ... and add the following source repositories...
 
+\lstset{style=listingstyle}
 \begin{lstlisting}[caption=/etc/apt/sources.list.d/picluster.list]
 deb-src http://archive.ubuntu.com/ubuntu focal main universe
 deb-src http://archive.ubuntu.com/ubuntu focal-updates main universe
 \end{lstlisting}
 
-... and then update the repository cache? 
+... and then update the repository cache...
 
+\lstset{style=termstyle}
 \begin{lstlisting}[]
-sudo apt update
+$ sudo apt update
 \end{lstlisting}
+
 
 
 \subsubsection{Create a Project Repository}
 
 Xpand upon...
 
-%\lstset{frameround=tttt}
+\lstset{style=termstyle}
 \begin{lstlisting}[]
-ssh node1
-mkdir picluster
-cd picluster
-git init
+$ ssh node1
+$ mkdir picluster
+$ cd picluster
+$ git init
 \end{lstlisting}
 
-Ensure you do  
-
-git add
-git commit
-git push
-
-at regular intervals...
-
+Ensure you do push your repository to a remote repository at regular intervals...
 
 
 \subsubsection{Select BLAS Library}
@@ -1021,9 +1048,142 @@ Confirm option 0, OpenBLAS, is selected. Press return to keep this option and th
 
 
 %
-% Appendix ? - Build Kernel with Jumbo Frames
+% Appendix ? - General Kernel Build Procedure
 %
-\clearpage\section*{Appendix ? - Build Kernel with Jumbo Frames Support}
+\clearpage\section*{Appendix ? - General Kernel Build Procedure}
+
+This procedure is derived from the Ubuntu Wiki BuildYourOwnKernel document...
+
+Make sure you have made the source code repositories available as per...
+
+Create a kernel build directory with the correct directory permissions to prevent source download warnings. 
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ ssh node1
+$ mkdir -p ~/picluster/build/kernel
+$ sudo chown _apt:root ~/picluster/build/kernel
+$ cd ~/picluster/build/kernel
+\end{lstlisting}
+
+Install the kernel build dependencies...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ sudo apt-get build-dep linux linux-image-$(uname -r)
+\end{lstlisting}
+
+Download the kernel source...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ sudo apt-get source linux-image-$(uname -r)
+$ cd linux-raspi-5.4.0
+\end{lstlisting}
+
+This bit is a fix for the subsequent \verb|editconfigs| step of the build procedure...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ cd debian.raspi/etc
+$ sudo cp kernelconfig kernelconfig.original
+$ sudo vim kernelconfig
+\end{lstlisting}
+
+And make the following change...
+
+\lstset{style=listingstyle}
+\begin{lstlisting}[caption=diff kernelconfig kernelconfig.original, numbers=none]
+5c5
+< 	archs="arm64"
+---
+> 	archs="armhf arm64"
+\end{lstlisting}
+
+Then move back up to the kernel source top level directory...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ cd ../..
+\end{lstlisting}
+
+Prepare the build scripts...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ sudo chmod a+x debian/rules
+$ sudo chmod a+x debian/scripts/*
+$ sudo chmod a+x debian/scripts/misc/*
+\end{lstlisting}
+
+SOURCE CHANGES AND/OR verb|editconfigs| AT THIS POINT
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ sudo apt install libncurses-dev
+$ sudo LANG=C fakeroot debian/rules clean
+$ sudo LANG=C fakeroot debian/rules editconfigs
+\end{lstlisting}
+
+Tweak the kernel name for identification...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ cd debian.raspi
+$ sudo cp changelog changelog.original
+$ sudo vim changelog
+\end{lstlisting}
+
+And make the following change, where \verb|+picluster0| is our kernel identifier...
+
+\lstset{style=listingstyle}
+\begin{lstlisting}[caption=diff changelog changelog.original, numbers=none]
+1c1
+< linux-raspi (5.4.0-1015.15+picluster0) focal; urgency=medium
+---
+> linux-raspi (5.4.0-1015.15) focal; urgency=medium
+\end{lstlisting}
+
+Move up to the top level kernel source directory...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ cd ..
+\end{lstlisting}
+
+And build the kernel...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ sudo LANG=C fakeroot debian/rules clean
+$ sudo LANG=C fakeroot debian/rules binary-arch
+cd ..
+\end{lstlisting}
+
+Install the new kernel...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ sudo dpkg -i linux*picluster0*.deb
+$ sudo shutdown -r now
+\end{lstlisting}
+
+Another build procedure fix...
+
+After each kernel build delete the \verb|linux-libc-dev| directory...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ cd ~/picluster/build/kernel/linux-raspi-5.4.0/debian
+$ rm -rf linux-libc-dev
+$ cd ..
+\end{lstlisting}
+
+
+%
+% Appendix ? - Kernel Build with Jumbo Frames
+%
+\clearpage\section*{Appendix ? - Kernel Build with Jumbo Frames}
 
 Standard MTU is 1500 bytes...
 
@@ -1043,36 +1203,6 @@ TODO: EXAMPLE OF ERROR MSG...
 
 Need to build the kernel with higher MTU...
 
-
-Make source packages available...
-
-\begin{verbatim}
-    sudo touch /etc/apt/sources.list.d/picluster.list
-    sudo vim /etc/apt/sources.list.d/picluster.list...
-        deb-src http://archive.ubuntu.com/ubuntu focal main
-        deb-src http://archive.ubuntu.com/ubuntu focal-updates main
-    sudo apt update
-\end{verbatim}
-
-Create a kernel build directory with the correct access permissions to prevent source download warnings. 
-
-\begin{verbatim}
-    mkdir kernel
-    sudo chown _apt:root kernel
-    cd kernel
-\end{verbatim}
-
-Install the kernel build dependencies...
-
-\begin{verbatim}
-    sudo apt-get build-dep linux linux-image-$(uname -r)
-\end{verbatim}
-
-Download the kernel source...
-
-\begin{verbatim}
-    sudo apt-get source linux-image-$(uname -r)
-\end{verbatim}
 
 Make the required changes to the source... as per REFERENCE
 
@@ -1099,18 +1229,6 @@ Add a Jumbo Frames identifier, "+jf", to the new kernel name...
         
 \end{verbatim}
 
-Build the kernel...
-
-\begin{verbatim}
-    sudo LANG=C fakeroot debian/rules clean
-    sudo LANG=C fakeroot debian/rules binary
-\end{verbatim}
-
-Install the new kernel...
-
-\begin{verbatim}
-    sudo sudo dpkg -i linux*5.4????????.deb
-\end{verbatim}
 
 %TODO: SHOW NEW DEFAULT MTU SETTING = 9000
 
@@ -1403,7 +1521,7 @@ During your cluster build you will accidentally delete files, results etc. After
 %
 \clearpage\section*{Appendix ? - cloud-init user-data}
 
-\lstinputlisting[frame=single, language=bash, numbers=left, caption=picluster/cloudinit/user-data]{picluster/cloudinit/user-data}
+\lstinputlisting[frame=single, language=bash, numbers=left, caption=picluster/cloud-init/user-data]{picluster/cloud-init/user-data}
 
 
 
@@ -1412,15 +1530,68 @@ During your cluster build you will accidentally delete files, results etc. After
 %
 \clearpage\section*{Appendix ? - Pi Cluster Tools}
 
-\lstinputlisting[caption=picluster/tools/picluster-update]{picluster/tools/picluster-update}
-\lstinputlisting[caption=picluster/tools/picluster-reboot]{picluster/tools/picluster-reboot}
-\lstinputlisting[caption=picluster/tools/picluster-shutdown]{picluster/tools/picluster-shutdown}
-\lstinputlisting[caption=picluster/tools/picluster-libblas-query]{picluster/tools/picluster-libblas-query}
-\lstinputlisting[caption=picluster/tools/picluster-libblas-set-openblas-serial]{picluster/tools/picluster-libblas-set-openblas-serial}
-\lstinputlisting[caption=picluster/tools/picluster-libblas-set-openblas-openmp]{picluster/tools/picluster-libblas-set-openblas-openmp}
-\lstinputlisting[caption=picluster/tools/picluster-libblas-set-blis-serial]{picluster/tools/picluster-libblas-set-blis-serial}
-\lstinputlisting[caption=picluster/tools/picluster-libblas-set-blis-openmp]{picluster/tools/picluster-libblas-set-blis-openmp}
-%\lstinputlisting[caption=picluster/tools/picluster-sort-hpl-out]{picluster/tools/picluster-sort-hpl-out}
+\lstinputlisting[caption=picluster/tools/upgrade, numbers=left, backgroundcolor=\color{LightSkyBlue}]{picluster/tools/upgrade}
+\lstinputlisting[caption=picluster/tools/reboot, numbers=left, backgroundcolor=\color{LightSkyBlue}]{picluster/tools/reboot}
+\lstinputlisting[caption=picluster/tools/shutdown, numbers=left, backgroundcolor=\color{LightSkyBlue}]{picluster/tools/shutdown}
+\lstinputlisting[caption=picluster/tools/libblas-query, numbers=left, backgroundcolor=\color{LightSkyBlue}]{picluster/tools/libblas-query}
+\lstinputlisting[caption=picluster/tools/libblas-set, numbers=left, backgroundcolor=\color{LightSkyBlue}]{picluster/tools/libblas-set}
+
+
+
+%
+% Appendix ? - Arm Performance Libraries
+%
+
+\clearpage\section*{Appendix ? - Build OpenMPI from Source}
+
+Do all of this on node1...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ ssh node1
+\end{lstlisting}
+
+We want to avoid collisions with multiple OpenMPI installations, so remove original installed version...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ sudo apt remove openmpi-common
+$ sudo apt remove openmpi-bin
+$ sudo apt autoremove 
+\end{lstlisting}
+
+OpenMPI requires the libevent-dev package...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ sudo apt install libevent-dev
+\end{lstlisting}
+
+Create a build directory, and download and, and and following BLAH, BLAH build OpenMPI...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ mkdir -p ~/picluster/build/openmpi
+$ cd ~/picluster/build/openmpi
+$ wget https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.4.tar.gz
+$ gunzip openmpi-4.0.4.tar.gz
+$ tar xvf openmpi-4.0.4.tar
+$ rm openmpi-4.0.4.tar
+$ cd openmpi-4.0.4
+$ mkdir build
+$ cd build
+$ ../configure CFLAGS="-O3 -march=armv8-a -mtune=cortex=a72"
+$ make all
+$ sudo make install
+$ sudo ldconfig
+\end{lstlisting}
+
+OpenMPI will installed to /usr/local
+
+EXTRACT FROM HPL.dat
+
+
+TODO: HOW TO COPY TO ALL NODES!
 
 
 
