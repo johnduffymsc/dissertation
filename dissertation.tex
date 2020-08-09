@@ -12,7 +12,7 @@
 \lstdefinestyle{termstyle}{
 frame=single,
 backgroundcolor=\color{Cornsilk},   
-basicstyle=\verbatim@font,
+basicstyle=\verbatim@font\small,
 numbers=none,
 tabsize=2
 }
@@ -20,7 +20,7 @@ tabsize=2
 \lstdefinestyle{listingstyle}{
 frame=single,
 backgroundcolor=\color{LightSkyBlue},   
-basicstyle=\verbatim@font,
+basicstyle=\verbatim@font\small,
 numbers=left,                    
 tabsize=2
 }
@@ -727,9 +727,92 @@ ping tests of MTU...
 
 iperf network speed...
 
+
+
+
+
 \subsubsection{Jumbo Frames}
 
 Requires a network switch capable of Jumbo frames...
+
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ ip link show eth0
+\end{lstlisting}
+
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000
+    link/ether dc:a6:32:60:7b:cd brd ff:ff:ff:ff:ff:ff
+\end{lstlisting}
+
+
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ ping -c 1 -s 1500 -M do node2
+\end{lstlisting}
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+PING node2 (192.168.0.2) 1500(1528) bytes of data.
+ping: local error: message too long, mtu=1500
+\end{lstlisting}
+
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ ping -c 1 -s 1472 -M do node2
+\end{lstlisting}
+
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+PING node2 (192.168.0.2) 1472(1500) bytes of data.
+1480 bytes from node2 (192.168.0.2): icmp_seq=1 ttl=64 time=0.392 ms
+\end{lstlisting}
+
+
+Trying to set the MTU to 9000 bytes...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ sudo ip link set eth0 mtu 9000 
+\end{lstlisting}
+
+... results with...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+Error: mtu greater than device maximum.
+\end{lstlisting}
+
+In fact, attempting to set the MTU to anything greater than 1500 bytes...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ sudo ip link set eth0 mtu 1501 
+\end{lstlisting}
+
+... results with...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+Error: mtu greater than device maximum.
+\end{lstlisting}
+
+
+Need to build a kernel with Jumbo frame support...
+
+
+
+
+
+
+
+
 
 
 
