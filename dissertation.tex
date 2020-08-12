@@ -1,4 +1,4 @@
-\documentclass{article}
+\documentclass{report}
 \usepackage[utf8]{inputenc}
 \setlength{\parindent}{0em}
 \setlength{\parskip}{1em}
@@ -28,13 +28,71 @@ tabsize=2
 
 
 
-\title{MSc Scientific Computing Dissertation\\ARM Cluster Linpack Benchmarks}
+\title{MSc Scientific Computing Dissertation\\ARM Cluster Benchmarks}
 \author{John Duffy}
-\date{August 2020}
+\date{September 2020}
 
 \begin{document}
 
 \maketitle
+
+\tableofcontents
+
+
+%
+% PART I
+%
+\part{Project Report}
+
+
+%
+% CHAPTER 
+%
+\chapter{Introduction}
+
+
+%
+% CHAPTER
+%
+\chapter{ARM Architectures for HP}
+
+
+%
+% CHAPTER
+%
+\chapter{The Aerin Cluster}
+
+
+
+%
+% PART II
+%
+\part{Benchmarks}
+
+
+%
+% CHAPTER
+%
+\chapter{High Performance Linpack (HPL) Benchmark}
+
+\section{Introduction}
+
+
+
+%
+% CHAPTER
+%
+\chapter{HPC Challenge (HPCC) Benchmark}
+
+\section{Introduction}
+
+
+%
+% CHAPTER
+%
+\chapter{High Performance Conjugate Gradients (HPCG) Benchmark}
+
+\section{Introduction}
 
 
 
@@ -863,20 +921,17 @@ $ iperf -i 1 -c node2
 Client connecting to node2, TCP port 5001
 TCP window size:  682 KByte (default)
 ------------------------------------------------------------
-[  3] local 192.168.0.1 port 46206 connected with 192.168.0.2 port 5001
+[  3] local 192.168.0.1 port 46216 connected with 192.168.0.2 port 5001
 [ ID] Interval       Transfer     Bandwidth
-[  3]  0.0- 1.0 sec   119 MBytes   997 Mbits/sec
-[  3]  1.0- 2.0 sec   118 MBytes   991 Mbits/sec
-[  3]  2.0- 3.0 sec   118 MBytes   991 Mbits/sec
-[  3]  3.0- 4.0 sec   118 MBytes   988 Mbits/sec
-[  3]  4.0- 5.0 sec   118 MBytes   992 Mbits/sec
-[  3]  5.0- 6.0 sec   118 MBytes   992 Mbits/sec
-[  3]  6.0- 7.0 sec   118 MBytes   987 Mbits/sec
-[  3]  7.0- 8.0 sec   118 MBytes   991 Mbits/sec
-[  3]  8.0- 9.0 sec   119 MBytes   997 Mbits/sec
-[  3]  9.0-10.0 sec   118 MBytes   990 Mbits/sec
 [  3]  0.0-10.0 sec  1.15 GBytes   991 Mbits/sec
 \end{lstlisting}
+
+
+\begin{figure}
+	\centering	
+	\includegraphics[width=1.0\textwidth]{bandwidth_vs_mtu.pdf}
+	\caption{Network Node to Node Bandwidth vs MTU.}
+\end{figure}
 
 
 \subsection{Kernel TCP Parameters Tuning}
@@ -912,16 +967,28 @@ sudo shutdown -r now
 \end{lstlisting}
 
 
+
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+Aug 11 03:35:40 node5 kernel: [19256.425779] bcmgenet fd580000.ethernet eth0: bcmgenet_xmit: tx ring 1 full when queue 2 awake
+\end{lstlisting}
+
+
+
+
+
 %
-% Appendices ###########################################################
+% PART III
 %
+\part{Build Instructions}
 
 %
 % Appendix A - Pi Cluster Build Instructions
 %
-\clearpage\section*{Appendix A - Pi Cluster Build Instructions}
+\chapter{The Aerin Cluster}
 
-\subsection{Introduction}
+\section{Introduction}
 
 This appendix is intended to be a complete and self contained guide for building a Raspberry Pi Cluster. With the caveat that the cluster has the bare minimum software/functionality necessary to compile and run the High Performance Linpack (HPL) benchmark, namely the build-essential package, two BLAS libraries (OpenBLAS and BLIS), and Open-MPI. A number of performance measurement tools are also installed, such as perf and iperf. The latest version of HPL is downloaded and built from source.
 
@@ -942,23 +1009,14 @@ Items
 Photo
 
 
-\subsection{Preliminary Tasks}
-
-1. Update the EE-PROM
-
-2. Get MAC address
-
-3. Generate keys
-
-4. Amend macbook /etc/hosts file...
-
+\section{Preliminary Tasks}
 
 
 \subsubsection{Update Raspberry Pi EE-PROMs}
 
 
 
-\subsubsection{Get Raspberry Pi MAC Addresses}
+\subsubsection{Obtain Raspberry Pi MAC Addresses}
 
 
 
@@ -974,10 +1032,9 @@ $ ssh-genkey -t rsa -C john
 This will create two files... in ...
 
 
-
 \subsubsection{Amend macbook /etc/hosts}
 
-On macbook, using your favourite editor, add the following to /etc/hosts:
+On \verb\macbook\, using your favourite editor, add the following to /etc/hosts:
 
 %\lstset{frameround=tttt}
 \begin{lstlisting}[]
@@ -1026,6 +1083,12 @@ Describe ssh access
 Add relevant PDFs.
 
 
+%
+% SECTION
+%
+\section{Ubuntu 20.04 LTS Installation}
+
+
 \subsubsection{Create the Raspberry Pi Ubuntu Server Image}
 
 On macbook...
@@ -1064,7 +1127,10 @@ When complete, remove the MicroSD card from the card reader, place it the Raspbe
 The cloud-init configuration process will now start. The Raspberry Pi will acquire its IP address from the router, setup users, update apt, upgrade the system, download software packages, set the hostname (based on the IP address), and finally the system will reboot.
 
 
-\subsection{Post-Installation Tasks}
+%
+% SECTION
+%
+\section{Post-Installation Tasks}
 
 \subsubsection{Enable No Password Access}
 
@@ -1667,7 +1733,7 @@ During your cluster build you will accidentally delete files, results etc. After
 %
 \clearpage\section*{Appendix ? - cloud-init user-data}
 
-\lstinputlisting[frame=single, language=bash, numbers=left, caption=picluster/cloud-init/user-data]{picluster/cloud-init/user-data}
+\lstinputlisting[frame=single, language=bash, numbers=left, caption=picluster/cloud-init/user-data]{picluster/cloud-init/user-data-dissertation}
 
 
 
