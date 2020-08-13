@@ -50,54 +50,6 @@ tabsize=2
 %
 \chapter{Introduction}
 
-
-%
-% CHAPTER
-%
-\chapter{ARM Architectures for HP}
-
-
-%
-% CHAPTER
-%
-\chapter{The Aerin Cluster}
-
-
-
-%
-% PART II
-%
-\part{Benchmarks}
-
-
-%
-% CHAPTER
-%
-\chapter{High Performance Linpack (HPL) Benchmark}
-
-\section{Introduction}
-
-
-
-%
-% CHAPTER
-%
-\chapter{HPC Challenge (HPCC) Benchmark}
-
-\section{Introduction}
-
-
-%
-% CHAPTER
-%
-\chapter{High Performance Conjugate Gradients (HPCG) Benchmark}
-
-\section{Introduction}
-
-
-
-\section{Introduction}
-
 \begin{verbatim}
 https://github.com/johnduffymsc/picluster
 \end{verbatim}
@@ -159,6 +111,17 @@ This is a file listing...
 \lstinputlisting[caption=/etc/hosts]{/etc/hosts}
 
 
+%
+% CHAPTER
+%
+\chapter{ARM Architectures for HP}
+
+
+
+%
+% CHAPTER
+%
+\chapter{The Aerin Cluster}
 
 \section{Raspberry Pi 4 Model B}
 
@@ -174,6 +137,27 @@ Limitations...
 
 Reference data sheet in Appendix...
 
+Photo...
+
+Description...
+
+Ubuntu 20.04 LTS 64-bit Preinstalled Server...
+
+Reference Appendix A for detailed build instructions...
+
+Limitations...
+
+Software/update management...
+
+Next PXE/NFS boot...
+
+Cluster management tools
+
+BLAS libraries...
+
+BLAS library management... update-alternatives --config libblas.so.3-aarch64-linux-gnu
+
+picluster/tools... appendix ?... use from node1...
 
 
 \subsection{Theoretical Maximum Performance (Gflop/s)}
@@ -199,34 +183,68 @@ Simplistically, ...
 This ignores instructions pipelining benefits...
 
 
+%
+% SECTION
+%
+\section{Network}
 
-\section{Pi Cluster}
-
-Photo...
-
-Description...
-
-Ubuntu 20.04 LTS 64-bit Preinstalled Server...
-
-Reference Appendix A for detailed build instructions...
-
-Limitations...
-
-Software/update management...
-
-Next PXE/NFS boot...
-
-Cluster management tools
-
-BLAS libraries...
-
-BLAS library management... update-alternatives --config libblas.so.3-aarch64-linux-gnu
-
-picluster/tools... appendix ?... use from node1...
+The network...
 
 
+%
+% SECTION
+%
+\section{BLAS Libraries}
 
-\section{High-Performance Linpack (HPL) Benchmark}
+\subsection{GotoBLAS}
+
+\subsection{OpenBLAS}
+
+\subsection{BLIS}
+
+
+%
+% SECTION
+%
+\section{OpenMPI Topology}
+
+The...
+
+
+%
+% SECTION
+%
+\section{Hybrid OpenMPI/OpenMP Topology}
+
+The network...
+
+
+
+%
+% CHAPTER
+%
+\chapter{HPC Benchmarks}
+
+\section{Landscape}
+
+Lists... 
+
+Top500...
+
+Green500...
+
+HPCG...
+
+
+High Performance Linpack (HPL) is the industry standard HPC benchmark and has been for ??? years. It is used by Top500 and Green500. However, it has been criticised for producing a single number, and not being a true measure of real-world application performance. This has led to the creation of complementary benchmarks, namely HPC Challenge (HPCC) and High Performance Conjugate Gradients (HPCG). These benchmarks measure whole system performance, including processing power, memory bandwidth and network speed, in relation to standard HPC algorithms such as FFT and CG.
+
+A more detailed description of each benchmark follows. 
+
+
+%
+% SECTION
+%
+\section{High Performance Linpack (HPL)}
 
 Reference Paper...
 
@@ -243,13 +261,9 @@ N formula...
 Reference http://hpl-calculator.sourceforge.net
 
 
-
-\subsection{Building and Installing HPL}
-
-See Appendix...
-
-
-
+%
+% SUB SECTION
+%
 \subsection{HPL.dat}
 
 Describe HPL.dat parameters...
@@ -259,6 +273,10 @@ Describe HPL.dat parameters...
 
 A detailed description of each line of this file is ...
 
+
+%
+% SUB SECTION
+%
 \subsection{HPL.out}
 
 Describe HPL.out...
@@ -275,7 +293,9 @@ $ grep WR HPL.out | sort -g -k 4 -k 7 | tr -s ' ' > HPL.out.sorted
 
 
 
-
+%
+% SUB SECTION
+%
 \subsection{Running xhpl}
 
 To run xhpl using the serial version of OpenBLAS...
@@ -300,15 +320,30 @@ mpirun -np 4 xhpl
 \end{lstlisting}
 
 
+%
+% SECTION
+%
+\section{HPC Challenge (HPCC)}
+
+HPCC...
 
 
-\section{OpenMPI}
+%
+% SECTION
+%
+\section{High Performance Conjugate Gradients (HPCG)}
 
-What is OpenMPI...
+HPCG...
 
 
 
-\section{OpenMPI Baseline Benchmarks}
+%
+% CHAPTER
+%
+\chapter{Benchmarking the Aerin Cluster}
+
+
+\section{OpenMPI Baseline}
 
 Ubuntu 20.04 LTS 64-bit packages, without any tweaks...
 
@@ -331,13 +366,6 @@ Methodology...
 
 1..8 nodes ... to investigate over scaling of performance with node count... with optimal N, NB, P and Q parameters determined from 2 node investigation... caveats...
 
-
-
-\subsection{OpenBLAS}
-
-
-
-\subsection{BLIS}
 
 
 
@@ -486,17 +514,20 @@ Suggests... improve network efficiency?
 
 
 %
-% SECTION - OPTIMISATIONS
+% SECTION
 %
 \clearpage\section{Optimisations}
 
+
 %
-% Single Core
+% SUB SECTION
 %
 \subsection{Single Core Optimisation}
 
 
-
+%
+% SUB SECTION
+%
 \subsubsection{Rebuild libopenblas0-serial}
 
 Better BLAS library...
@@ -598,16 +629,21 @@ On completion of the build process, and after uninstalling the original libopenb
 Discussion...
 
 
+%
+% SUB SECTION
+%
 \subsubsection{Rebuild libblis3-serial}
 
 
-
 %
-% Single Node
+% SUB SECTION
 %
 \subsection{Single Node Optimisation}
 
 
+%
+% SUB SECTION
+%
 \subsubsection{Kernel Preemption Model}
 
 The Linux kernel has 3 Preemption Models...
@@ -645,6 +681,9 @@ So, although this optimisation applies to  single node, the benefits of applying
 RESULTS...
 
 
+%
+% SUB SECTION
+%
 \subsubsection{Recieve Queues}
 
 \lstset{style=termstyle}
@@ -763,7 +802,7 @@ What is there to be done?...
 %
 % Network Optimisation
 %
-\subsection{Cluster Optimisation}
+\subsection{Network Optimisation}
 
 On node2 start the Iperf server...
 
@@ -975,11 +1014,14 @@ Aug 11 03:35:40 node5 kernel: [19256.425779] bcmgenet fd580000.ethernet eth0: bc
 \end{lstlisting}
 
 
-
+%
+% CHAPTER
+%
+\chapter{Summary}
 
 
 %
-% PART III
+% PART II
 %
 \part{Build Instructions}
 
@@ -1335,9 +1377,9 @@ node1... /usr/lib/aarch64-linux-gnu/blis-serial/libblas.so.3
 
 
 %
-% SECTION
+% CHAPTER
 %
-\clearpage\section{Install High-Performance Linpack (HPL)}
+\chapter{Install High-Performance Linpack (HPL)}
 
 Download and install the latest version of HPL on \verb|node1|...
 
@@ -1394,11 +1436,22 @@ $ scp xhpl node8:~picluster/hpl/hpl-2.3/bin/picluster
 \end{lstlisting}
 
 
+%
+% CHAPTER
+%
+\chapter{Install HPC Challenge (HPCC)}
+
 
 %
-% SECTION
+% CHAPTER
 %
-\clearpage\section{Kernel Build Procedure}
+\chapter{Install High Performance Conjugate Gradients (HPCG)}
+
+
+%
+% CHAPTER
+%
+\chapter{Ubuntu Kernel Build Procedure}
 
 This procedure is derived from the Ubuntu Wiki BuildYourOwnKernel document...
 
@@ -1529,9 +1582,15 @@ $ cd ..
 
 
 %
-% SECTION
+% CHAPTER
 %
-\clearpage\section{Build Kernel with Jumbo Frames Support}
+\chapter{Build Kernel with No Pre-Emption Scheduler}
+
+
+%
+% CHAPTER
+%
+\chapter{Build Kernel with Jumbo Frames Support}
 
 Standard MTU is 1500 bytes...
 
@@ -1578,11 +1637,10 @@ Add a Jumbo Frames identifier, "+jf", to the new kernel name...
 \end{verbatim}
 
 
-
 %
-% SECTION
+% CHAPTER
 %
-\clearpage\section{Rebuild OpenBLAS}
+\chapter{Rebuild OpenBLAS}
 
 \lstset{style=termstyle}
 \begin{lstlisting}
@@ -1663,9 +1721,9 @@ $ ssh sudo update-alternatives --config libblas.so.3-aarch64-linux-gnu
 
 
 %
-% SECTION
+% CHAPTER
 %
-\clearpage\section{Rebuild BLIS}
+\chapter{Rebuild BLIS}
 
 \lstset{style=termstyle}
 \begin{lstlisting}
@@ -1678,25 +1736,11 @@ $ cd blis-0.6.1
 \end{lstlisting}
 
 
-
 %
-% SECTION
-%
-\clearpage\section{Pi Cluster Tools}
-
-\lstinputlisting[caption=picluster/tools/upgrade, numbers=left, backgroundcolor=\color{LightSkyBlue}]{picluster/tools/upgrade}
-\lstinputlisting[caption=picluster/tools/reboot, numbers=left, backgroundcolor=\color{LightSkyBlue}]{picluster/tools/reboot}
-\lstinputlisting[caption=picluster/tools/shutdown, numbers=left, backgroundcolor=\color{LightSkyBlue}]{picluster/tools/shutdown}
-\lstinputlisting[caption=picluster/tools/libblas-query, numbers=left, backgroundcolor=\color{LightSkyBlue}]{picluster/tools/libblas-query}
-\lstinputlisting[caption=picluster/tools/libblas-set, numbers=left, backgroundcolor=\color{LightSkyBlue}]{picluster/tools/libblas-set}
-
-
-
-%
-% SECTION
+% CHAPTER
 %
 
-\clearpage\section{Build OpenMPI from Source}
+\chapter{Build OpenMPI from Source}
 
 Do all of this on node1...
 
@@ -1748,12 +1792,23 @@ EXTRACT FROM HPL.dat
 TODO: HOW TO COPY TO ALL NODES!
 
 
+%
+% CHAPTER
+%
+\chapter{Aerin Cluster Tools}
+
+\lstinputlisting[caption=picluster/tools/upgrade, numbers=left, backgroundcolor=\color{LightSkyBlue}]{picluster/tools/upgrade}
+\lstinputlisting[caption=picluster/tools/reboot, numbers=left, backgroundcolor=\color{LightSkyBlue}]{picluster/tools/reboot}
+\lstinputlisting[caption=picluster/tools/shutdown, numbers=left, backgroundcolor=\color{LightSkyBlue}]{picluster/tools/shutdown}
+\lstinputlisting[caption=picluster/tools/libblas-query, numbers=left, backgroundcolor=\color{LightSkyBlue}]{picluster/tools/libblas-query}
+\lstinputlisting[caption=picluster/tools/libblas-set, numbers=left, backgroundcolor=\color{LightSkyBlue}]{picluster/tools/libblas-set}
+
 
 %
-% SECTION
+% CHAPTER
 %
 
-\clearpage\section{Arm Performance Libraries}
+\chapter{Arm Performance Libraries}
 
 \textcolor{red}{This does not work yet! HPL will build, but raises an illegal instruction error at runtime. At the time of writing, Arm Performance Libraries release 20.2.0 require a minimum of armv8.1-a. Unfortunately, the Raspberry Pi's Cortex-A72 cores are armv8.0-a. The next release will support armv8.0-a. Appendix included for future reference.}  
 
