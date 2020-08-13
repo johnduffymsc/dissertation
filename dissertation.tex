@@ -1441,6 +1441,47 @@ $ scp xhpl node8:~picluster/hpl/hpl-2.3/bin/picluster
 %
 \chapter{Install HPC Challenge (HPCC)}
 
+Download and install the latest version of HPCC on \verb|node1|...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ ssh node1
+$ cd ~/picluster
+$ mkdir hpcc
+$ cd hpcc
+$ wget http://icl.cs.utk.edu/projectsfiles/hpcc/download/hpcc-1.5.0.tar.gz
+$ gunzip hpcc-1.5.0.tar.gz
+$ tar xvf hpcc-1.5.0.tar
+$ rm hpcc-1.5.0.tar
+$ cd hpcc-1.5.0
+\end{lstlisting}
+
+Copy the HPL build script \verb|Make.picluster| to the \verb|hpl| directory...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ cd hpl
+$ cp ~/picluster/hpl/hpl-2.3/Make.picluster .
+\end{lstlisting}
+
+Change the \verb|TOPdir| variable in \verb|Make.picluster| to \verb|../../..|, and move back up into the top level directory...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ cd ..
+\end{lstlisting}
+
+Build HPCC...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ make arch=picluster
+\end{lstlisting}
+
+
+
+
+
 
 %
 % CHAPTER
