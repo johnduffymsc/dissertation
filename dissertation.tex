@@ -135,7 +135,7 @@ This is a command to type...
 $ cat /proc/softirqs
 \end{lstlisting}
 
-And this is the command output displayed on your screen...
+And this is the command output...
 
 \lstset{style=termstyle}
 \begin{lstlisting}
@@ -984,7 +984,7 @@ Aug 11 03:35:40 node5 kernel: [19256.425779] bcmgenet fd580000.ethernet eth0: bc
 \part{Build Instructions}
 
 %
-% Appendix A - Pi Cluster Build Instructions
+% CHAPTER
 %
 \chapter{The Aerin Cluster}
 
@@ -1009,18 +1009,18 @@ Items
 Photo
 
 
-\section{Preliminary Tasks}
+\clearpage\section{Preliminary Tasks}
 
 
-\subsubsection{Update Raspberry Pi EE-PROMs}
-
-
-
-\subsubsection{Obtain Raspberry Pi MAC Addresses}
+\subsection{Update Raspberry Pi EE-PROMs}
 
 
 
-\subsubsection{Generate User Key Pair}
+\subsection{Obtain Raspberry Pi MAC Addresses}
+
+
+
+\subsection{Generate User Key Pair}
 
 On macbook (no passphrase):
 
@@ -1031,10 +1031,11 @@ $ ssh-genkey -t rsa -C john
 This will create two files... in ...
 
 
-\subsubsection{Amend macbook /etc/hosts}
+\subsection{Amend macbook /etc/hosts}
 
 On \verb\macbook\, using your favourite editor, add the following to /etc/hosts:
 
+\lstset{style=listingstyle}
 \begin{lstlisting}[]
 192.168.0.1 node1
 192.168.0.2 node2
@@ -1049,21 +1050,23 @@ On \verb\macbook\, using your favourite editor, add the following to /etc/hosts:
 
 This enables...
 
+\lstset{style=termstyle}
 \begin{lstlisting}[]
-ssh john@node1
+$ ssh john@node1
 \end{lstlisting}
 
 or, the abbreviated...
 
+\lstset{style=termstyle}
 \begin{lstlisting}[]
-ssh node1
+$ ssh node1
 \end{lstlisting}
 
 provided the user name on the macbook is the same as the Linux user created by cloud-init.
 
 
 
-\subsubsection{Router/Firewall Configuration}
+\subsection{Router/Firewall Configuration}
 
 Local network behind firewall/switch: 192.168.0.254
 
@@ -1082,25 +1085,36 @@ Add relevant PDFs.
 %
 % SECTION
 %
-\section{Ubuntu 20.04 LTS Installation}
+\clearpage\section{Ubuntu 20.04 64-bit LTS Installation}
+
+The idea is to have a single (modified) Ubuntu 20.04 image which can be used to install Ubuntu 20.04 on all of the nodes...
 
 
-\subsubsection{Create the Raspberry Pi Ubuntu Server Image}
+%
+% SUB SECTION
+%
+\subsection{Create the Installation Image}
 
-On macbook...
+The instructions below are for MacOS but should be straightforward to adjust for other operating systems.
 
-Download Ubuntu 20.04 LTS 64-bit pre-installed server image for the Raspberry Pi 4...
+On \verb|macbook|...
 
-Double click to uncompress the .xz file which leaves the .img file. 
+Download the Raspberry Pi 4 Ubuntu 20.04 LTS 64-bit pre-installed server image from the Ubuntu website.
 
-Double click to mount the .img in the filesystem...
+Double click the compressed the \verb|.xz| file to extract the \verb|.img| file. 
 
-Amend /Volumes/system-boot/user-data...
+Double click the \verb|.img| file to mount the image in the \verb|macbook| filesystem as:
 
-%\lstset{frameround=tttt}
-\lstinputlisting[frame=single]{files/user-data}
+\verb|/Volumes/system-boot|
 
-Eject/unmount .img file
+We now need to edit the \verb|user-data| file which stores the \verb|cloud-init| configuration. The \verb|user-data| file used to create the Aerin Cluster is at Listing 7.
+
+
+\lstset{style=listingstyle}
+\lstinputlisting[caption=/Volumes/system-boot/user-data]{picluster/cloud-init/user-data-dissertation}
+
+
+Eject/unmount the \verb|.img| file.
 
 Use Raspberry Pi Imager to erase...
 
@@ -1126,9 +1140,9 @@ The cloud-init configuration process will now start. The Raspberry Pi will acqui
 %
 % SECTION
 %
-\section{Post-Installation Tasks}
+\clearpage\section{Post-Installation Tasks}
 
-\subsubsection{Enable No Password Access}
+\subsection{Enable No Password Access}
 
 This is required for Open-MPI...
 
@@ -1136,43 +1150,55 @@ Our public key was installed on each node by cloud-init. So, we can ssh into eac
 
 We need to copy our private key to node1 (only node1)...
 
-\begin{lstlisting}[]
-scp ~/.ssh/id_rsa node1:~/.ssh
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ scp ~/.ssh/id_rsa node1:~/.ssh
 \end{lstlisting}
 
 Then to enable access to nodes node2 to node9 without a password from node1, we need to import the ... keys into the node1 knownhosts file...
 
-This is easily done...
+This is easily done. From \verb|macbook|...
 
-From macbook, ssh into node1...
+\lstset{style=termstyle}
+\begin{lstlisting}[]
+$ ssh node1
+\end{lstlisting}
 
-ssh node1
+And then from node1, for \verb|node2| to \verb|node9|...
 
-and then from node1, for each of the nodes node2 to node9:
+\lstset{style=termstyle}
+\begin{lstlisting}[]
+$ ssh node2
+\end{lstlisting}
 
-ssh node2
+This will generate will generate a message similar to...
 
-This will generate...
-
+\lstset{style=termstyle}
 \begin{lstlisting}[]
 The authenticity of host 'node2 (192.168.0.2)' can't be established.
 ECDSA key fingerprint is SHA256:5VgsnN2nPvpfbJmALh3aJdOeT/NvDXqN8TCreQyNaFA.
 Are you sure you want to continue connecting (yes/no/[fingerprint])?
 \end{lstlisting}
 
-responding yes, imports the key into the node1 knownhosts file...
+Respond yes to this, which imports the host key into the \verb|~/.ssh/knownhosts| file of \verb|node1|.
 
+And then exit from the connected node...
+
+\lstset{style=termstyle}
 \begin{lstlisting}[]
-exit
+$ exit
 \end{lstlisting}
 
-Next node...
+Repeat the above for \verb|node2| to \verb|node9|.
 
-This is only required to be done on intial contact with nodes node2 to node9 (unless the keys on these nodes change)
+The above is only required to be done once (unless the host keys on \verb|node2| to \verb|node9| change).
 
 
+%
+% SUB SECTION
+%
 
-\subsubsection{Uninstall unattended-upgrades}
+\subsection{Uninstall unattended-upgrades}
 
 The \verb|unattended-upgrades| package is installed automatically...
 
@@ -1197,7 +1223,7 @@ $ ~/picluster/tools/upgrade
 \end{lstlisting}
 
 
-\subsubsection{Add Source Repositories}
+\subsection{Add Ubuntu Source Repositories}
 
 We are going to be rebuilding some packages from source...
 
@@ -1225,7 +1251,7 @@ $ sudo apt update
 
 
 
-\subsubsection{Create a Project Repository}
+\subsection{Create a Project Repository}
 
 Xpand upon...
 
@@ -1240,25 +1266,139 @@ $ git init
 Ensure you do push your repository to a remote repository at regular intervals...
 
 
-\subsubsection{Select BLAS Library}
+\subsection{Select BLAS Library}
 
-We have installed four BLAS libraries...
+The \verb|cloud-init| process will have installed four BLAS libraries, namely...
 
-Confirm all nodes are using the same one initially...
+\verb|libopenblas0-serial|
 
-ssh node1
-sudo update-alternatives --config libblas.so.3-aarch64-linux-gnu
+\verb|libopenblas0-openmp|
 
-TODO screen output...
+\verb|libblis0-serial|
 
-Confirm option 0, OpenBLAS, is selected. Press return to keep this option and then exit.
+\verb|libblis0-openmp|
+
+To query the BLAS library currently in use on each node we can use one of our Pi Cluster tools...
+
+\lstset{style=termstyle}
+\begin{lstlisting}[]
+$ ~/picluster/tools/libblas-query
+\end{lstlisting}
+
+\lstset{style=termstyle}
+\begin{lstlisting}[]
+node8... /usr/lib/aarch64-linux-gnu/openblas-openmp/libblas.so.3
+node7... /usr/lib/aarch64-linux-gnu/openblas-openmp/libblas.so.3
+node6... /usr/lib/aarch64-linux-gnu/openblas-openmp/libblas.so.3
+node5... /usr/lib/aarch64-linux-gnu/openblas-openmp/libblas.so.3
+node4... /usr/lib/aarch64-linux-gnu/openblas-openmp/libblas.so.3
+node3... /usr/lib/aarch64-linux-gnu/openblas-openmp/libblas.so.3
+node2... /usr/lib/aarch64-linux-gnu/openblas-openmp/libblas.so.3
+node1... /usr/lib/aarch64-linux-gnu/openblas-openmp/libblas.so.3
+\end{lstlisting}
+
+To select an alternative library we can use another of our Pi Cluster tools...
+
+\lstset{style=termstyle}
+\begin{lstlisting}[]
+$ ~/picluster/tools/libblas-set blis-serial
+\end{lstlisting}
+
+\lstset{style=termstyle}
+\begin{lstlisting}[]
+node8... done
+node7... done
+node6... done 
+node5... done 
+node4... done 
+node3... done 
+node2... done 
+node1... done 
+\end{lstlisting}
+
+\lstset{style=termstyle}
+\begin{lstlisting}[]
+$ ~/picluster/tools/libblas-query
+\end{lstlisting}
+
+\lstset{style=termstyle}
+\begin{lstlisting}[]
+node8... /usr/lib/aarch64-linux-gnu/blis-serial/libblas.so.3
+node7... /usr/lib/aarch64-linux-gnu/blis-serial/libblas.so.3
+node6... /usr/lib/aarch64-linux-gnu/blis-serial/libblas.so.3
+node5... /usr/lib/aarch64-linux-gnu/blis-serial/libblas.so.3
+node4... /usr/lib/aarch64-linux-gnu/blis-serial/libblas.so.3
+node3... /usr/lib/aarch64-linux-gnu/blis-serial/libblas.so.3
+node2... /usr/lib/aarch64-linux-gnu/blis-serial/libblas.so.3
+node1... /usr/lib/aarch64-linux-gnu/blis-serial/libblas.so.3
+\end{lstlisting}
+
+
+%
+% SECTION
+%
+\clearpage\section{Install High-Performance Linpack (HPL)}
+
+Download and install the latest version of HPL on \verb|node1|...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ ssh node1
+$ cd ~/picluster
+$ mkdir hpl
+$ cd hpl
+$ wget https://www.netlib.org/benchmark/hpl/hpl-2.3.tar.gz
+$ gunzip hpl-2.3.tar.gz
+$ tar xvf hpl-2.3.tar
+$ rm hpl-2.3.tar
+$ cd hpl-2.3
+\end{lstlisting}
+
+Create a \verb|Make.picluster| file...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ cd setup
+$ bash make_generic
+$ cp Make.UNKNOWN ../Make.picluster
+$ cd ..
+\end{lstlisting}
+
+Amend \verb|Make.picluster| as per listing ???.
+
+\lstset{style=listingstyle}
+\lstinputlisting[caption=~/picluster/hpl/hpl-2.3/Make.picluster]{picluster/hpl/hpl-2.3/Make.picluster}
+
+Build HPL...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ make arch=picluster   
+\end{lstlisting}
+
+This creates the executable \verb|xhpl| and input file \verb|HPL.dat| in \verb|bin/picluster|
+
+The \verb|xhpl| executable has to exist in the same location on each node, so copy \verb|xhpl| to \verb|node2| to \verb|node8| (only \verb|xhpl|, and not \verb|HPL.dat|)...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ cd bin/picluster
+$ ~/picluster/tools/do "mkdir -p picluster/hpl/hpl-2.3/bin/picluster"
+$ scp xhpl node2:~picluster/hpl/hpl-2.3/bin/picluster
+$ scp xhpl node3:~picluster/hpl/hpl-2.3/bin/picluster
+$ scp xhpl node4:~picluster/hpl/hpl-2.3/bin/picluster
+$ scp xhpl node5:~picluster/hpl/hpl-2.3/bin/picluster
+$ scp xhpl node6:~picluster/hpl/hpl-2.3/bin/picluster
+$ scp xhpl node7:~picluster/hpl/hpl-2.3/bin/picluster
+$ scp xhpl node8:~picluster/hpl/hpl-2.3/bin/picluster
+\end{lstlisting}
 
 
 
 %
-% Appendix ? - General Kernel Build Procedure
+% SECTION
 %
-\clearpage\section*{Appendix ? - General Kernel Build Procedure}
+\clearpage\section{Kernel Build Procedure}
 
 This procedure is derived from the Ubuntu Wiki BuildYourOwnKernel document...
 
@@ -1389,9 +1529,9 @@ $ cd ..
 
 
 %
-% Appendix ? - Kernel Build with Jumbo Frames
+% SECTION
 %
-\clearpage\section*{Appendix ? - Kernel Build with Jumbo Frames}
+\clearpage\section{Build Kernel with Jumbo Frames Support}
 
 Standard MTU is 1500 bytes...
 
@@ -1438,150 +1578,11 @@ Add a Jumbo Frames identifier, "+jf", to the new kernel name...
 \end{verbatim}
 
 
-%TODO: SHOW NEW DEFAULT MTU SETTING = 9000
-
-%TODO: EXAMPLES OF ABILITY TO SET MTU ABOVE 1500 UP TO 9000
-
-%TODO: WARNING ABOUT ROUTER/SWITCH & OTHER NODE MTU's
-
-
 
 %
-% Appendix ? - High Performance Linpack Installation
+% SECTION
 %
-\clearpage\section*{Appendix B - High-Performance Linpack (HPL) Installation}
-
-Download and install the latest version of HPL on node1...
-
-%\lstset{frameround=tttt}
-\begin{lstlisting}[]
-ssh node1
-cd picluster
-mkdir hpl
-cd hpl
-wget https://www.netlib.org/benchmark/hpl/hpl-2.3.tar.gz
-gunzip hpl-2.3.tar.gz
-tar xvf hpl-2.3.tar
-rm hpl-2.3.tar
-cd hpl-2.3
-\end{lstlisting}
-
-Create Make.serial file...
-
-%\lstset{frameround=tttt}
-\begin{lstlisting}[]
-cd setup
-bash make_generic
-cd ..
-cp setup/Make.UNKNOWN Make.serial
-\end{lstlisting}
-
-Amend Make.serial as per...
-
-Build...
-
-%\lstset{frameround=tttt}
-\begin{lstlisting}[]
-make arch=serial   
-\end{lstlisting}
-
-This creates xhpl and HPL.dat in bin/serial
-
-Copy xhpl to all nodes (only xhpl, and not HPL.dat)...
-
-%\lstset{frameround=tttt}
-\begin{lstlisting}[]
-ssh node2 mkdir -p picluster/hpl/hpl-2.3/bin/serial
-ssh node3 mkdir -p picluster/hpl/hpl-2.3/bin/serial
-ssh node4 mkdir -p picluster/hpl/hpl-2.3/bin/serial
-ssh node5 mkdir -p picluster/hpl/hpl-2.3/bin/serial
-ssh node6 mkdir -p picluster/hpl/hpl-2.3/bin/serial
-ssh node7 mkdir -p picluster/hpl/hpl-2.3/bin/serial
-ssh node8 mkdir -p picluster/hpl/hpl-2.3/bin/serial
-ssh node9 mkdir -p picluster/hpl/hpl-2.3/bin/serial
-
-scp bin/serial/xhpl node2:~picluster/hpl/hpl-2.3/bin/serial
-scp bin/serial/xhpl node3:~picluster/hpl/hpl-2.3/bin/serial
-scp bin/serial/xhpl node4:~picluster/hpl/hpl-2.3/bin/serial
-scp bin/serial/xhpl node5:~picluster/hpl/hpl-2.3/bin/serial
-scp bin/serial/xhpl node6:~picluster/hpl/hpl-2.3/bin/serial
-scp bin/serial/xhpl node7:~picluster/hpl/hpl-2.3/bin/serial
-scp bin/serial/xhpl node8:~picluster/hpl/hpl-2.3/bin/serial
-scp bin/serial/xhpl node9:~picluster/hpl/hpl-2.3/bin/serial
-\end{lstlisting}
-
-
-
-%
-% Appendix ? - High Performance Linpack Installation
-%
-\clearpage\section*{Appendix ? - High Performance Linpack (HPL) Installation}
-
-Download and install the latest version of HPL on node1...
-
-%\lstset{frameround=tttt}
-\begin{lstlisting}[]
-ssh node1
-cd picluster
-mkdir hpl
-cd hpl
-wget https://www.netlib.org/benchmark/hpl/hpl-2.3.tar.gz
-gunzip hpl-2.3.tar.gz
-tar xvf hpl-2.3.tar
-rm hpl-2.3.tar
-cd hpl-2.3
-\end{lstlisting}
-
-Create Make.serial file...
-
-%\lstset{frameround=tttt}
-\begin{lstlisting}[]
-cd setup
-bash make_generic
-cd ..
-cp setup/Make.UNKNOWN Make.serial
-\end{lstlisting}
-
-Amend Make.serial as per...
-
-Build...
-
-%\lstset{frameround=tttt}
-\begin{lstlisting}[]
-make arch=serial   
-\end{lstlisting}
-
-This creates xhpl and HPL.dat in bin/serial
-
-Copy xhpl to all nodes (only xhpl, and not HPL.dat)...
-
-%\lstset{frameround=tttt}
-\begin{lstlisting}[]
-ssh node2 mkdir -p picluster/hpl/hpl-2.3/bin/serial
-ssh node3 mkdir -p picluster/hpl/hpl-2.3/bin/serial
-ssh node4 mkdir -p picluster/hpl/hpl-2.3/bin/serial
-ssh node5 mkdir -p picluster/hpl/hpl-2.3/bin/serial
-ssh node6 mkdir -p picluster/hpl/hpl-2.3/bin/serial
-ssh node7 mkdir -p picluster/hpl/hpl-2.3/bin/serial
-ssh node8 mkdir -p picluster/hpl/hpl-2.3/bin/serial
-ssh node9 mkdir -p picluster/hpl/hpl-2.3/bin/serial
-
-scp bin/serial/xhpl node2:~picluster/hpl/hpl-2.3/bin/serial
-scp bin/serial/xhpl node3:~picluster/hpl/hpl-2.3/bin/serial
-scp bin/serial/xhpl node4:~picluster/hpl/hpl-2.3/bin/serial
-scp bin/serial/xhpl node5:~picluster/hpl/hpl-2.3/bin/serial
-scp bin/serial/xhpl node6:~picluster/hpl/hpl-2.3/bin/serial
-scp bin/serial/xhpl node7:~picluster/hpl/hpl-2.3/bin/serial
-scp bin/serial/xhpl node8:~picluster/hpl/hpl-2.3/bin/serial
-scp bin/serial/xhpl node9:~picluster/hpl/hpl-2.3/bin/serial
-\end{lstlisting}
-
-
-
-%
-% Appendix ? - Rebuild OpenBLAS
-%
-\clearpage\section*{Appendix ? - Rebuild OpenBLAS}
+\clearpage\section{Rebuild OpenBLAS}
 
 \lstset{style=termstyle}
 \begin{lstlisting}
@@ -1660,83 +1661,28 @@ $ ssh sudo dpkg -i libopenblas0-serial\_0.3.8+ds-1\_arm64.deb
 $ ssh sudo update-alternatives --config libblas.so.3-aarch64-linux-gnu
 \end{lstlisting}
 
+
 %
-% Appendix ? - Rebuild libblis3-serial
+% SECTION
 %
-\clearpage\section*{Appendix ? - Rebuild libblis3-serial}
+\clearpage\section{Rebuild BLIS}
 
 \lstset{style=termstyle}
 \begin{lstlisting}
-ssh node1
-mkdir -p picluster/build/blis
-cd picluster/build/blis
-apt-get source blis
-sudo apt-get build-dep blis
-cd blis-0.6.1
+$ ssh node1
+$ mkdir -p picluster/build/blis
+$ cd picluster/build/blis
+$ apt-get source blis
+$ sudo apt-get build-dep blis
+$ cd blis-0.6.1
 \end{lstlisting}
 
 
 
 %
-% Appendix ? - Hints
+% SECTION
 %
-\clearpage\section*{Appendix ? - Hints}
-
-Hints from experience... and time savers... for building a development cluster on a local network.
-
-% SUBSECTION
-\subsection{IP/MAC Addresses}
-If IP/MAC address assignments get confused, which is easily done during initial build, view IP address assignments on the local network with:
-
-\begin{verbatim}
-    arp -a
-\end{verbatim}
-
-Then delete \emph{incomplete} IP addresses with:
-
-\begin{verbatim}
-    sudo arp -d incomplete-ip-address
-\end{verbatim}
-
-% SUBSECTION
-\subsection{SSH known\_hosts}
-If \emph{ssh} reports differing keys in 'known-hosts', and warns of a potential 'man-in-the-middle-attack', then just delete 'known-hosts':
-
-\begin{verbatim}
-    sudo rm ~/.ssh/known_hosts
-\end{verbatim}
-
-'known\_hosts' will be re-populated as you log into each node. 
-
-% SUBSECTION
-\subsection{tmux}
-\verb|tmux| is your friend!
-
-Monitoring long running jobs from a workstation, which goes to sleep after a period of no activity, for example, may interfere with the running of the jobs if a SSH connection is broken.
-
-Use a \verb|tmux| session to start long running jobs, and then detach from the \verb|tmux| session. The job will quite happily run in the background on the cluster. Turn the workstation off and go to bed. In the morning, turn the workstation on and 'attach' to the \verb|tmux| session. All will be well.
-
-% SUBSECTION
-\subsection{git}
-\verb|git| is your best friend!
-
-During your cluster build you will accidentally delete files, results etc. After every significant...
-
-
-
-%
-% Appendix ? - cloud-init user-data
-%
-\clearpage\section*{Appendix ? - cloud-init user-data}
-
-\lstinputlisting[frame=single, language=bash, numbers=left, caption=picluster/cloud-init/user-data]{picluster/cloud-init/user-data-dissertation}
-
-
-
-%
-% Appendix ? - Pi Cluster Tools
-%
-\clearpage\section*{Appendix ? - Pi Cluster Tools}
+\clearpage\section{Pi Cluster Tools}
 
 \lstinputlisting[caption=picluster/tools/upgrade, numbers=left, backgroundcolor=\color{LightSkyBlue}]{picluster/tools/upgrade}
 \lstinputlisting[caption=picluster/tools/reboot, numbers=left, backgroundcolor=\color{LightSkyBlue}]{picluster/tools/reboot}
@@ -1747,10 +1693,10 @@ During your cluster build you will accidentally delete files, results etc. After
 
 
 %
-% Appendix ? - Arm Performance Libraries
+% SECTION
 %
 
-\clearpage\section*{Appendix ? - Build OpenMPI from Source}
+\clearpage\section{Build OpenMPI from Source}
 
 Do all of this on node1...
 
@@ -1804,10 +1750,10 @@ TODO: HOW TO COPY TO ALL NODES!
 
 
 %
-% Appendix ? - Arm Performance Libraries
+% SECTION
 %
 
-\clearpage\section*{Appendix ? - Arm Performance Libraries}
+\clearpage\section{Arm Performance Libraries}
 
 \textcolor{red}{This does not work yet! HPL will build, but raises an illegal instruction error at runtime. At the time of writing, Arm Performance Libraries release 20.2.0 require a minimum of armv8.1-a. Unfortunately, the Raspberry Pi's Cortex-A72 cores are armv8.0-a. The next release will support armv8.0-a. Appendix included for future reference.}  
 
