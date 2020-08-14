@@ -17,6 +17,14 @@ numbers=none,
 tabsize=2
 }
 
+\lstdefinestyle{hack}{
+frame=single,
+backgroundcolor=\color{MistyRose},   
+basicstyle=\verbatim@font\small,
+numbers=none,
+tabsize=2
+}
+
 \lstdefinestyle{listingstyle}{
 frame=single,
 backgroundcolor=\color{LightSkyBlue},   
@@ -109,6 +117,18 @@ This is a file listing...
 
 \lstset{style=listingstyle}
 \lstinputlisting[caption=/etc/hosts]{/etc/hosts}
+
+
+And this is something to take note of...
+
+\lstset{style=hack}
+\begin{lstlisting}
+This is a 'gotcha', or
+This differs from a similar build procedure, or
+This is a 'hack' to be fixed permanently later, or
+Don't do this at home, or,
+Something similar
+\end{lstlisting}
 
 
 %
@@ -1441,6 +1461,8 @@ $ scp xhpl node8:~picluster/hpl/hpl-2.3/bin/picluster
 %
 \chapter{Install HPC Challenge (HPCC)}
 
+These instructions are derived from the README.txt file in the top level directory of the HPCC source code.
+
 Download and install the latest version of HPCC on \verb|node1|...
 
 \lstset{style=termstyle}
@@ -1464,7 +1486,30 @@ $ cd hpl
 $ cp ~/picluster/hpl/hpl-2.3/Make.picluster .
 \end{lstlisting}
 
-Change the \verb|TOPdir| variable in \verb|Make.picluster| to \verb|../../..|, and move back up into the top level directory...
+Make the following changes to \verb|Make.picluster|. These differ from the build instructions for HPL.
+
+Change the \verb|TOPdir| variable to \verb|../../..|
+
+\lstset{style=hack}
+\begin{lstlisting}[caption=Make.picluster]
+TOPdir = ../../..
+\end{lstlisting}
+
+Add the \verb|math| library explicitly, \verb|-lm|, for the linker...
+
+\lstset{style=hack}
+\begin{lstlisting}[caption=Make.picluster]
+LAlib = $(LAdir)/libblas.so.3 -lm
+\end{lstlisting}
+
+Add the constant \verb|OMPI_OMIT_MPI1_COMPAT_DECLS| to \verb|CCFLAGS|, otherwise the compilation fails...
+
+\lstset{style=hack}
+\begin{lstlisting}[caption=Make.picluster]
+CCFLAGS = $(HPL_DEFS) -O3 -march=armv8-a -mtune=cortex-a72 -DOMPI_OMIT_MPI1_COMPAT_DECLS
+\end{lstlisting}
+
+Now move back up into the top level directory...
 
 \lstset{style=termstyle}
 \begin{lstlisting}
@@ -1478,7 +1523,37 @@ Build HPCC...
 $ make arch=picluster
 \end{lstlisting}
 
+Copy the \verb|hpcc| executable to all of the nodes...
 
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ ~/picluster/tools/do "mkdir -p ~/picluster/hpcc/hpcc-1.5.0"
+$ scp hpcc node2:~/picluster/hpcc/hpcc-1.5.0
+$ scp hpcc node3:~/picluster/hpcc/hpcc-1.5.0
+$ scp hpcc node4:~/picluster/hpcc/hpcc-1.5.0
+$ scp hpcc node5:~/picluster/hpcc/hpcc-1.5.0
+$ scp hpcc node6:~/picluster/hpcc/hpcc-1.5.0
+$ scp hpcc node7:~/picluster/hpcc/hpcc-1.5.0
+$ scp hpcc node8:~/picluster/hpcc/hpcc-1.5.0
+\end{lstlisting}
+
+Create the input file \verb|hpccinf.txt|...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ cp _hpccinf.txt hpccinf.txt
+\end{lstlisting}
+
+And amend as necessary. An input file which uses 80\% of the total cluster memory is at Listing ???.
+
+To run HPCC across all 8 nodes...
+
+\lstset{style=termstyle}
+\begin{lstlisting}
+$ mpirun -host node1:4,node2:4,...node7:4,node8:4 -np 32 hpcc
+\end{lstlisting}
+
+The output will be in the file \verb|hpccoutf.txt|.
 
 
 
