@@ -515,7 +515,7 @@ NB 32 to 256 in increments of 8...
 
 \lstset{style=termstyle}
 \begin{lstlisting}[]
-$ mpirun -np 1 xhpl
+$ mpirun --bind-to core -host node1:1 -np 1 xhpl
 \end{lstlisting}
 
 mpirun does bind to core by default for $np \leq 2$
@@ -528,7 +528,7 @@ mpirun does bind to core by default for $np \leq 2$
 
 4 x 4.7527e+00 = 19 Gflops
 
-Explain...
+Explain --bind-to core
 
 Cache misses from peak...
 
@@ -556,14 +556,16 @@ A single core is capable of achieving maximum theoretical performance... CAVEATS
 
 \lstset{style=termstyle}
 \begin{lstlisting}[]
-$ mpirun -np 4 xhpl
+$ mpirun --bind-to core -host node1:4 -np 4 xhpl
 \end{lstlisting}
+
+Explain bind to core...
 
 mpirun does bind to socket by default for $np \geq 2$
 
 \begin{figure}
 	\centering	
-	\includegraphics[width=1.0\textwidth]{gflops_vs_nb_1_node_80_percent_memory.pdf}
+	\includegraphics[width=1.0\textwidth]{openmpi_gflops_vs_nb_1_node_80_percent_memory.pdf}
 	\caption{$R_{max}$ vs NB 1 Node (4 cores) using 80\% memory.}
 \end{figure}
 
