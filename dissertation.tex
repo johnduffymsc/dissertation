@@ -36,7 +36,7 @@ tabsize=2
 
 
 
-\title{MSc Scientific Computing Dissertation\\ARM Cluster Benchmarks}
+\title{MSc Scientific Computing Dissertation\\Benchmarking a Raspberry Pi 4 Cluster}
 \author{John Duffy}
 \date{September 2020}
 
@@ -58,31 +58,113 @@ tabsize=2
 %
 \chapter{Introduction}
 
-\begin{verbatim}
-https://github.com/johnduffymsc/picluster
-\end{verbatim}
+
+%
+% SECTION
+%
+\section{Arm}
+
+Big picture paragraph...
+Billions of chip... 
+Microsoft...
+Apple...
+Internet + mobile... battery live
+
+From small acorns...
+
+ARM1...
+RISC vs CISC...
+Transistor count...
+Required < 1 Watt for plastic packaging, cost... actually 0.1 Watt...
+Powered by input voltages...
+Low power was not a primary design criteria, it was a sup 
 
 
-\subsection{Aims}
+%
+% SECTION
+%
+\section{Raspberry Pi}
 
-\subsubsection{Investigate Maximum Achievable Linpack Performance}
+The Raspberry Pi Foundation, founded in 2009, is a UK based charity whose aim is to "promote the study of computer science and related topics, especially at school level, and to put the fun back into learning computing". Through it's subsidiary, Raspberry Pi (Trading) Ltd, it provides low-cost, high-performance single-board computers called Raspberry Pi's.
 
-Efficiency... achieved vs theoretical maximum
+\begin{figure}
+	\centering	
+	\includegraphics[width=1.0\textwidth]{images/raspberry-pi-4-model-b.jpeg}
+	\caption{The Raspberry Pi 4 Model B.}
+\end{figure}
+
+Initially released in 2012 as the Raspberry Pi Model B,...
+
+a number of formats...
 
 
-\subsubsection{Investigate Gflops/Watt}
+The Raspberry Pi range...
+
+The Raspberry Pi Zero is a tiny...
+
+\begin{figure}
+	\centering	
+	\includegraphics[width=1.0\textwidth]{images/raspberry-pi-zero.jpeg}
+	\caption{The Raspberry Pi Zero.}
+\end{figure}
+
+
+A more recent addition to the range is the Raspberry Pi Compute Module, which is a stripped down version of the Pi without the connectivity components, such as video, USB and GPIO. This model is aimed at industrial applications and fits in a standard DDR2 SODIMM connector. 
+
+\begin{figure}
+	\centering	
+	\includegraphics[width=1.0\textwidth]{images/raspberry-pi-compute-module-3.jpeg}
+	\caption{The Raspberry Pi Compute Module 3+ (CM3+).}
+\end{figure}
+
+
+
+The first..
+
+
+To promote its aims... bundled with non-commercial versions of Mathematica...
+
+
+
+At the heart of every Raspberry Pi computer is a Broadcom System on a Chip (SOC) based on Arm technology.
+
+The most recent addition to the Raspberry Pi range of computers is the Raspberry Pi 4 Model B. This is a quad-core 64-bit...
+
+
+
+
+
+
+\section{Aims}
+
+\subsection{Benchmark Performance}
+
+The main aim of this project is to benchmark the performance of an 8 node Raspberry Pi 4 Model B cluster using standard HPC benchmarks. These benchmarks include High Performance Linpack (HPL), HPC Challenge (HPCC) and High Performance Conjugate Gradient (HPCG).
+
+OpenMPI, Hybrid OpenMPI/OpenMP...
+
+
+\subsection{Performance Optimisations}
+
+
+
+\subsection{Investigate Gflops/Watt}
 
 Green500 ranking...
 
 
-\subsubsection{Overview of Competitive Available Gflops/£}
+
+\subsection{Overview of Competitive Available Gflops/£}
 
 Buy lots of Pi's, or buy a bigger machine...
 
 Plot Gflops vs £...
 
 
-\subsection{Typography}
+%
+% SECTION
+%
+\section{Typography}
 
 This is a computer name...
 
@@ -95,7 +177,7 @@ This is a command to type...
 $ cat /proc/softirqs
 \end{lstlisting}
 
-And this is the command output...
+This is the command output...
 
 \lstset{style=termstyle}
 \begin{lstlisting}
@@ -129,6 +211,25 @@ This is a 'hack' to be fixed permanently later, or
 Don't do this at home, or,
 Something similar
 \end{lstlisting}
+
+
+%
+% SECTION
+%
+\section{Project GitHub Repositories}
+
+All of the project code and benchmark results are hosted in the following GitHub repository.
+
+\begin{verbatim}
+https://github.com/johnduffymsc/picluster
+\end{verbatim}
+
+This dissertation and the Jupyter Notebook used to generate the dissertation plots are hosted in the following GitHub repository.
+
+\begin{verbatim}
+https://github.com/johnduffymsc/dissertation
+\end{verbatim}
+ 
 
 
 %
