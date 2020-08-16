@@ -92,8 +92,7 @@ Low power was not a primary design criteria, it was a sup
 
 The Raspberry Pi Foundation, founded in 2009, is a UK based charity whose aim is to "promote the study of computer science and related topics, especially at school level, and to put the fun back into learning computing". Through it's subsidiary, Raspberry Pi (Trading) Ltd, it provides low-cost, high-performance single-board computers called Raspberry Pi's, and free software.
 
-At the heart of every Raspberry Pi is a Broadcom "System on a Chip" (SoC) with Arm processor cores.
-
+At the heart of every Raspberry Pi is a Broadcom "System on a Chip" (SoC). The SoC integrates Arm processor cores with video, audio and Input/Output (IO). The IO includes USB, Ethernet, and General Purpose IO (GPIO) pins for interfacing with devices such as sensors and motors. The SoC is mounted on small form factor circuit board which hosts the memory chip, and video, audio, and IO connectors. A MicroSD card is used to boot the operating system and for permanent storage.
 
 \begin{figure}
 	\centering	
@@ -101,7 +100,7 @@ At the heart of every Raspberry Pi is a Broadcom "System on a Chip" (SoC) with A
 	\caption{The Raspberry Pi 4 Model B.}
 \end{figure}
 
-Initially released in 2012 as the Raspberry Pi 1, each model has seen improvements in SoC core count, clock speed and available memory.
+Initially released in 2012 as the Raspberry Pi 1, each subsequent model has seen improvements in SoC processor core count or performance, clock speed and available memory.
 
 The Raspberry Pi 1 has a single-core 32-bit ARM1176JZF-S based SoC clocked at 700 MHz and 256 MB of RAM. The RAM was increased to 512 MB in 2016.
 
@@ -109,21 +108,16 @@ The Raspberry Pi 2, released in 2015, introduced a quad-core 32-bit Arm Cortex-A
 
 In 2016, the Raspberry Pi 3 was released with a quad-core 64-bit Arm Cortex-A53 based SoC clocked at 1.2 GHz, together with 1 GB of RAM.
 
-The most recent addition to the range is the Raspberry Pi 4, sporting a quad-core 64-bit Cortex-A-72 based SoC clocked at 1.5 GHz. This model is available with 1, 2, 4 and 8 GB of RAM.
+The most recent addition to the range is the Raspberry Pi 4, sporting a quad-core 64-bit Cortex-A-72 based SoC clocked at 1.5 GHz. This model is available with 1, 2, 4 and 8 GB of RAM. This model with 4 GB of RAM has been used for this project.
 
-Since 2012 the official operating system for all Raspberry Pi models has been Raspbian, a Linux operating system based on Debian. To support the aims of the Foundation, a number of educational software packages are bundled with Raspbian, including a "non-commercial use" version of Mathematica, and a graphical programming environment aimed a younger children call Scratch.
+Since 2012 the official operating system for all Raspberry Pi models has been Raspbian, a Linux operating system based on Debian. Raspbian has recently been renamed Raspberry Pi OS. To support the aims of the Foundation, a number of educational software packages are bundled with Raspberry Pi OS. These include a "non-commercial use" version of Mathematica, and a graphical programming environment aimed a young children called Scratch.
 
-Due to its popularity and ease of use, Python is the official programming language, and the inclusion of an easy to use Python IDE has been a Foundation priority. This is currently Thonny. 
+Python is the official programming language, due to its popularity and ease of use, and the inclusion of an easy to use Python IDE has been a Foundation priority. This is currently Thonny. 
 
-Even though the Raspberry Pi 3 introduced a 64-bit processor, Raspbian has remained a 32-bit operating system. However, to complement the introduction of the Raspberry Pi 4 with 8 GB of RAM, a 64-bit version is currently in Beta testing.
+Even though the Raspberry Pi 3 introduced a 64-bit processor, Raspberry Pi OS has remained a 32-bit operating system. However, to complement the introduction of the Raspberry Pi 4 with 8 GB of RAM, a 64-bit version is currently in public beta testing.
 
-Raspbian has recently been renamed Raspberry Pi OS.
+Raspberry Pi OS is not the only operating system available for the Raspberry Pi. The Raspberry Pi website provides downloads for Raspberry Pi OS, and also NOOBS (New Out of the Box Software), together with a MicroSD card OS image burning tool called Raspberry Pi Imager. NOOBS and Raspberry Pi Imager make it easy to install operating systems such as Ubuntu, RISC OS, Windows 10 IoT Core, and more. Ubuntu 20.04 LTS 64-bit, the operating system used for this project, is available for download from the Ubuntu website, and is also available as an install option within Raspberry Pi Imager.
 
-
-
-The Raspberry Pi range...
-
-The Raspberry Pi Zero is a tiny...
 
 \begin{figure}
 	\centering	
@@ -131,14 +125,14 @@ The Raspberry Pi Zero is a tiny...
 	\caption{The Raspberry Pi Zero.}
 \end{figure}
 
-
-A more recent addition to the range is the Raspberry Pi Compute Module, which is a stripped down version of the Pi without the connectivity components, such as video, USB and GPIO. This model is aimed at industrial applications and fits in a standard DDR2 SODIMM connector. 
-
 \begin{figure}
 	\centering	
 	\includegraphics[width=1.0\textwidth]{images/raspberry-pi-compute-module-3.jpeg}
 	\caption{The Raspberry Pi Compute Module 3+ (CM3+).}
 \end{figure}
+
+Since the release of the Raspberry Pi 1, the Raspberry Pi has been available in a number of model variants and circuit board formats. The Model B of each release is the most powerful variant, intended for desktop use. The Model A is a simpler and cheaper variant intended for embedded projects. The models B+ and A+ designate an improvement to the current release hardware. The Raspberry Pi Zero is a tiny, inexpensive variant without most of the external connectors, designed for low power, possibly battery powered, embedded projects. The Raspberry Pi Compute Module is a stripped down version of the Raspberry Pi without any external connectors. This model is aimed at industrial applications and fits in a standard DDR2 SODIMM connector.
+
 
 
 
@@ -175,18 +169,18 @@ Plot Gflops vs £...
 %
 \section{Typography}
 
-This is a computer name...
+This is a computer name.
 
 \verb|node1|
 
-This is a command to type...
+This is a command to type.
 
 \lstset{style=termstyle}
 \begin{lstlisting}[]
 $ cat /proc/softirqs
 \end{lstlisting}
 
-This is the command output...
+This is the command output.
 
 \lstset{style=termstyle}
 \begin{lstlisting}
@@ -204,13 +198,13 @@ This is the command output...
 \end{lstlisting}
 
 % TODO: Change to Ubuntu /etc/hosts...
-This is a file listing...
+This is a file listing.
 
 \lstset{style=listingstyle}
 \lstinputlisting[caption=/etc/hosts]{/etc/hosts}
 
 
-And this is something to take note of...
+And this is something to take note of.
 
 \lstset{style=hack}
 \begin{lstlisting}
@@ -233,7 +227,7 @@ All of the project code and benchmark results are hosted in the following GitHub
 https://github.com/johnduffymsc/picluster
 \end{verbatim}
 
-This dissertation and the Jupyter Notebook used to generate the dissertation plots are hosted in the following GitHub repository.
+This dissertation TeX and PDF files, and the Jupyter Notebook used to generate the dissertation plots, are hosted in the following GitHub repository.
 
 \begin{verbatim}
 https://github.com/johnduffymsc/dissertation
