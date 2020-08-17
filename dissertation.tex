@@ -2102,58 +2102,68 @@ TODO: HOW TO COPY TO ALL NODES!
 
 \chapter{Arm Performance Libraries}
 
-\textcolor{red}{This does not work yet! HPL will build, but raises an illegal instruction error at runtime. At the time of writing, Arm Performance Libraries release 20.2.0 require a minimum of armv8.1-a. Unfortunately, the Raspberry Pi's Cortex-A72 cores are armv8.0-a. The next release will support armv8.0-a. Appendix included for future reference.}  
+\textcolor{red}{This does not work, yet! HPL will compile and link to Arm Performance Libraries, but raises an illegal instruction error at runtime.}
 
-"Arm Performance Libraries provides optimized standard core math libraries for high-performance computing applications on Arm processors. This free version of the libraries provides optimized libraries for Arm® Neoverse™ N1-based Armv8 AArch64 implementations that are compatible with various versions of GCC. You do not require a license for this version of the libraries."
+\textcolor{red}{At the time of writing, Arm Performance Libraries release 20.2.0 requires a minimum instruction set of armv8.1-a. Unfortunately, the Raspberry Pi's Cortex-A72 cores are armv8.0-a. An Arm representative has indicated on the Arm HPC Forum that the next release will support armv8.0-a.}
 
-Downloaded Arm Performance Libraries 20.2.0 with GCC 9.3 for Ubuntu 16.04+.
+\textcolor{red}{This Chapter is included for future reference.}
+
+The Arm Performance Libraries website states:
+
+"Arm Performance Libraries provides optimised standard core math libraries for high-performance computing applications on Arm processors. This free version of the libraries provides optimised libraries for Arm® Neoverse™ N1-based Armv8 AArch64 implementations that are compatible with various versions of GCC. You do not require a license for this version of the libraries."
+
+To install Arm Performance Libraries, firstly downloaded Arm Performance Libraries 20.2.0 with GCC 9.3 for Ubuntu 16.04+ from the Arm website.
+
+Then follow these instructions.
 
 \lstset{style=type}
 \begin{lstlisting}
 $ ssh node1
+\end{lstlisting}
+
+Install the required \verb|environment_modules| package.
+
+\lstset{style=type}
+\begin{lstlisting}
 $ sudo apt install environment-modules
-$ mkdir picluster/armpl
-$ cd picluster/armpl
+\end{lstlisting}
+
+Then extract and install Arm Performance Libraries.
+
+The default installation directory is /opt/arm.
+
+\lstset{style=type}
+\begin{lstlisting}
+$ mkdir ~/picluster/armpl
+$ cd ~/picluster/armpl
 $ tar xvf arm-performance-libraries_20.2_Ubuntu-16.04_gcc-9.3.tar
 $ rm arm-performance-libraries_20.2_Ubuntu-16.04_gcc-9.3.tar
 $ sudo ./arm-performance-libraries_20.2_Ubuntu-16.04.sh
 \end{lstlisting}
 
-The default installation directory is /opt/arm...
-
-TODO: CHANGE TO /usr/local + ldconfig
-
-Compile HPL with armpl...
+Copy the \verb|Make.picluster| configuration file.
 
 \lstset{style=type}
 \begin{lstlisting}
 $ cd ~/picluster/hpl/hpl-2.3
-$ cp Make.serial Make.armpl-serial
+$ cp Make.picluster Make.picluster-armpl
 \end{lstlisting}
 
-Edit Make.armpl-serial...
+Make the following changes to \verb|Make.picluster-armpl|.
 
 \lstset{style=listingstyle}
-\begin{lstlisting}[caption=Make.armpl-serial extract]
-# ----------------------------------------------------------------------
-# - Linear Algebra library (BLAS or VSIPL) -----------------------------
-# ----------------------------------------------------------------------
-# LAinc tells the  C  compiler where to find the Linear Algebra  library
-# header files,  LAlib  is defined  to be the name of  the library to be 
-# used. The variable LAdir is only used for defining LAinc and LAlib.
-#
+\begin{lstlisting}[caption=Make.picluster-armpl, numbers=none]
 LAdir        = /opt/arm/armpl_20.2_gcc-9.3
 LAinc        =
 LAlib        = -L$(LAdir)/lib -larmpl -lgfortran -lamath -lm
 \end{lstlisting}
 
-Compile HPL...
+Build HPL.
 
 \lstset{style=type}
-\begin{lstlisting}[]
-$ make arch=armpl-serial
+\begin{lstlisting}
+$ make arch=picluster-armpl
 \end{lstlisting}
-
 
 
 %
