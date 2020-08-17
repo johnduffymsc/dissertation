@@ -12,9 +12,19 @@
 %\definecolor{termcolor}{RGB}{1.0, 0.97, 0.86}
 %\definecolor{listingcolor}{RGB}{0.61, 0.87, 1.0}
 
-\lstdefinestyle{termstyle}{
+\lstdefinestyle{type}{
 frame=single,
 backgroundcolor=\color{Cornsilk},   
+basicstyle=\verbatim@font\small,
+numbers=none,
+tabsize=2,
+breaklines=true,
+postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space}
+}
+
+\lstdefinestyle{term}{
+frame=single,
+backgroundcolor=\color{Ivory},   
 basicstyle=\verbatim@font\small,
 numbers=none,
 tabsize=2,
@@ -108,7 +118,7 @@ The Raspberry Pi 2, released in 2015, introduced a quad-core 32-bit Arm Cortex-A
 
 In 2016, the Raspberry Pi 3 was released with a quad-core 64-bit Arm Cortex-A53 based SoC clocked at 1.2 GHz, together with 1 GB of RAM.
 
-The most recent addition to the range, in 2019, is the Raspberry Pi 4, sporting a quad-core 64-bit Cortex-A-72 based SoC clocked at 1.5 GHz. This model is available with 1, 2, 4 and 8 GB of RAM. This model with 4 GB of RAM has been used for this project.
+The most recent addition to the range, in 2019, is the Raspberry Pi 4, sporting a quad-core 64-bit Cortex-A-72 based SoC clocked at 1.5 GHz. This model is available with 1, 2, 4 and 8 GB of RAM. This model with 4 GB of RAM was used for this project.
 
 Since 2012 the official operating system for all Raspberry Pi models has been Raspbian, a Linux operating system based on Debian. Raspbian has recently been renamed Raspberry Pi OS. To support the aims of the Foundation, a number of educational software packages are bundled with Raspberry Pi OS. These include a "non-commercial use" version of Mathematica, and a graphical programming environment aimed a young children called Scratch.
 
@@ -117,7 +127,6 @@ Python is the official programming language, due to its popularity and ease of u
 Even though the Raspberry Pi 3 introduced a 64-bit processor, Raspberry Pi OS has remained a 32-bit operating system. However, to complement the introduction of the Raspberry Pi 4 with 8 GB of RAM, a 64-bit version is currently in public beta testing.
 
 Raspberry Pi OS is not the only operating system available for the Raspberry Pi. The Raspberry Pi website provides downloads for Raspberry Pi OS, and also NOOBS (New Out of the Box Software), together with a MicroSD card OS image burning tool called Raspberry Pi Imager. NOOBS and Raspberry Pi Imager make it easy to install operating systems such as Ubuntu, RISC OS, Windows 10 IoT Core, and more. Ubuntu 20.04 LTS 64-bit, the operating system used for this project, is available for download from the Ubuntu website, and is also available as an install option within Raspberry Pi Imager.
-
 
 \begin{figure}
 	\centering	
@@ -134,34 +143,38 @@ Raspberry Pi OS is not the only operating system available for the Raspberry Pi.
 Since the release of the Raspberry Pi 1, the Raspberry Pi has been available in a number of model variants and circuit board formats. The Model B of each release is the most powerful variant, intended for desktop use. The Model A is a simpler and cheaper variant intended for embedded projects. The models B+ and A+ designate an improvement to the current release hardware. The Raspberry Pi Zero is a tiny, inexpensive variant without most of the external connectors, designed for low power, possibly battery powered, embedded projects. The Raspberry Pi Compute Module is a stripped down version of the Raspberry Pi without any external connectors. This model is aimed at industrial applications and fits in a standard DDR2 SODIMM connector.
 
 
-
-
-
-
+%
+% SECTION
+%
 \section{Aims}
 
+
+%
+% SUB SECTION
+%
 \subsection{Benchmark Performance}
 
 The main aim of this project is to benchmark the performance of an 8 node Raspberry Pi 4 Model B cluster using standard HPC benchmarks. These benchmarks include High Performance Linpack (HPL), HPC Challenge (HPCC) and High Performance Conjugate Gradient (HPCG).
 
-OpenMPI, Hybrid OpenMPI/OpenMP...
+A pure OpenMPI topology was benchmarked, together with a hybrid OpenMPI/OpenMP topology.
 
 
+%
+% SECTION
+%
 \subsection{Performance Optimisations}
 
+Having determined a Baseline performance benchmark, opportunities for performance optimisations were investigated for a single core, single node and the whole cluster. Network optimisation was also investigated, and proved to be significant factor in overall cluster performance. 
 
 
+%
+% SECTION
+%
 \subsection{Investigate Gflops/Watt}
 
-Green500 ranking...
+The Green500 List ranks computer systems by energy efficiency, Gflops/Watt. In June 2020, ranking Number 1, the most energy-efficient system was the MN-3 by Preferred Networks in Japan, which achieved a record 21.1 Gigaflops/Watt. Ranking 200 was Archer at the University of Edinburgh, which achieved 0.497 Gflops/Watt.
 
-
-
-\subsection{Overview of Competitive Available Gflops/£}
-
-Buy lots of Pi's, or buy a bigger machine...
-
-Plot Gflops vs £...
+The final aim of this project was to investigate where the Aerin cluster might fair in relation to the Green500 List. 
 
 
 %
@@ -169,20 +182,23 @@ Plot Gflops vs £...
 %
 \section{Typography}
 
+This has been a very hands-on computing project with lots of Linux command line use. To enable a reader to replicate the cluster build and results, the Linux commands, output and file listings are included in the dissertation text, and colour coded as follows to aid readability.
+
 This is a computer name.
 
 \verb|node1|
 
 This is a command to type.
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}[]
 $ cat /proc/softirqs
 \end{lstlisting}
 
+
 This is the command output.
 
-\lstset{style=termstyle}
+\lstset{style=term}
 \begin{lstlisting}
                     CPU0       CPU1       CPU2       CPU3       
           HI:          1          0          0          1
@@ -196,6 +212,14 @@ This is the command output.
      HRTIMER:         67          0          0          0
          RCU:     604466     281455     260784     277699
 \end{lstlisting}
+
+This is a long command to type.
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ mpirun -bind-to-socket -host node1:1,node2:1,node3:1 -np 3 -x OMP_NUM_THREADS=4 xhpl
+\end{lstlisting}
+
 
 % TODO: Change to Ubuntu /etc/hosts...
 This is a file listing.
@@ -221,13 +245,13 @@ Something similar
 %
 \section{Project GitHub Repositories}
 
-All of the project code and benchmark results are hosted in the following GitHub repository.
+The project code and benchmark results are hosted in the following GitHub repository.
 
 \begin{verbatim}
 https://github.com/johnduffymsc/picluster
 \end{verbatim}
 
-This dissertation TeX and PDF files, and the Jupyter Notebook used to generate the dissertation plots, are hosted in the following GitHub repository.
+This dissertation TeX and PDF files, and the Jupyter Notebook used to generate the plots, are hosted in the following GitHub repository.
 
 \begin{verbatim}
 https://github.com/johnduffymsc/dissertation
@@ -407,7 +431,7 @@ Describe HPL.out...
 
 It is very easy to use \verb grep to find the lines in HPL.out containing the results. And to then conduct a general numeric sort, first by P and then by Gflops, to find Rmax for each P and Q pair, squeezing repeated white space down to a single space for readability.
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ grep WR HPL.out | sort -g -k 4 -k 7 | tr -s ' ' > HPL.out.sorted
 \end{lstlisting}
@@ -424,20 +448,20 @@ $ grep WR HPL.out | sort -g -k 4 -k 7 | tr -s ' ' > HPL.out.sorted
 
 To run xhpl using the serial version of OpenBLAS...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ ~/picluster/tools/picluster-set-libblas-openblas-serial
 \end{lstlisting}
 
 or, with the serial version of BLIS...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ ~/picluster/tools/picluster-set-libblas-blis-serial
 \end{lstlisting}
 
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 cd ~/picluster/hpl/hpl-2.3/bin/serial
 mpirun -np 4 xhpl
@@ -519,7 +543,7 @@ NB 32 to 256 in increments of 8...
 	\end{tabular}
 \end{center}
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ mpirun -bind-to-core -host node1:1 -np 1 xhpl
 \end{lstlisting}
@@ -574,7 +598,7 @@ A single core is capable of achieving maximum theoretical performance... CAVEATS
 	\end{tabular}
 \end{center}
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}[]
 $ mpirun -bind-to-core -host node1:4 -n 4 xhpl
 \end{lstlisting}
@@ -584,7 +608,7 @@ Explain bind to core...
 mpirun does bind to socket by default for $np \geq 2$
 
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}[]
 $ mpirun -bind-to-socket -host node1:1 -x OMP_NUM_THREADS=4 -n 1 xhpl
 \end{lstlisting}
@@ -858,7 +882,7 @@ RESULTS...
 %
 \subsubsection{Recieve Queues}
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ sudo perf record mpirun -allow-run-as-root -np 4 xhpl
 \end{lstlisting}
@@ -867,7 +891,7 @@ $ sudo perf record mpirun -allow-run-as-root -np 4 xhpl
 
 Running xhpl on 8 nodes using OpenBLAS...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ mpirun -host node1:4 ... node8:4 -np 32 xhpl
 \end{lstlisting}
@@ -879,7 +903,7 @@ On node1,... where we initiated...
 
 top...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 top - 20:33:15 up 8 days,  6:02,  1 user,  load average: 4.02, 4.03, 4.00
 Tasks: 140 total,   5 running, 135 sleeping,   0 stopped,   0 zombie
@@ -903,14 +927,14 @@ IPERF!!!
 
 On node8, running the top command...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ top
 \end{lstlisting}
 
 We can see...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 top - 18:58:44 up 8 days,  4:29,  1 user,  load average: 4.00, 3.75, 2.35
 Tasks: 133 total,   5 running, 128 sleeping,   0 stopped,   0 zombie
@@ -931,13 +955,13 @@ I hypothesise that the 1.4\% of software interrupts (si) is responsible 47.8\% o
 
 Lets have a look at the software interrupts on the system...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ watch -n 1 cat /proc/softirqs
 \end{lstlisting}
 
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 Every 1.0s: cat /proc/softirqs
 
@@ -978,14 +1002,14 @@ What is there to be done?...
 
 On node2 start the Iperf server...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ iperf -s
 \end{lstlisting}
 
 On node1 start the Iperf client...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ iperf -c
 \end{lstlisting}
@@ -1006,13 +1030,13 @@ iperf network speed...
 Requires a network switch capable of Jumbo frames...
 
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ ip link show eth0
 \end{lstlisting}
 
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000
     link/ether dc:a6:32:60:7b:cd brd ff:ff:ff:ff:ff:ff
@@ -1020,25 +1044,25 @@ $ ip link show eth0
 
 
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ ping -c 1 -s 1500 -M do node2
 \end{lstlisting}
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 PING node2 (192.168.0.2) 1500(1528) bytes of data.
 ping: local error: message too long, mtu=1500
 \end{lstlisting}
 
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ ping -c 1 -s 1472 -M do node2
 \end{lstlisting}
 
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 PING node2 (192.168.0.2) 1472(1500) bytes of data.
 1480 bytes from node2 (192.168.0.2): icmp_seq=1 ttl=64 time=0.392 ms
@@ -1047,28 +1071,28 @@ PING node2 (192.168.0.2) 1472(1500) bytes of data.
 
 Trying to set the MTU to 9000 bytes...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ sudo ip link set eth0 mtu 9000 
 \end{lstlisting}
 
 ... results with...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 Error: mtu greater than device maximum.
 \end{lstlisting}
 
 In fact, attempting to set the MTU to anything greater than 1500 bytes...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ sudo ip link set eth0 mtu 1501 
 \end{lstlisting}
 
 ... results with...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 Error: mtu greater than device maximum.
 \end{lstlisting}
@@ -1078,34 +1102,34 @@ Need to build a kernel with Jumbo frame support...
 
 See Appendix ?...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ ip link show eth0
 \end{lstlisting}
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9000 qdisc mq state UP mode DEFAULT group default qlen 1000
     link/ether dc:a6:32:60:7b:cd brd ff:ff:ff:ff:ff:ff
 \end{lstlisting}
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ ping -c 1 -s 9000 -M do node2
 \end{lstlisting}
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 PING node2 (192.168.0.2) 9000(9028) bytes of data.
 ping: local error: message too long, mtu=9000
 \end{lstlisting}
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ ping -c 1 -s 8972 -M do node2
 \end{lstlisting}
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 PING node2 (192.168.0.2) 8972(9000) bytes of data.
 8980 bytes from node2 (192.168.0.2): icmp_seq=1 ttl=64 time=0.847 ms
@@ -1114,19 +1138,19 @@ PING node2 (192.168.0.2) 8972(9000) bytes of data.
 
 On \verb|node2| create the \verb|Iperf| server...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ iperf -s
 \end{lstlisting}
 
 On \verb|node1| create and run the \verb|Iperf| client...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ iperf -i 1 -c node2
 \end{lstlisting}
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 ------------------------------------------------------------
 Client connecting to node2, TCP port 5001
@@ -1165,14 +1189,14 @@ net.ipv4.route.flush = 1
 \end{lstlisting}
 
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 sudo sysctl --system
 \end{lstlisting}
 
 or
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 sudo shutdown -r now
 \end{lstlisting}
@@ -1180,7 +1204,7 @@ sudo shutdown -r now
 
 
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 Aug 11 03:35:40 node5 kernel: [19256.425779] bcmgenet fd580000.ethernet eth0: bcmgenet_xmit: tx ring 1 full when queue 2 awake
 \end{lstlisting}
@@ -1264,14 +1288,14 @@ On \verb\macbook\, using your favourite editor, add the following to /etc/hosts:
 
 This enables...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}[]
 $ ssh john@node1
 \end{lstlisting}
 
 or, the abbreviated...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}[]
 $ ssh node1
 \end{lstlisting}
@@ -1364,7 +1388,7 @@ Our public key was installed on each node by cloud-init. So, we can ssh into eac
 
 We need to copy our private key to node1 (only node1)...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ scp ~/.ssh/id_rsa node1:~/.ssh
 \end{lstlisting}
@@ -1373,21 +1397,21 @@ Then to enable access to nodes node2 to node9 without a password from node1, we 
 
 This is easily done. From \verb|macbook|...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}[]
 $ ssh node1
 \end{lstlisting}
 
 And then from node1, for \verb|node2| to \verb|node9|...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}[]
 $ ssh node2
 \end{lstlisting}
 
 This will generate will generate a message similar to...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}[]
 The authenticity of host 'node2 (192.168.0.2)' can't be established.
 ECDSA key fingerprint is SHA256:5VgsnN2nPvpfbJmALh3aJdOeT/NvDXqN8TCreQyNaFA.
@@ -1398,7 +1422,7 @@ Respond yes to this, which imports the host key into the \verb|~/.ssh/knownhosts
 
 And then exit from the connected node...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}[]
 $ exit
 \end{lstlisting}
@@ -1422,7 +1446,7 @@ Remove...
 
 From \verb|macbook|:
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}[]
 $ ssh node1
 $ ~/picluster/tools/do "sudo apt remove unattended-upgrades"
@@ -1430,7 +1454,7 @@ $ ~/picluster/tools/do "sudo apt remove unattended-upgrades"
 
 Don't forget to upgrade your cluster regularly at convenient times with...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}[]
 $ ssh node1
 $ ~/picluster/tools/upgrade
@@ -1441,7 +1465,7 @@ $ ~/picluster/tools/upgrade
 
 We are going to be rebuilding some packages from source...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}[]
 $ ssh node1
 $ sudo touch /etc/apt/sources/list.d/picluster.list
@@ -1458,7 +1482,7 @@ deb-src http://archive.ubuntu.com/ubuntu focal-updates main universe
 
 ... and then update the repository cache...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}[]
 $ sudo apt update
 \end{lstlisting}
@@ -1469,7 +1493,7 @@ $ sudo apt update
 
 Xpand upon...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}[]
 $ ssh node1
 $ mkdir picluster
@@ -1494,12 +1518,12 @@ The \verb|cloud-init| process will have installed four BLAS libraries, namely...
 
 To query the BLAS library currently in use on each node we can use one of our Pi Cluster tools...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}[]
 $ ~/picluster/tools/libblas-query
 \end{lstlisting}
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}[]
 node8... /usr/lib/aarch64-linux-gnu/openblas-openmp/libblas.so.3
 node7... /usr/lib/aarch64-linux-gnu/openblas-openmp/libblas.so.3
@@ -1513,12 +1537,12 @@ node1... /usr/lib/aarch64-linux-gnu/openblas-openmp/libblas.so.3
 
 To select an alternative library we can use another of our Pi Cluster tools...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}[]
 $ ~/picluster/tools/libblas-set blis-serial
 \end{lstlisting}
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}[]
 node8... done
 node7... done
@@ -1530,12 +1554,12 @@ node2... done
 node1... done 
 \end{lstlisting}
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}[]
 $ ~/picluster/tools/libblas-query
 \end{lstlisting}
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}[]
 node8... /usr/lib/aarch64-linux-gnu/blis-serial/libblas.so.3
 node7... /usr/lib/aarch64-linux-gnu/blis-serial/libblas.so.3
@@ -1555,7 +1579,7 @@ node1... /usr/lib/aarch64-linux-gnu/blis-serial/libblas.so.3
 
 Download and install the latest version of HPL on \verb|node1|...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ ssh node1
 $ cd ~/picluster
@@ -1570,7 +1594,7 @@ $ cd hpl-2.3
 
 Create a \verb|Make.picluster| file...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ cd setup
 $ bash make_generic
@@ -1585,7 +1609,7 @@ Amend \verb|Make.picluster| as per listing ???.
 
 Build HPL...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ make arch=picluster   
 \end{lstlisting}
@@ -1594,7 +1618,7 @@ This creates the executable \verb|xhpl| and input file \verb|HPL.dat| in \verb|b
 
 The \verb|xhpl| executable has to exist in the same location on each node, so copy \verb|xhpl| to \verb|node2| to \verb|node8| (only \verb|xhpl|, and not \verb|HPL.dat|)...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ cd bin/picluster
 $ ~/picluster/tools/do "mkdir -p picluster/hpl/hpl-2.3/bin/picluster"
@@ -1617,7 +1641,7 @@ These instructions are derived from the README.txt file in the top level directo
 
 Download and install the latest version of HPCC on \verb|node1|...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ ssh node1
 $ cd ~/picluster
@@ -1632,7 +1656,7 @@ $ cd hpcc-1.5.0
 
 Copy the HPL build script \verb|Make.picluster| to the \verb|hpl| directory...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ cd hpl
 $ cp ~/picluster/hpl/hpl-2.3/Make.picluster .
@@ -1663,21 +1687,21 @@ CCFLAGS = $(HPL_DEFS) -O3 -march=armv8-a -mtune=cortex-a72 -DOMPI_OMIT_MPI1_COMP
 
 Now move back up into the top level directory...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ cd ..
 \end{lstlisting}
 
 Build HPCC...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ make arch=picluster
 \end{lstlisting}
 
 Copy the \verb|hpcc| executable to all of the nodes...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ ~/picluster/tools/do "mkdir -p ~/picluster/hpcc/hpcc-1.5.0"
 $ scp hpcc node2:~/picluster/hpcc/hpcc-1.5.0
@@ -1691,7 +1715,7 @@ $ scp hpcc node8:~/picluster/hpcc/hpcc-1.5.0
 
 Create the input file \verb|hpccinf.txt|...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ cp _hpccinf.txt hpccinf.txt
 \end{lstlisting}
@@ -1700,7 +1724,7 @@ And amend as necessary. An input file which uses 80\% of the total cluster memor
 
 To run HPCC across all 8 nodes...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ mpirun -host node1:4,node2:4,...node7:4,node8:4 -np 32 hpcc
 \end{lstlisting}
@@ -1727,7 +1751,7 @@ Make sure you have made the source code repositories available as per...
 
 Create a kernel build directory with the correct directory permissions to prevent source download warnings. 
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ ssh node1
 $ mkdir -p ~/picluster/build/kernel
@@ -1737,14 +1761,14 @@ $ cd ~/picluster/build/kernel
 
 Install the kernel build dependencies...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ sudo apt-get build-dep linux linux-image-$(uname -r)
 \end{lstlisting}
 
 Download the kernel source...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ sudo apt-get source linux-image-$(uname -r)
 $ cd linux-raspi-5.4.0
@@ -1752,7 +1776,7 @@ $ cd linux-raspi-5.4.0
 
 This bit is a fix for the subsequent \verb|editconfigs| step of the build procedure...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ cd debian.raspi/etc
 $ sudo cp kernelconfig kernelconfig.original
@@ -1771,14 +1795,14 @@ And make the following change...
 
 Then move back up to the kernel source top level directory...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ cd ../..
 \end{lstlisting}
 
 Prepare the build scripts...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ sudo chmod a+x debian/rules
 $ sudo chmod a+x debian/scripts/*
@@ -1787,7 +1811,7 @@ $ sudo chmod a+x debian/scripts/misc/*
 
 SOURCE CHANGES AND/OR verb|editconfigs| AT THIS POINT
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ sudo apt install libncurses-dev
 $ sudo LANG=C fakeroot debian/rules clean
@@ -1796,7 +1820,7 @@ $ sudo LANG=C fakeroot debian/rules editconfigs
 
 Tweak the kernel name for identification...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ cd debian.raspi
 $ sudo cp changelog changelog.original
@@ -1815,14 +1839,14 @@ And make the following change, where \verb|+picluster0| is our kernel identifier
 
 Move up to the top level kernel source directory...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ cd ..
 \end{lstlisting}
 
 And build the kernel...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ sudo LANG=C fakeroot debian/rules clean
 $ sudo LANG=C fakeroot debian/rules binary-arch
@@ -1831,7 +1855,7 @@ cd ..
 
 Install the new kernel...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ sudo dpkg -i linux*picluster0*.deb
 $ sudo shutdown -r now
@@ -1841,7 +1865,7 @@ Another build procedure fix...
 
 After each kernel build delete the \verb|linux-libc-dev| directory...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ cd ~/picluster/build/kernel/linux-raspi-5.4.0/debian
 $ rm -rf linux-libc-dev
@@ -1910,7 +1934,7 @@ Add a Jumbo Frames identifier, "+jf", to the new kernel name...
 %
 \chapter{Rebuild OpenBLAS}
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ ssh node1
 $ mkdir -p build/openblas
@@ -1924,19 +1948,19 @@ $ cd openblas-0.3.8+ds
 
 Edit cpuid\_arm64.c...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ sudo cp cpuid_arm64.c cpuid_arm64.c.original
 $ sudo vim cpuid_arm64.c
 \end{lstlisting}
 
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ diff cpuid_arm64.c cpuid_arm64.c.original
 \end{lstlisting}
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 275c275
 <       printf("#define L2_SIZE 1048576\n");
@@ -1951,14 +1975,14 @@ $ diff cpuid_arm64.c cpuid_arm64.c.original
 
 And, then following the instructions in debian/README.Debian
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ DEB_BUILD_OPTIONS=custom dpkg-buildpackage -uc -b
 \end{lstlisting}
 
 Once the build is complete..
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 cd ..
 $ sudo apt remove libopenblas0-serial
@@ -1967,7 +1991,7 @@ $ sudo dpkg -i libopenblas0-serial\_0.3.8+ds-1\_arm64.deb
 
 Ensure the correct BLAS library is being used...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ sudo update-alternatives --config libblas.so.3-aarch64-linux-gnu
 \end{lstlisting}
@@ -1979,7 +2003,7 @@ install new...
 If more than one BLAS library is installed, check update-alternatives!!!
 
 ssh node2 .. node8
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ ssh node2 sudo apt remove libblas0-serial
 $ scp libopenblas0-serial\_0.3.8+ds-1\_arm64.deb node2:~
@@ -1993,7 +2017,7 @@ $ ssh sudo update-alternatives --config libblas.so.3-aarch64-linux-gnu
 %
 \chapter{Rebuild BLIS}
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ ssh node1
 $ mkdir -p picluster/build/blis
@@ -2012,14 +2036,14 @@ $ cd blis-0.6.1
 
 Do all of this on node1...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ ssh node1
 \end{lstlisting}
 
 We want to avoid collisions with multiple OpenMPI installations, so remove original installed version...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ sudo apt remove openmpi-common
 $ sudo apt remove openmpi-bin
@@ -2028,14 +2052,14 @@ $ sudo apt autoremove
 
 OpenMPI requires the libevent-dev package...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ sudo apt install libevent-dev
 \end{lstlisting}
 
 Create a build directory, and download and, and and following BLAH, BLAH build OpenMPI...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ mkdir -p ~/picluster/build/openmpi
 $ cd ~/picluster/build/openmpi
@@ -2084,7 +2108,7 @@ TODO: HOW TO COPY TO ALL NODES!
 
 Downloaded Arm Performance Libraries 20.2.0 with GCC 9.3 for Ubuntu 16.04+.
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ ssh node1
 $ sudo apt install environment-modules
@@ -2101,7 +2125,7 @@ TODO: CHANGE TO /usr/local + ldconfig
 
 Compile HPL with armpl...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}
 $ cd ~/picluster/hpl/hpl-2.3
 $ cp Make.serial Make.armpl-serial
@@ -2125,7 +2149,7 @@ LAlib        = -L$(LAdir)/lib -larmpl -lgfortran -lamath -lm
 
 Compile HPL...
 
-\lstset{style=termstyle}
+\lstset{style=type}
 \begin{lstlisting}[]
 $ make arch=armpl-serial
 \end{lstlisting}
