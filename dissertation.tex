@@ -79,20 +79,11 @@ tabsize=2
 %
 \section{Arm}
 
-Big picture paragraph...
-Billions of chip... 
-Microsoft...
-Apple...
-Internet + mobile... battery live
+Since the release of the Acorn Computers Arm1 in 1985, as a second coprocessor for the BBC Micro, through to powering today's fastest supercomputer, the Japanese 8 million core Fugaku supercomputer, Arm has steadily grown to become a dominant force in the microprocessor industry, with more than 170+ billion Arm-based processors shipped to date.
 
-From small acorns...
+Famed for power efficiency, which directly equates to battery life, Arm-based processors dominate the mobile device market for phones and tablets. And market segments which have almost exclusively been based upon x86 processors from Intel or AMD are also increasingly turning to Arm-based processors. Microsoft's current flagship laptop, the Surface Pro X, released in October 2019, is based on a Microsoft designed Arm-based processor. And Apple announced in June 2020 a roadmap to transition all Apple devices to Apple designed Arm-based processors within 2 years.
 
-ARM1...
-RISC vs CISC...
-Transistor count...
-Required < 1 Watt for plastic packaging, cost... actually 0.1 Watt...
-Powered by input voltages...
-Low power was not a primary design criteria, it was a sup 
+When Acorn engineers designed the Arm1, and subsequently the Arm2 for the Acorn Archimedes personal computer, low power consumptions was not the primary design criteria. Their focus was on simplicity of design. Influenced by research projects at Stanford University and the University of California, Berkeley, their focus was on producing a Reduced Instruction Set Computer (RISC). In comparison to a contemporary Complicated Instruction Set Computer (CISC), the simplicity of a RISC design required fewer transistors, which directly translated to a lower power consumption. The RISC design permitted the Arm2 to outperform the Intel 80286, a contemporary CISC design, whilst using less power. 
 
 
 %
@@ -120,6 +111,12 @@ In 2016, the Raspberry Pi 3 was released with a quad-core 64-bit Arm Cortex-A53 
 
 The most recent addition to the range, in 2019, is the Raspberry Pi 4, sporting a quad-core 64-bit Cortex-A-72 based SoC clocked at 1.5 GHz. This model is available with 1, 2, 4 and 8 GB of RAM. This model with 4 GB of RAM was used for this project.
 
+\begin{figure}
+	\centering	
+	\includegraphics[width=1.0\textwidth]{images/raspberry-pi-zero.jpeg}
+	\caption{The Raspberry Pi Zero.}
+\end{figure}
+
 Since 2012 the official operating system for all Raspberry Pi models has been Raspbian, a Linux operating system based on Debian. Raspbian has recently been renamed Raspberry Pi OS. To support the aims of the Foundation, a number of educational software packages are bundled with Raspberry Pi OS. These include a "non-commercial use" version of Mathematica, and a graphical programming environment aimed a young children called Scratch.
 
 Python is the official programming language, due to its popularity and ease of use, and the inclusion of an easy to use Python IDE has been a Foundation priority. This is currently Thonny. 
@@ -127,12 +124,6 @@ Python is the official programming language, due to its popularity and ease of u
 Even though the Raspberry Pi 3 introduced a 64-bit processor, Raspberry Pi OS has remained a 32-bit operating system. However, to complement the introduction of the Raspberry Pi 4 with 8 GB of RAM, a 64-bit version is currently in public beta testing.
 
 Raspberry Pi OS is not the only operating system available for the Raspberry Pi. The Raspberry Pi website provides downloads for Raspberry Pi OS, and also NOOBS (New Out of the Box Software), together with a MicroSD card OS image burning tool called Raspberry Pi Imager. NOOBS and Raspberry Pi Imager make it easy to install operating systems such as Ubuntu, RISC OS, Windows 10 IoT Core, and more. Ubuntu 20.04 LTS 64-bit, the operating system used for this project, is available for download from the Ubuntu website, and is also available as an install option within Raspberry Pi Imager.
-
-\begin{figure}
-	\centering	
-	\includegraphics[width=1.0\textwidth]{images/raspberry-pi-zero.jpeg}
-	\caption{The Raspberry Pi Zero.}
-\end{figure}
 
 \begin{figure}
 	\centering	
@@ -220,6 +211,7 @@ This is a long command to type.
 $ mpirun -bind-to-socket -host node1:1,node2:1,node3:1 -np 3 -x OMP_NUM_THREADS=4 xhpl
 \end{lstlisting}
 
+Yes, in the command above, it is possible to reduce typing by putting the host data in a \verb|hostfile|, but this illustrates the typography.
 
 % TODO: Change to Ubuntu /etc/hosts...
 This is a file listing.
@@ -2104,7 +2096,7 @@ TODO: HOW TO COPY TO ALL NODES!
 
 \textcolor{red}{This does not work, yet! HPL will compile and link to Arm Performance Libraries, but raises an illegal instruction error at runtime.}
 
-\textcolor{red}{At the time of writing, Arm Performance Libraries release 20.2.0 requires a minimum instruction set of armv8.1-a. Unfortunately, the Raspberry Pi's Cortex-A72 cores are armv8.0-a. An Arm representative has indicated on the Arm HPC Forum that the next release will support armv8.0-a.}
+\textcolor{red}{At the time of writing, Arm Performance Libraries release 20.2.0 requires a minimum Instruction Set Architecture (ISA) of armv8.1-a. Unfortunately, the Raspberry Pi's Cortex-A72 ISA is armv8.0-a. An Arm representative has indicated on the Arm HPC Forum that the next release of the libraries will support the armv8.0-a ISA.}
 
 \textcolor{red}{This Chapter is included for future reference.}
 
