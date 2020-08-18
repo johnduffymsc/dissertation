@@ -270,6 +270,8 @@ https://github.com/johnduffymsc/dissertation
 %
 \section{Description}
 
+Detailed build instructions for the Aerin Cluster are included in Part II Chapter 7. This chapter describes the components of the cluster, and includes some advice and lessons learned.
+
 Photo...
 
 The Aerin Cluster consists of the following hardware and software components.
@@ -286,16 +288,20 @@ The Aerin Cluster consists of the following hardware and software components.
   \item 9 x Official Raspberry Pi 4 USB-C Power Supplies (5.1V, 3A)
   \item 9 x Class 10 MicroSD cards
   \item 9 x Heatsinks with integrated fans
-  \item 1 x 8 Port Gigabit Router/Firewall
-  \item 1 x 16 Port Gigabit Switch with Jumbo Frame support
+  \item 1 x Netgear FVS318G 8 Port Gigabit Router/Firewall
+  \item 1 x Netgear GS316 16 Port Gigabit Switch (with Jumbo Frame support)
   \item Cat 7 Cabling (Minimum Cat 5e for Gigabit Ethernet)
 \end{itemize}
 
 The 9 x Raspberry Pi 4 are the 4GB RAM version. Recently, an 8GB RAM version became available, which would be the preferred version for a future cluster.   
 
-Some benchmarks take a substantial amount of time to run, so it is helpful to have a dedicated build node for compiling software, developing scripts, etc, whilst the benchmarks run on dedicated compute nodes.
+Some benchmarks require a substantial amount of time to run, so it is helpful to have a dedicated build node for compiling software, developing scripts, etc, while the benchmarks run on dedicated compute nodes. This is \verb|node9|.
+
+It is convenient to have a compute node designated the ``master'' node (there is a convenience and not a requirement). This is \verb|node1|. If any software needs to compiled locally to the compute nodes, and not on the build node, then the ``master'' node is used to do this. This node is also used to mirror the GitHub repository and to run the various Pi Cluster Tools. 
 
 The Raspberry Pi 4 is sensitive to voltage drops, especially whilst booting. So it was decided to purchase 9 Official Raspberry Pi 4 power supplies, rather than a USB hub with multiple power outlets which may not have been able to maintain its output voltage whilst booting 9 nodes. The 9 power supplies do take up some space, so a future development would be to investigate a suitably rated USB hub.
+
+Class 10 MicroSD cards...
 
 Cooling is a major consideration when building any cluster, even an 8 node Raspberry Pi cluster. The Raspberry Pi 4 throttles back the clock speed at approximately 85\degree C, which would not only have had a negative impact on benchmark results, but also on repeatability. So, it was very important to select suitable cooling. After some investigation, it was decided to purchase heatsinks with integrated fans. These proved to be very successful, with no greater than 65\degree C observed at any time, even with 100\% CPU utilisation for many hours. 
 
@@ -303,9 +309,20 @@ As we shall see, the Raspberry Pi 4 has very good Ethernet networking capabiliti
 
 The MTU is the network packet payload size in bytes, i.e. the size of your data that is transmitted in a single network packet. It is actually 28 bytes less than the MTU due to network protocol overhead. We shall see later how a larger MTU can improve network efficiency and improve benchmark performance.
 
-This brings us on to network equipment and cabling. Having seen that the Raspberry Pi 4 is capable of full Gigabit Ethernet, it is important that we make full use of it. It would be tempting to use any old router/firewall, switch, and cabling found lurking around in some dusty cupboard. This would be a mistake, and potentially cripple the cluster network. Courtesy of Ebay, I acquired a professional quality router/firewall and switch for less than £30 each. And the switch supports Jumbo Frames up to 9000 bytes, which we will be making use of.
+This brings us on to network equipment and cabling. Having seen that the Raspberry Pi 4 is capable of full Gigabit Ethernet, it is important that we make full use of it. It would be tempting to use any old router/firewall, switch, and cabling found lurking around in some dusty cupboard. This would be a mistake, and potentially cripple the cluster network. Courtesy of Ebay, I acquired a professional grade router/firewall and switch for less than £30 each. And the switch supports Jumbo Frames up to 9000 bytes, which we will be making use of.
 
-A Jumbo Frame is any MTU greater than 1500 bytes. There is no standard maximum size for a Jumbo Frame, but the norm seems to be 9000 bytes.
+A Jumbo Frame is any MTU greater than 1500 bytes. There is no standard maximum size for a Jumbo Frame, but the norm seems to be 9000 bytes. Not all network devices support Jumbo Frames, and a change of MTU size from the default 1500 bytes has to be supported by all devices on the network (although some devices are smart enough to accommodate multiple MTU's).
+
+The router/firewall acts a cluster interface to the outside world. In my home environment the WAN (Wide Area Network) side of the router/firewall is connected to my ADSL router via an ethernet cable. This permits the compute nodes on the LAN (Local Area Network) side of the firewall to connect to the internet and download updates. When relocated to UCL, the WAN side of the router/firewall would be connected to the internal UCL network.
+
+The router/firewall exposes a single IP address for the cluster to the WAN. Access from the outside world to the cluster is through this single IP address via SSH which is routed to \verb|node1|. The router/firewall also acts as DHCP (Dynamic Host Configuration Protocol) server for the compute node LAN. Compute node hostnames, such as \verb|node1| etc, are configured by a boot script which determines the node hostname from the last octet of the node IP address, served by the DHCP server based on the MAC address. This ensures that each compute node is always assigned the same LAN IP address and hostname across reboots. It sounds more complicated than it actually is, and is easily setup through the router/firewall web-based setup. More details are in Part II Chapter 7.
+
+The switch acts as an extension to the number of LAN port on the router/firewall. And because it supports Jumbo Frames it can accommodate an MTU increase to 9000 bytes local to the compute nodes.
+
+My initial build of the Aerin Cluster only used the 8 port Gigabit Router/Firewall. Only having 8 ports quickly became tiresome, so a 5 port switch was added so that I could directly connect \verb|node9| and my \verb|macbook| to the compute nodes without having to \verb|SSH| through the firewall. Later, when it became apparent that the 5 port switch didn't support Jumbo Frames, this was replaced with the current 16 port switch. I did anticipate having to replace the Router/Firewall because it doesn't support Jumbo Frames, but the switch is sufficiently smart to route 9000 byte packets between the compute nodes, and fragment any packets to/from the outside world, through the Router/Firewall, into 1500 byte packets.
+
+Cat 5 network cables support only 100 Mbit/s networking, and without any electrical shielding. Cat 5e supports 1 Gbit/s without shielding. Cat 6 supports 1 Gbit/s, possibly with shielding depending on the cable. Cat 6a and Cat 7 support 10 Gbit/s with electrical shielding. To ensure maximum use of the network capabilities of the Raspberry Pi 4, a minimum of Cat 5e cabling must be used. Because the Aerin Cluster cable lengths are relatively short, and therefore inexpensive, I opted to use CAT 7 cabling. My advice would be to do the same for any future clusters. Any performance limiting factor is then not the cabling. If you need to use old cable, check the labelling!  
+
 
 
 %
