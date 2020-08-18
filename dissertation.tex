@@ -8,6 +8,7 @@
 \usepackage{float}
 \usepackage[]{caption}
 \usepackage[]{subcaption}
+\usepackage{gensymb}
 
 %\definecolor{termcolor}{RGB}{1.0, 0.97, 0.86}
 %\definecolor{listingcolor}{RGB}{0.61, 0.87, 1.0}
@@ -263,13 +264,58 @@ https://github.com/johnduffymsc/dissertation
 %
 \chapter{The Aerin Cluster}
 
-\section{Raspberry Pi 4 Model B}
 
-\subsection{Description}
+%
+% SECTION
+%
+\section{Description}
 
 Photo...
 
-Description...
+The Aerin Cluster consists of the following hardware and software components.
+
+
+%
+% SUB SECTION
+%
+\subsection{Hardware}
+
+\begin{itemize}
+  \item 8 x Raspberry Pi 4 Model B compute nodes, \verb|node1| to \verb|node8|
+  \item 1 x Raspberry Pi 4 Model B build node, \verb|node9|
+  \item 9 x Official Raspberry Pi 4 USB-C Power Supplies (5.1V, 3A)
+  \item 9 x Class 10 MicroSD cards
+  \item 9 x Heatsinks with integrated fans
+  \item 1 x 8 Port Gigabit Router/Firewall
+  \item 1 x 16 Port Gigabit Switch with Jumbo Frame support
+  \item Cat 7 Cabling (Minimum Cat 5e for Gigabit Ethernet)
+\end{itemize}
+
+The 9 x Raspberry Pi 4 are the 4GB RAM version. Recently, an 8GB RAM version became available, which would be the preferred version for a future cluster.   
+
+Some benchmarks take a substantial amount of time to run, so it is helpful to have a dedicated build node for compiling software, developing scripts, etc, whilst the benchmarks run on dedicated compute nodes.
+
+The Raspberry Pi 4 is sensitive to voltage drops, especially whilst booting. So it was decided to purchase 9 Official Raspberry Pi 4 power supplies, rather than a USB hub with multiple power outlets which may not have been able to maintain its output voltage whilst booting 9 nodes. The 9 power supplies do take up some space, so a future development would be to investigate a suitably rated USB hub.
+
+Cooling is a major consideration when building any cluster, even an 8 node Raspberry Pi cluster. The Raspberry Pi 4 throttles back the clock speed at approximately 85\degree C, which would not only have had a negative impact on benchmark results, but also on repeatability. So, it was very important to select suitable cooling. After some investigation it was decided to purchase heatsinks with integrated fans. These proved to be very successful, with no greater than 65\degree C observed at any time, with 100\% CPU utilisation for many hours at a time. 
+
+
+
+
+%
+% SUB SECTION
+%
+\subsection{Software}
+
+\begin{itemize}
+  \item The individual entries are indicated with a black dot, a so-called bullet.
+  \item The text in the entries may be of any length.
+\end{itemize}
+
+
+
+
+Photo...
 
 Highlights...
 
@@ -289,38 +335,17 @@ Limitations...
 
 Software/update management...
 
-Next PXE/NFS boot...
-
 Cluster management tools
 
 BLAS libraries...
 
 BLAS library management... update-alternatives --config libblas.so.3-aarch64-linux-gnu
 
+
+\subsection{Pi Cluster Tools}
+
 picluster/tools... appendix ?... use from node1...
 
-
-\subsection{Theoretical Maximum Performance (Gflop/s)}
-
-The Raspberry Pi 4 Model B uses the Broadcom BCM2711 System on a Chip (Soc).
-
-Block diagram from Cortex-A72 Software Optimisation Guide
-
-4 cores
-
-1.5 GHz
-
-128 bit SIMD
-
-4 GB memory (our chosen model)
-
-Caches...
-
-Pipeline...
-
-Simplistically, ...
-
-This ignores instructions pipelining benefits...
 
 
 %
@@ -483,6 +508,35 @@ HPCG...
 \chapter{Benchmarking the Aerin Cluster}
 
 
+%
+% SECTION
+%
+\section{Theoretical Maximum Performance (Gflop/s)}
+
+The Raspberry Pi 4 Model B is based on the Broadcom BCM2711 System on a Chip (SoC).
+
+Block diagram from Cortex-A72 Software Optimisation Guide
+
+4 cores
+
+1.5 GHz
+
+128 bit SIMD
+
+4 GB memory (our chosen model)
+
+Caches...
+
+Pipeline...
+
+Simplistically, ...
+
+This ignores instructions pipelining benefits...
+
+
+%
+% SECTION
+%
 \section{OpenMPI Baseline}
 
 Ubuntu 20.04 LTS 64-bit packages, without any tweaks...
@@ -507,7 +561,9 @@ Methodology...
 1..8 nodes ... to investigate over scaling of performance with node count... with optimal N, NB, P and Q parameters determined from 2 node investigation... caveats...
 
 
-
+%
+% SUB SECTION
+%
 \subsection{1 Core Baseline}
 
 \begin{figure}[h]
@@ -627,6 +683,9 @@ $ mpirun -bind-to-socket -host node1:1 -x OMP_NUM_THREADS=4 -n 1 xhpl
 
 
 
+%
+% SUB SECTION
+%
 \subsection{2 Node Baseline}
 
 P1 x Q8
@@ -656,7 +715,10 @@ P2 x Q4
 \end{figure}
 
 
-\subsection{8 Node Baseline}
+%
+% SUB SECTION
+%
+\subsection{Cluster Baseline}
 
 1x32
 2x16
@@ -669,7 +731,9 @@ P2 x Q4
 \end{figure}
 
 
-
+%
+% SUB SECTION
+%
 \subsection{Observations}
 
 Best NB...
@@ -697,6 +761,22 @@ Suggests... improve network efficiency?
 \section{Hybrid OpenMPI/OpenMP Baseline}
 
 
+%
+% SUB SECTION
+%
+\subsection{1 Core Baseline}
+
+
+%
+% SUB SECTION
+%
+\subsection{1 Node Baseline}
+
+
+%
+% SUB SECTION
+%
+\subsection{Cluster Baseline}
 
 
 
