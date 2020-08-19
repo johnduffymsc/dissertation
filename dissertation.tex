@@ -286,7 +286,7 @@ The Aerin Cluster consists of the following hardware and software components.
   \item 8 x Raspberry Pi 4 Model B compute nodes, \verb|node1| to \verb|node8|
   \item 1 x Raspberry Pi 4 Model B build node, \verb|node9|
   \item 9 x Official Raspberry Pi 4 USB-C Power Supplies (5.1V, 3A)
-  \item 9 x Class 10 MicroSD cards
+  \item 9 x Class 10 A1 MicroSD cards
   \item 9 x Heatsinks with integrated fans
   \item 1 x Netgear FVS318G 8 Port Gigabit Router/Firewall
   \item 1 x Netgear GS316 16 Port Gigabit Switch (with Jumbo Frame support)
@@ -301,7 +301,7 @@ It is convenient to have a compute node designated the ``master'' node (there is
 
 The Raspberry Pi 4 is sensitive to voltage drops, especially whilst booting. So it was decided to purchase 9 Official Raspberry Pi 4 power supplies, rather than a USB hub with multiple power outlets which may not have been able to maintain its output voltage whilst booting 9 nodes. The 9 power supplies do take up some space, so a future development would be to investigate a suitably rated USB hub.
 
-Class 10 MicroSD cards...
+MicroSD cards are available in a number of speed classes and use categories. The recommended minimum specification for the Raspberry Pi 4 is Class 10 A1. The ``10'' refers to a 10 MB/s write speed. The ``A'' refers to the ``Application'' category, which support at least 1500 read operations and 500 write operations per second.
 
 Cooling is a major consideration when building any cluster, even an 8 node Raspberry Pi cluster. The Raspberry Pi 4 throttles back the clock speed at approximately 85\degree C, which would not only have had a negative impact on benchmark results, but also on repeatability. So, it was very important to select suitable cooling. After some investigation, it was decided to purchase heatsinks with integrated fans. These proved to be very successful, with no greater than 65\degree C observed at any time, even with 100\% CPU utilisation for many hours. 
 
@@ -591,7 +591,7 @@ Methodology...
 
 \begin{figure}[h]
 	\centering	
-	\includegraphics[width=1.0\textwidth]{gflops_vs_nb_1_core_80_percent_memory.pdf}
+	\includegraphics[width=1.0\textwidth]{openmpi_gflops_vs_nb_1_core_80_percent_memory.pdf}
 	\caption{OpenMPI 1 Core $R_{max}$ vs NB using 80\% memory.}
 \end{figure}
 
@@ -687,22 +687,22 @@ $ mpirun -bind-to-socket -host node1:1 -x OMP_NUM_THREADS=4 -n 1 xhpl
 
 
 
-%\begin{figure}[H]
-%	\begin{subfigure}{1.0\textwidth}
-%		\centering
-%		\includegraphics[width=0.9\textwidth]{openmpi_gflops_vs_nb_1_node_80_percent_memory.pdf}
-%		\caption{OpenMPI}
-%		\label{fig:subim1}
-%	\end{subfigure}
-%	\begin{subfigure}{1.0\textwidth}
-%		\centering
-%		\includegraphics[width=0.9\textwidth]{openmp_gflops_vs_nb_1_node_80_percent_memory.pdf}
-%		\caption{Hybrid OpenMPI/OpenMP}
-%		\label{fig:subim2}
-%	\end{subfigure}
-%\caption{1 Node $R_{max}$ vs NB using 80\% memory.}
-%\label{fig:image2}
-%\end{figure}
+\begin{figure}[H]
+	\begin{subfigure}{1.0\textwidth}
+		\centering
+		\includegraphics[width=0.85\textwidth]{openmpi_gflops_vs_nb_1_node_80_percent_memory.pdf}
+		\caption{OpenMPI}
+		\label{fig:subim1}
+	\end{subfigure}
+	\begin{subfigure}{1.0\textwidth}
+		\centering
+		\includegraphics[width=0.85\textwidth]{openmp_gflops_vs_nb_1_node_80_percent_memory.pdf}
+		\caption{Hybrid OpenMPI/OpenMP}
+		\label{fig:subim2}
+	\end{subfigure}
+\caption{1 Node $R_{max}$ vs NB using 80\% memory.}
+\label{fig:image2}
+\end{figure}
 
 
 
