@@ -589,11 +589,11 @@ Methodology...
 %
 \subsection{1 Core Baseline}
 
-\begin{figure}[h]
-	\centering	
-	\includegraphics[width=1.0\textwidth]{openmpi_gflops_vs_nb_1_core_80_percent_memory.pdf}
-	\caption{OpenMPI 1 Core $R_{max}$ vs NB using 80\% memory.}
-\end{figure}
+%\begin{figure}[h]
+%	\centering	
+%	\includegraphics[width=1.0\textwidth]{openmpi_gflops_vs_nb_1_core_80_percent_memory.pdf}
+%	\caption{OpenMPI 1 Core $R_{max}$ vs NB using 80\% memory.}
+%\end{figure}
 
 Problem size restricted to 80\% of memory...
 
@@ -621,6 +621,23 @@ $ mpirun -bind-to-core -host node1:1 -np 1 xhpl
 
 mpirun does bind to core by default for $np \leq 2$
 
+\begin{figure}
+	\begin{subfigure}{1.0\textwidth}
+		\centering
+		\includegraphics[width=0.85\textwidth]{openmpi_gflops_vs_nb_1_core_80_percent_memory.pdf}
+		\caption{Pure OpenMPI}
+		\label{fig:subim1}
+	\end{subfigure}
+	\par\bigskip
+	\begin{subfigure}{1.0\textwidth}
+		\centering
+		\includegraphics[width=0.85\textwidth]{openmp_gflops_vs_nb_1_core_80_percent_memory.pdf}
+		\caption{Hybrid OpenMPI/OpenMP}
+		\label{fig:subim2}
+	\end{subfigure}
+\caption{1 Core $R_{max}$ vs NB using 80\% memory.}
+\label{fig:image2}
+\end{figure}
 
 4 x 4.7527e+00 = 19 Gflops
 
@@ -636,18 +653,17 @@ A single core is capable of achieving maximum theoretical performance... CAVEATS
 %
 \subsection{1 Node Baseline}
 
-\begin{figure}
-	\centering	
-	\includegraphics[width=1.0\textwidth]{openmpi_gflops_vs_nb_1_node_80_percent_memory.pdf}
-	\caption{OpenMPI 1 Node $R_{max}$ vs NB using 80\% memory.}
-\end{figure}
+%\begin{figure}
+%	\centering	
+%	\includegraphics[width=1.0\textwidth]{openmpi_gflops_vs_nb_1_node_80_percent_memory.pdf}
+%	\caption{OpenMPI 1 Node $R_{max}$ vs NB using 80\% memory.}
+%\end{figure}
 
-
-\begin{figure}
-	\centering	
-	\includegraphics[width=1.0\textwidth]{openmp_gflops_vs_nb_1_node_80_percent_memory.pdf}
-	\caption{Hybrid OpenMPI/OpenMP 1 Node $R_{max}$ vs NB using 80\% memory.}
-\end{figure}
+%\begin{figure}
+%	\centering	
+%	\includegraphics[width=1.0\textwidth]{openmp_gflops_vs_nb_1_node_80_percent_memory.pdf}
+%	\caption{Hybrid OpenMPI/OpenMP 1 Node $R_{max}$ vs NB using 80\% memory.}
+%\end{figure}
 
 
 
@@ -685,15 +701,14 @@ $ mpirun -bind-to-socket -host node1:1 -x OMP_NUM_THREADS=4 -n 1 xhpl
 \end{lstlisting}
 
 
-
-
 \begin{figure}[H]
 	\begin{subfigure}{1.0\textwidth}
 		\centering
 		\includegraphics[width=0.85\textwidth]{openmpi_gflops_vs_nb_1_node_80_percent_memory.pdf}
-		\caption{OpenMPI}
+		\caption{Pure OpenMPI}
 		\label{fig:subim1}
 	\end{subfigure}
+	\par\bigskip
 	\begin{subfigure}{1.0\textwidth}
 		\centering
 		\includegraphics[width=0.85\textwidth]{openmp_gflops_vs_nb_1_node_80_percent_memory.pdf}
@@ -731,10 +746,28 @@ P2 x Q4
 \end{center}
 
 
-\begin{figure}
-	\centering	
-	\includegraphics[width=1.0\textwidth]{openmpi_gflops_vs_nb_2_node_80_percent_memory.pdf}
-	\caption{$R_{max}$ vs NB 2 Nodes using 80\% memory.}
+%\begin{figure}
+%	\centering	
+%	\includegraphics[width=1.0\textwidth]{openmpi_gflops_vs_nb_2_node_80_percent_memory.pdf}
+%	\caption{$R_{max}$ vs NB 2 Nodes using 80\% memory.}
+%\end{figure}
+
+\begin{figure}[H]
+	\begin{subfigure}{1.0\textwidth}
+		\centering
+		\includegraphics[width=0.85\textwidth]{openmpi_gflops_vs_nb_2_node_80_percent_memory.pdf}
+		\caption{Pure OpenMPI}
+		\label{fig:subim1}
+	\end{subfigure}
+	\par\bigskip
+	\begin{subfigure}{1.0\textwidth}
+		\centering
+		\includegraphics[width=0.85\textwidth]{openmp_gflops_vs_nb_2_node_80_percent_memory.pdf}
+		\caption{Hybrid OpenMPI/OpenMP}
+		\label{fig:subim2}
+	\end{subfigure}
+\caption{2 Node $R_{max}$ vs NB using 80\% memory.}
+\label{fig:image2}
 \end{figure}
 
 
