@@ -278,12 +278,12 @@ The Aerin Cluster consists of the following hardware and software components.
 \begin{itemize}
   \item 8 x Raspberry Pi 4 Model B compute nodes, \verb|node1| to \verb|node8|
   \item 1 x Raspberry Pi 4 Model B build node, \verb|node9|
-  \item 9 x Official Raspberry Pi 4 USB-C Power Supplies (5.1V, 3A)
+  \item 9 x Official Raspberry Pi 4 power supplies
   \item 9 x Class 10 A1 MicroSD cards
   \item 9 x Heatsinks with integrated fans
   \item 1 x Netgear FVS318G 8 Port Gigabit Router/Firewall
-  \item 1 x Netgear GS316 16 Port Gigabit Switch (with Jumbo Frame support)
-  \item Cat 7 Cabling (Minimum Cat 5e for Gigabit Ethernet)
+  \item 1 x Netgear GS316 16 Port Gigabit Switch (with Jumbo Frame Support)
+  \item Cat 7 cabling
 \end{itemize}
 
 
@@ -291,11 +291,13 @@ The Aerin Cluster consists of the following hardware and software components.
 % SUB SECTION
 %
 \subsection{Raspberry Pi's}
-The 9 x Raspberry Pi 4 used in the cluster are the 4GB RAM version. Recently, an 8GB RAM version became available. This which would be the preferred version for a future cluster.   
+The 9 x Raspberry Pi 4 used in the cluster are the 4GB RAM version. Recently, an 8GB RAM version became available. This which would be the preferred version for a future cluster.
 
-Some benchmarks require a substantial amount of time to run, so it is helpful to have a dedicated build node for compiling software, developing scripts, etc, while the benchmarks run on dedicated compute nodes. This build node is \verb|node9|.
+The compute nodes of the cluster are \verb|node1| to \verb|node8|. These are used to run the benchmarks.  
 
-It is convenient to have a compute node designated the ``master'' node (there is a convenience and not a requirement). This is \verb|node1|. If any software needs to compiled locally to the compute nodes, and not on the build node, then the ``master'' node is used to do this. This node is also used to mirror the GitHub repository and to run the various Pi Cluster Tools. 
+Some benchmarks require a substantial amount of time to run, so it is helpful to have a dedicated build node for compiling software, developing scripts, etc, while the benchmarks run on compute nodes. This build node is \verb|node9|.
+
+It is convenient to have one of the compute nodes designated the ``master'' node (this is a convenience and not a requirement). This is \verb|node1|. If any software needs to compiled locally to the compute nodes, and not on the build node, then the ``master'' node is used to do this. This node is also used to mirror the GitHub repository and to run the various Pi Cluster Tools. 
 
 
 %
