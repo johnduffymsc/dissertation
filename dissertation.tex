@@ -369,50 +369,185 @@ Cat 5 network cables only support 100 Mbit/s, and without any electrical shieldi
 
 
 %
-% SUB SECTION
+% SECTION
 %
 \section{Software}
 
+
+%
+% SUB SECTION
+%
+\subsection{Operating System}
+The operating system used for the Aerin Cluster is Ubuntu 20.04 LTS 64-bit Pre-Installed Server for the Raspberry Pi 4. This can be downloaded from the Ubuntu website or installed via Raspberry Pi Imager.
+
+
+%
+% SUB SECTION
+%
+\subsection{\texttt{cloud-init}}
+
+The \verb|cloud-init| system was originally developed by Ubuntu to simplify the instantiation of operating system images in cloud computing environments, such as Amazon's AWS and Microsoft's Azure. It is now an industry standard.
+
+It is also very useful for automating the installation of the same operating system on a number of computers using a single installation image. This dramatically simplifies building a cluster.
+
+The idea is that a \verb|user-data| file is added to the \verb|boot| directory of an installation image. When a node boots using the image, this file is read and the configuration/actions specified in this file are automatically applied/run as the operating system is installed.
+
+For the Aerin Cluster the following configuration/actions were applied to each node:
+
 \begin{itemize}
-  \item The individual entries are indicated with a black dot, a so-called bullet.
-  \item The text in the entries may be of any length.
+\item Add the user \verb|john| to the system and set the initial password 
+\item Add \verb|john's| public key
+\item Update the \verb|apt| data cache
+\item Upgrade the system
+\item Install specified software packages
+\item Create a \verb|/etc/hosts| file
+\item Set the hostname based on the IP address
 \end{itemize}
 
+All of this is done from a single image and \verb|user-data| file. The time invested in getting the \verb|user-data| file right pays off handsomely, especially when the cluster may need to be rebuild from scratch a number of times.
+
+The main software packages used for benchmarking installed by \verb|cloud-init| are:
+
+\begin{itemize}
+\item build-essential
+\item openmpi-bin
+\item libopenblas0-serial
+\item libopenblas0-openmp
+\item libblis3-serial
+\item libblis3-openmp
+\end{itemize}
+
+This installs essential software build tools, such as C/C++ compilers, \verb|make|, etc, OpenMPI binary and development files, and the OpenBLAS and BLIS libraries in both serial and OpenMP versions. 
+
+The package names for the OpenBLAS and BLIS libraries are somewhat cryptic and can cause confusion. For example, the BLIS packages libblis64-serial and libblis64-openmp are not the 64-bit packages we would expect to install on a 64-bit operating system. The ``64'' refers to the integer size for the BLAS library. The packages we need are the libblis3-serial and libblis3-openmp versions, which are still 64-bit packages.
 
 
+%
+% SUB SECTION
+%
+\subsection{Benchmark Software}
 
-Photo...
-
-Highlights...
-
-Limitations...
-
-Reference data sheet in Appendix...
-
-Photo...
-
-Description...
-
-Ubuntu 20.04 LTS 64-bit Preinstalled Server...
-
-Reference Appendix A for detailed build instructions...
-
-Limitations...
-
-Software/update management...
-
-Cluster management tools
-
-BLAS libraries...
-
-BLAS library management... update-alternatives --config libblas.so.3-aarch64-linux-gnu
+The HPL, HPCC and HPCG software packages were all compiled locally from source. The instructions for how to do this are in Part II Chapter 7.
 
 
+%
+% SUB SECTION
+%
+\subsection{BLAS Library Management}
+
+On the Aerin Cluster we have two different BLAS libraries installed, OpenBLAS and BLIS, both in serial and OpenMP versions. It is obviously critical to have the same BLAS library configured as the ``the BLAS library in use'' on each node at the same time.
+
+Debian/Ubuntu have a very clever mechanism for setting a particular version of a library to be the ``the BLAS library in use''. The is called the ``alternatives'' mechanism, and is not just used for BLAS libraries, there are lots of software packages with ``alternatives''.
+
+Each ``alternative'' has a name, in the case of the BLAS libraries it is called \verb|libblas.so.3|. What is really clever is that you can build software, such as HPL, to link against \verb|libblas.so.3|, and then change then change what this ``alternative'' points to without having to rebuild the software.
+
+For example, to set the serial version of OpenBLAS to ``the BLAS library in use'' we update the ``alternative'' with the following command:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ sudo update-alternatives --set libblas.so.3-aarch64-linux-gnu /usr/lib/aarch64-linux-gnu/openblas-serial/libblas.so.3
+\end{lstlisting}
+
+Alternatively, there is an interactive version of the command which allows you to select a BLAS library from a list of options:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ sudo update-alternatives --config libblas.so.3-aarch64-linux-gnu
+\end{lstlisting}
+
+The ``alternatives'' mechanism is very clever, but when you need to set the BLAS library on 8 nodes quite frequently this is a lot of typing and also error prone. So to make life easier I wrote two BLAS library management wrapper scripts described in the section below. 
+
+
+%
+% SUB SECTION
+%
 \subsection{Pi Cluster Tools}
 
-picluster/tools... appendix ?... use from node1...
+Even a cluster of only 8 nodes requires quite a bit of effort, and typing, to keep the system up to date and to ensure the same BLAS library is running on each node. Logging in to each node individually to do this is a chore, and more importantly it is very error prone.
+
+To get around this problem, a number of \verb|bash| scripts were written as Pi Cluster Tools. Each script loops over a list of node names and uses \verb|ssh| to run a command remotely on each node in turn.
+
+The following scripts are included as Pi Cluster Tools.
+
+\begin{itemize}
+\item upgrade
+\item reboot
+\item shutdown
+\item do
+\item libblas-query
+\item libblas-set
+\end{itemize}
+
+Listings of the scripts are included in Part II Chapter 17.
+
+To run a particular tool, for example \verb|upgrade|, type the following command which will upgrade all of the nodes sequentially.
+
+\lstset{style=type}
+\begin{lstlisting}
+$ ~/picluster/tools/upgrade
+\end{lstlisting}
+
+The \verb|do| command ``does'' the same command on each node. Note the required quotation marks.
+
+\lstset{style=type}
+\begin{lstlisting}
+$ ~/picluster/tools/do "echo hello"
+\end{lstlisting}
 
 
+Probably the most useful of the Pi Cluster Tools are the two BLAS library tools.
+
+\verb|libblas-query| queries the current ``BLAS library in use'' on each node and prints it out. This is extremely useful for ensuring the same library is in use on each node.
+
+For example.
+
+\lstset{style=type}
+\begin{lstlisting}
+$ ~/picluster/tools/libblas-query
+\end{lstlisting}
+
+\lstset{style=term}
+\begin{lstlisting}
+node8... /usr/lib/aarch64-linux-gnu/blis-openmp/libblas.so.3
+node7... /usr/lib/aarch64-linux-gnu/blis-openmp/libblas.so.3
+node6... /usr/lib/aarch64-linux-gnu/blis-openmp/libblas.so.3
+node5... /usr/lib/aarch64-linux-gnu/blis-openmp/libblas.so.3
+node4... /usr/lib/aarch64-linux-gnu/blis-openmp/libblas.so.3
+node3... /usr/lib/aarch64-linux-gnu/blis-openmp/libblas.so.3
+node2... /usr/lib/aarch64-linux-gnu/blis-openmp/libblas.so.3
+node1... /usr/lib/aarch64-linux-gnu/blis-openmp/libblas.so.3
+\end{lstlisting}
+
+
+\verb|libblas-set| takes a single argument, openblas-serial, openblas-openmp, blis-serial, or blis-openmp, and then uses the ``alternatives'' mechanism to set the ``BLAS library in use'' on each node.
+
+For example.
+
+\lstset{style=type}
+\begin{lstlisting}
+$ ~/picluster/tools/libblas-set openblas-serial
+\end{lstlisting}
+
+\lstset{style=term}
+\begin{lstlisting}
+node8... done
+node7... done 
+node6... done 
+node5... done 
+node4... done 
+node3... done 
+node2... done 
+node1... done 
+\end{lstlisting}
+
+These two tools save a lot of typing, time and heartache.
+
+
+
+%
+% CHAPTER
+%
+\chapter{HPC Benchmarks}
 
 
 %
@@ -441,14 +576,6 @@ The...
 \section{Hybrid OpenMPI/OpenMP Topology}
 
 The network...
-
-
-
-%
-% CHAPTER
-%
-\chapter{HPC Benchmarks}
-
 \section{Landscape}
 
 Lists... 
