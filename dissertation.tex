@@ -9,6 +9,7 @@
 \usepackage[]{caption}
 \usepackage[]{subcaption}
 \usepackage{gensymb}
+\usepackage{amsmath}
 
 %\definecolor{termcolor}{RGB}{1.0, 0.97, 0.86}
 %\definecolor{listingcolor}{RGB}{0.61, 0.87, 1.0}
@@ -700,33 +701,39 @@ HPCG...
 %
 % SECTION
 %
-\section{Theoretical Maximum Performance (Gflop/s)}
+\section{Theoretical Maximum Performance (Gflops)}
 
-The Raspberry Pi 4 Model B is based on the Broadcom BCM2711 System on a Chip (SoC).
+The Raspberry Pi 4 Model B is based on the Broadcom BCM2711 System on a Chip (SoC). The BCM2711 contains 4 Arm Cortex-A72 cores clocked at 1.5 GHz.
 
-Block diagram from Cortex-A72 Software Optimisation Guide
+Each core implements the 64-bit Armv8-A Instruction Set Architecture (ISA). This instruction set includes Advanced SIMD instructions which operate on a single 128-bit SIMD pipeline. This 128-bit pipeline can conduct two 64-bit double precision floating point operations (Flops) per clock cycle.  
 
-4 cores
+A \emph{fused multiply-add} (FMA) instruction implements a multiplication followed by an add in a single instruction. The main purpose of FMA instructions is to improve result accuracy by conducting a single rounding operation on completion of both the multiplication and add operations. A single FMA instruction counts as two Flops. 
 
-1.5 GHz
+The theoretical maximum performance, $R_{peak}$, per node is therefore:
 
-128 bit SIMD
+\begin{align}
+R_{peak} &= 4 \textrm{ cores} \times 1.5 \textrm{ GHz} \times 2 \textrm{ doubles} \times 2 \textrm{ FMA}\\
+&= 24 \textrm{ Gflops}
+\end{align}
 
-4 GB memory (our chosen model)
+This is only achievable continuously if every instruction in a program is an FMA instruction, which obviously cannot be the case. Nevertheless, this is the standard measure of theoretical maximum performance.
 
-Caches...
+The theoretical maximum performance of the Aerin Cluster is therefore:
 
-Pipeline...
+\begin{align}
+R_{peak} &= 8 \textrm{ nodes} \times 24 \textrm{ Gflops}\\
+&= 192 \textrm{ Gflops}
+\end{align}
 
-Simplistically, ...
+For the High Performance Linpack benchmark, to achieve 100\% performance requires a problem size that uses 100\% of memory. Because the operating system requires some memory, is it not possible to allocate 100\% memory for benchmarks.
 
-This ignores instructions pipelining benefits...
+Out of the 4 GB of memory per node, only 3.7 GB is available for user programs. 
 
 
 %
 % SECTION
 %
-\section{OpenMPI Baseline}
+\section{Baseline}
 
 Ubuntu 20.04 LTS 64-bit packages, without any tweaks...
 
@@ -738,6 +745,11 @@ Linpack performance scales with problem size... REFERENCE
 
 80\% of memory a good initial guess... FAQ REFERENCE...
 
+4 x 4.7527e+00 = 19 Gflops
+
+Cache misses from peak...
+
+A single core is capable of achieving maximum theoretical performance... CAVEATS whole L2 cache, whole node 4 GB memory, although problem size limited to 80\% of 1 GB...  
 
 Methodology...
 
@@ -754,12 +766,6 @@ Methodology...
 % SUB SECTION
 %
 \subsection{1 Core Baseline}
-
-%\begin{figure}[h]
-%	\centering	
-%	\includegraphics[width=1.0\textwidth]{openmpi_gflops_vs_nb_1_core_80_percent_memory.pdf}
-%	\caption{OpenMPI 1 Core $R_{max}$ vs NB using 80\% memory.}
-%\end{figure}
 
 Problem size restricted to 80\% of memory...
 
@@ -780,12 +786,19 @@ NB 32 to 256 in increments of 8...
 	\end{tabular}
 \end{center}
 
+Explain bind to core...
+
 \lstset{style=type}
-\begin{lstlisting}
-$ mpirun -bind-to-core -host node1:1 -np 1 xhpl
+\begin{lstlisting}[]
+$ mpirun --bind-to core -host node1:1 -np 1 xhpl
 \end{lstlisting}
 
-mpirun does bind to core by default for $np \leq 2$
+Explain bind to socket...
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ mpirun --bind-to socket -host node1:1 -np 1 -x OMP_NUM_THREADS=1 xhpl
+\end{lstlisting}
 
 \begin{figure}
 	\begin{subfigure}{1.0\textwidth}
@@ -807,36 +820,11 @@ mpirun does bind to core by default for $np \leq 2$
 
 As expected... no difference between a pure OpenMPI and hybrid OpenMPI/OpenMP for a single process...
 
-4 x 4.7527e+00 = 19 Gflops
-
-Explain --bind-to core
-
-Cache misses from peak...
-
-A single core is capable of achieving maximum theoretical performance... CAVEATS whole L2 cache, whole node 4 GB memory, although problem size limited to 80\% of 1 GB...  
-
 
 %
 % SUB SECTION
 %
 \subsection{1 Node Baseline}
-
-%\begin{figure}
-%	\centering	
-%	\includegraphics[width=1.0\textwidth]{openmpi_gflops_vs_nb_1_node_80_percent_memory.pdf}
-%	\caption{OpenMPI 1 Node $R_{max}$ vs NB using 80\% memory.}
-%\end{figure}
-
-%\begin{figure}
-%	\centering	
-%	\includegraphics[width=1.0\textwidth]{openmp_gflops_vs_nb_1_node_80_percent_memory.pdf}
-%	\caption{Hybrid OpenMPI/OpenMP 1 Node $R_{max}$ vs NB using 80\% memory.}
-%\end{figure}
-
-
-
-
-1x4
 
 \begin{center}
 	\begin{tabular}{ |c|c|c|c|c|c|c|c|c|c| } 
@@ -853,19 +841,18 @@ A single core is capable of achieving maximum theoretical performance... CAVEATS
 	\end{tabular}
 \end{center}
 
-\lstset{style=type}
-\begin{lstlisting}[]
-$ mpirun -bind-to-core -host node1:4 -n 4 xhpl
-\end{lstlisting}
-
 Explain bind to core...
 
-mpirun does bind to socket by default for $np \geq 2$
+\lstset{style=type}
+\begin{lstlisting}[]
+$ mpirun --bind-to core -host node1:4 -np 4 xhpl
+\end{lstlisting}
 
+Explain bind to socket...
 
 \lstset{style=type}
 \begin{lstlisting}[]
-$ mpirun -bind-to-socket -host node1:1 -x OMP_NUM_THREADS=4 -n 1 xhpl
+$ mpirun --bind-to socket -host node1:1 -np 1 -x OMP_NUM_THREADS=4 xhpl
 \end{lstlisting}
 
 
@@ -914,11 +901,19 @@ P2 x Q4
 \end{center}
 
 
-%\begin{figure}
-%	\centering	
-%	\includegraphics[width=1.0\textwidth]{openmpi_gflops_vs_nb_2_node_80_percent_memory.pdf}
-%	\caption{$R_{max}$ vs NB 2 Nodes using 80\% memory.}
-%\end{figure}
+Explain bind to core...
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ mpirun --bind-to core -host node1:4,node2:4 -np 8 xhpl
+\end{lstlisting}
+
+Explain bind to socket...
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ mpirun --bind-to socket -host node1:1,node2:1 -np 2 -x OMP_NUM_THREADS=4 xhpl
+\end{lstlisting}
 
 \begin{figure}[H]
 	\begin{subfigure}{1.0\textwidth}
@@ -948,10 +943,22 @@ P2 x Q4
 2x16
 4x8
 
-\begin{figure}
-	\centering	
-	\includegraphics[width=1.0\textwidth]{gflops_vs_nodes_80_percent_memory.pdf}
-	\caption{$R_{max}$ vs Nodes using 80\% memory.}
+\begin{figure}[H]
+	\begin{subfigure}{1.0\textwidth}
+		\centering
+		\includegraphics[width=0.85\textwidth]{openmpi_gflops_vs_nodes_80_percent_memory.pdf}
+		\caption{Pure OpenMPI}
+		\label{fig:subim1}
+	\end{subfigure}
+	\par\bigskip
+	\begin{subfigure}{1.0\textwidth}
+		\centering
+		\includegraphics[width=0.85\textwidth]{openmp_gflops_vs_nodes_80_percent_memory.pdf}
+		\caption{Hybrid OpenMPI/OpenMP}
+		\label{fig:subim2}
+	\end{subfigure}
+\caption{$R_{max}$ vs Nodes using 80\% memory.}
+\label{fig:image2}
 \end{figure}
 
 
@@ -977,31 +984,6 @@ cache misses...
 software interrupts...
 
 Suggests... improve network efficiency?
-
-
-%
-% SECTION
-%
-\section{Hybrid OpenMPI/OpenMP Baseline}
-
-
-%
-% SUB SECTION
-%
-\subsection{1 Core Baseline}
-
-
-%
-% SUB SECTION
-%
-\subsection{1 Node Baseline}
-
-
-%
-% SUB SECTION
-%
-\subsection{Cluster Baseline}
-
 
 
 
