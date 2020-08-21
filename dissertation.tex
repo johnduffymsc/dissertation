@@ -557,43 +557,23 @@ Pi Cluster Tools are not production quality, yet!
 %
 % SECTION
 %
-\section{BLAS Libraries}
-
-\subsection{GotoBLAS}
-
-\subsection{OpenBLAS}
-
-\subsection{BLIS}
-
-
-%
-% SECTION
-%
-\section{OpenMPI Topology}
-
-The...
-
-
-%
-% SECTION
-%
-\section{Hybrid OpenMPI/OpenMP Topology}
-
-The network...
 \section{Landscape}
 
-Lists... 
+High Performance Linpack (HPL) is the industry standard HPC benchmark and has been for ??? years. It is used by Top500 and Green500 lists described in the following section. However, it has been criticised for producing a single number, and not being a true measure of real-world application performance. This has led to the creation of complementary benchmarks, namely HPC Challenge (HPCC) and High Performance Conjugate Gradients (HPCG). These benchmarks measure whole system performance, including processing power, memory bandwidth and network speed, in relation to standard HPC algorithms such as FFT and CG.
+
+A more detailed description of each benchmark follows. 
+
+
+%
+% SECTION
+%
+\section{Lists} 
 
 Top500...
 
 Green500...
 
 HPCG...
-
-
-High Performance Linpack (HPL) is the industry standard HPC benchmark and has been for ??? years. It is used by Top500 and Green500. However, it has been criticised for producing a single number, and not being a true measure of real-world application performance. This has led to the creation of complementary benchmarks, namely HPC Challenge (HPCC) and High Performance Conjugate Gradients (HPCG). These benchmarks measure whole system performance, including processing power, memory bandwidth and network speed, in relation to standard HPC algorithms such as FFT and CG.
-
-A more detailed description of each benchmark follows. 
 
 
 %
@@ -653,6 +633,8 @@ $ grep WR HPL.out | sort -g -k 4 -k 7 | tr -s ' ' > HPL.out.sorted
 %
 \subsection{Running xhpl}
 
+To run xhpl on the Aerin Cluster...
+
 To run xhpl using the serial version of OpenBLAS...
 
 \lstset{style=type}
@@ -689,6 +671,33 @@ HPCC...
 \section{High Performance Conjugate Gradients (HPCG)}
 
 HPCG...
+
+%
+% SECTION
+%
+\section{BLAS Libraries}
+
+\subsection{GotoBLAS}
+
+\subsection{OpenBLAS}
+
+\subsection{BLIS}
+
+
+%
+% SECTION
+%
+\section{OpenMPI Topology}
+
+The...
+
+
+%
+% SECTION
+%
+\section{Hybrid OpenMPI/OpenMP Topology}
+
+The network...
 
 
 
