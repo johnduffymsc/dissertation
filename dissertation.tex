@@ -725,7 +725,19 @@ R_{peak} &= 8 \textrm{ nodes} \times 24 \textrm{ Gflops}\\
 &= 192 \textrm{ Gflops}
 \end{align}
 
-For the High Performance Linpack benchmark, to achieve 100\% performance requires a problem size that uses 100\% of memory. Because the operating system requires some memory, is it not possible to allocate 100\% memory for benchmarks.
+For the High Performance Linpack benchmark, to achieve 100\% performance requires a problem size that utilises 100\% of memory. Because the operating system requires some memory, is it not possible to allocate 100\% memory for benchmarks.
+
+The Linux command \verb|dmesg| prints out the kernel boot messages, which can be searched using \verb|grep| to determine how memory is utilised on the system:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ dmesg | grep Memory
+\end{lstlisting}
+
+\lstset{style=type}
+\begin{lstlisting}
+[    0.000000] Memory: 3783876K/4050944K available (11772K kernel code, 1236K rwdata, 4244K rodata, 6144K init, 1072K bss, 201532K reserved, 65536K cma-reserved)
+\end{lstlisting}
 
 Out of the 4 GB of memory per node, only 3.7 GB is available for user programs. 
 
@@ -737,19 +749,7 @@ Out of the 4 GB of memory per node, only 3.7 GB is available for user programs.
 
 Ubuntu 20.04 LTS 64-bit packages, without any tweaks...
 
-1 core... a single ARM Cortex-A72 core...
-
-1 node... a single Raspberry Pi 4 Model B, 4 x ARM Cortex-A72 cores...
-
-Linpack performance scales with problem size... REFERENCE
-
 80\% of memory a good initial guess... FAQ REFERENCE...
-
-4 x 4.7527e+00 = 19 Gflops
-
-Cache misses from peak...
-
-A single core is capable of achieving maximum theoretical performance... CAVEATS whole L2 cache, whole node 4 GB memory, although problem size limited to 80\% of 1 GB...  
 
 Methodology...
 
@@ -788,12 +788,16 @@ NB 32 to 256 in increments of 8...
 
 Explain bind to core...
 
+1x1
+
 \lstset{style=type}
 \begin{lstlisting}[]
 $ mpirun --bind-to core -host node1:1 -np 1 xhpl
 \end{lstlisting}
 
 Explain bind to socket...
+
+1x1
 
 \lstset{style=type}
 \begin{lstlisting}[]
@@ -843,12 +847,16 @@ As expected... no difference between a pure OpenMPI and hybrid OpenMPI/OpenMP fo
 
 Explain bind to core...
 
+1x4
+
 \lstset{style=type}
 \begin{lstlisting}[]
 $ mpirun --bind-to core -host node1:4 -np 4 xhpl
 \end{lstlisting}
 
 Explain bind to socket...
+
+1x1
 
 \lstset{style=type}
 \begin{lstlisting}[]
@@ -881,21 +889,17 @@ $ mpirun --bind-to socket -host node1:1 -np 1 -x OMP_NUM_THREADS=4 xhpl
 %
 \subsection{2 Node Baseline}
 
-P1 x Q8
-
-P2 x Q4
-
 \begin{center}
 	\begin{tabular}{ |c|c|c|c|c|c|c|c|c|c| } 
 		\hline
 		NB & N & NB & N & NB & N & NB & N & NB & N \\ 
 		\hline
-		32 & 26208 &   80 & 26160 & 128 & 26112 & 176 & 26048 & 224 & 26208 \\ 
-		40 & 26200 &   88 & 26136 & 136 & 26112 & 184 & 26128 & 232 & 25984 \\ 
- 		48 & 26208 &   96 & 26208 & 144 & 26208 & 192 & 26112 & 240 & 26160 \\
+		32 & 26208 &  80 & 26160 & 128 & 26112 & 176 & 26048 & 224 & 26208 \\ 
+		40 & 26200 &  88 & 26136 & 136 & 26112 & 184 & 26128 & 232 & 25984 \\ 
+ 		48 & 26208 &  96 & 26208 & 144 & 26208 & 192 & 26112 & 240 & 26160 \\
 		56 & 26208 & 104 & 26208 & 152 & 26144 & 200 & 26200 & 248 & 26040 \\ 
  		64 & 26176 & 112 & 26208 & 160 & 26080 & 208 & 26208 & 256 & 26112 \\
-		72 & 26208 & 120 & 26160 & 168 & 26208 & 216 & 26136 &     - &         - \\ 
+		72 & 26208 & 120 & 26160 & 168 & 26208 & 216 & 26136 &   - &     - \\ 
  		\hline
 	\end{tabular}
 \end{center}
@@ -903,12 +907,17 @@ P2 x Q4
 
 Explain bind to core...
 
+1x8
+2x4
+
 \lstset{style=type}
 \begin{lstlisting}[]
 $ mpirun --bind-to core -host node1:4,node2:4 -np 8 xhpl
 \end{lstlisting}
 
 Explain bind to socket...
+
+1x2
 
 \lstset{style=type}
 \begin{lstlisting}[]
