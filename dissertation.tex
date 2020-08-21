@@ -427,7 +427,7 @@ The package names for the OpenBLAS and BLIS libraries are somewhat cryptic and c
 %
 \subsection{Benchmark Software}
 
-The HPL, HPCC and HPCG software packages were all compiled locally from source. The instructions for how to do this are in Part II Chapter 7.
+The HPL, HPCC and HPCG benchmark software was all compiled locally from source. The instructions for how to do this are in Part II Chapter 7.
 
 
 %
@@ -491,13 +491,13 @@ The \verb|do| command ``does'' the same command on each node. Note the required 
 
 \lstset{style=type}
 \begin{lstlisting}
-$ ~/picluster/tools/do "echo hello"
+$ ~/picluster/tools/do "mkdir -p ~/picluster/hpl/hpl-2.3/bin/picluster"
 \end{lstlisting}
 
 
 Probably the most useful of the Pi Cluster Tools are the two BLAS library tools.
 
-\verb|libblas-query| queries the current ``BLAS library in use'' on each node and prints it out. This is extremely useful for ensuring the same library is in use on each node.
+\verb|libblas-query| queries the ``the BLAS library in use'' on each node. This is extremely useful for ensuring the same library is in use on each node.
 
 For example.
 
@@ -540,7 +540,10 @@ node2... done
 node1... done 
 \end{lstlisting}
 
-These two tools save a lot of typing, time and heartache.
+\lstset{style=hack}
+\begin{lstlisting}
+Pi Cluster Tools are not production quality, yet!
+\end{lstlisting}
 
 
 
