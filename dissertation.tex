@@ -725,7 +725,7 @@ R_{peak} &= 4 \textrm{ cores} \times 1.5 \textrm{ GHz} \times 2 \textrm{ doubles
 &= 24 \textrm{ Gflops}
 \end{align}
 
-This is only achievable continuously if every instruction in a program is an FMA instruction, which obviously cannot be the case. Nevertheless, this is the standard measure of theoretical maximum performance.
+This is only achievable continuously if every instruction in a program is an FMA instruction, which obviously cannot be the case, since data has to be loaded from memory and stored back into memory. Nevertheless, this is the standard measure of theoretical maximum performance.
 
 The theoretical maximum performance of the Aerin Cluster as a whole is therefore:
 
@@ -954,11 +954,21 @@ The results are plotted in Figure ??
 %
 \subsubsection{Observations}
 
+As anticipated, there is indeed a reduction in performance per core, 80\% $R_{peak}$ in no longer attained.
+
+Pure OpenMPI topology attains a $R_{max}$ of ?? with an NB of ??.
+
+The hybrid OpenMPI/OpenMP topology attains a $R_{max}$ of ?? with an NB of ??.
+
 
 %
 % SUB SECTION
 %
 \subsection{2 Node Baseline}
+
+The purpose of this baseline is to determine the performance of 2 nodes. Now, each core on each node not only has to share access to the L2 cache, but the cache may be refreshed with data less frequently due to network delays and overhead. It is therefore anticipated that this will result in a performance reduction, per node, compared to the single node case.
+
+For this baseline the HPL problem size is restricted to 80\% of 2 nodes combined memory, 80\% of 8 GB. This results in NB and N combinations as tabulated below:
 
 \begin{center}
 	\begin{tabular}{ |c|c|c|c|c|c|c|c|c|c| } 
@@ -975,25 +985,39 @@ The results are plotted in Figure ??
 	\end{tabular}
 \end{center}
 
+For the pure OpenMPI topology, 8 \verb|xhpl| processes are run, one on each core of each of the 2 nodes. Now it is possible to have 2 processor grid shapes, 1 x 8 and 2 x 4. In this case HPL.dat is populated with processor grid parameters P and Q as follows:
 
-Explain bind to core...
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+2            # of process grids (P x Q)
+1 2          Ps
+8 4          Qs
+\end{lstlisting}
 
-1x8
-2x4
+The pure OpenMPI topology baseline is run with the following command:
 
 \lstset{style=type}
 \begin{lstlisting}[]
 $ mpirun --bind-to core -host node1:4,node2:4 -np 8 xhpl
 \end{lstlisting}
 
-Explain bind to socket...
+For the hybrid OpenMPI/OpenMP topology, a single \verb|xhpl| process is run on each node. This results in single processor grid shape of 1 x 2, and the HPL.dat P and Q processor grid parameters are populated as follows:
 
-1x2
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+1            # of process grids (P x Q)
+1            Ps
+2            Qs
+\end{lstlisting}
+
+With the BLAS library utilising the 4 cores on each node, the hybrid OpenMPI/OpenMP topology baseline is run with the following command:
 
 \lstset{style=type}
 \begin{lstlisting}[]
 $ mpirun --bind-to socket -host node1:1,node2:1 -np 2 -x OMP_NUM_THREADS=4 xhpl
 \end{lstlisting}
+
+The results are plotted in Figure ??
 
 \begin{figure}[H]
 	\begin{subfigure}{1.0\textwidth}
@@ -1012,6 +1036,15 @@ $ mpirun --bind-to socket -host node1:1,node2:1 -np 2 -x OMP_NUM_THREADS=4 xhpl
 \caption{2 Node $R_{max}$ vs NB using 80\% memory.}
 \label{fig:image2}
 \end{figure}
+
+
+
+%
+% SUB SUB SECTION
+%
+\subsubsection{Observations}
+
+
 
 
 %
