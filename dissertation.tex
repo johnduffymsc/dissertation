@@ -42,7 +42,7 @@ numbers=none,
 tabsize=2
 }
 
-\lstdefinestyle{listingstyle}{
+\lstdefinestyle{listing}{
 frame=single,
 backgroundcolor=\color{AliceBlue},   
 basicstyle=\verbatim@font\small,
@@ -218,7 +218,7 @@ Yes, in the command above, it is possible to reduce typing by putting the host d
 % TODO: Change to Ubuntu /etc/hosts...
 This is a file listing.
 
-\lstset{style=listingstyle}
+\lstset{style=listing}
 \lstinputlisting[caption=/etc/hosts]{/etc/hosts}
 
 
@@ -603,7 +603,7 @@ Reference http://hpl-calculator.sourceforge.net
 
 Describe HPL.dat parameters...
 
-\lstset{style=listingstyle}
+\lstset{style=listing}
 \lstinputlisting[caption=Example HPL.dat]{files/HPL.dat}
 
 A detailed description of each line of this file is ...
@@ -623,7 +623,7 @@ It is very easy to use \verb grep to find the lines in HPL.out containing the re
 $ grep WR HPL.out | sort -g -k 4 -k 7 | tr -s ' ' > HPL.out.sorted
 \end{lstlisting}
 
-\lstset{style=listingstyle}
+\lstset{style=listing}
 \lstinputlisting[caption=Example HPL.out.sorted]{files/HPL.out.sorted}
 
 
@@ -716,9 +716,9 @@ The Raspberry Pi 4 Model B is based on the Broadcom BCM2711 System on a Chip (So
 
 Each core implements the 64-bit Armv8-A Instruction Set Architecture (ISA). This instruction set includes Advanced SIMD instructions which operate on a single 128-bit SIMD pipeline. This 128-bit pipeline can conduct two 64-bit double precision floating point operations (Flops) per clock cycle.  
 
-A \emph{fused multiply-add} (FMA) instruction implements a multiplication followed by an add in a single instruction. The main purpose of FMA instructions is to improve result accuracy by conducting a single rounding operation on completion of both the multiplication and add operations. A single FMA instruction counts as two Flops. 
+A \emph{fused multiply-add} (FMA) instruction implements a multiplication followed by an add in a single instruction. The main purpose of FMA instructions is to improve result accuracy by conducting a single rounding operation on completion of both the multiplication and the add operations. A single FMA instruction counts as two Flops. 
 
-The theoretical maximum performance, $R_{peak}$, per node is therefore:
+The theoretical maximum performance of a single Aerin Cluster node, $R_{peak}$, is therefore:
 
 \begin{align}
 R_{peak} &= 4 \textrm{ cores} \times 1.5 \textrm{ GHz} \times 2 \textrm{ doubles} \times 2 \textrm{ FMA}\\
@@ -727,16 +727,16 @@ R_{peak} &= 4 \textrm{ cores} \times 1.5 \textrm{ GHz} \times 2 \textrm{ doubles
 
 This is only achievable continuously if every instruction in a program is an FMA instruction, which obviously cannot be the case. Nevertheless, this is the standard measure of theoretical maximum performance.
 
-The theoretical maximum performance of the Aerin Cluster is therefore:
+The theoretical maximum performance of the Aerin Cluster as a whole is therefore:
 
 \begin{align}
 R_{peak} &= 8 \textrm{ nodes} \times 24 \textrm{ Gflops}\\
 &= 192 \textrm{ Gflops}
 \end{align}
 
-For the High Performance Linpack benchmark, to achieve 100\% performance requires a problem size that utilises 100\% of memory. Because the operating system requires some memory, is it not possible to allocate 100\% memory for benchmarks.
+For the High Performance Linpack benchmark, to achieve 100\% performance requires a problem size that utilises 100\% of memory. Because the operating system requires memory, is it not possible to use 100\% for benchmarks.
 
-The Linux command \verb|dmesg| prints out the kernel boot messages, which can be searched using \verb|grep| to determine how memory is utilised on the system:
+The Linux \verb|dmesg| command prints out the kernel boot messages, which can be searched using \verb|grep| to determine how memory is utilised on the system:
 
 \lstset{style=type}
 \begin{lstlisting}
@@ -748,17 +748,22 @@ $ dmesg | grep Memory
 [    0.000000] Memory: 3783876K/4050944K available (11772K kernel code, 1236K rwdata, 4244K rodata, 6144K init, 1072K bss, 201532K reserved, 65536K cma-reserved)
 \end{lstlisting}
 
-Out of the 4 GB of memory per node, only 3.7 GB is available for user programs. 
+As can be seen, 37838776k of memory is available, which equates to 90\% of the 4 GB (4194304k) on each node. It would be optimistic to expect to use every byte of this 90\%, and using any more than this would result in swap space being used which would negatively impact benchmark results.
 
+So, for the Baseline benchmarks, 80\% of memory was chosen for the problem size. This is the amount suggested as an initial \emph{good guess} in the HPL Frequently Asked Questions.
+
+The above necessarily results in the Baseline benchmarks only being able to achieve 80\% of $R_{peak}$ at best, 4.8 Gflops for a single core, 19.2 Gflops for a single node, and 153.6 Gflops for the 8 node cluster. These values are indicated on the following Baseline result plots.
+
+TODO: REFERENCE (https://www.netlib.org/benchmark/hpl/faqs.html).
 
 %
 % SECTION
 %
-\section{Baseline}
+\section{HPL Baseline}
 
 Ubuntu 20.04 LTS 64-bit packages, without any tweaks...
 
-80\% of memory a good initial guess... FAQ REFERENCE...
+80\% of memory
 
 Methodology...
 
@@ -774,11 +779,13 @@ Methodology...
 %
 % SUB SECTION
 %
-\subsection{1 Core Baseline}
+\subsection{1 Core HPL Baseline}
 
-Problem size restricted to 80\% of memory...
+The purpose of this baseline is to determine the performance of a single core running a single \verb|xhpl| process, with the single core having exclusive access to the shared L2 cache. 
 
-NB 32 to 256 in increments of 8...
+As discussed in the previous section, the HPL problem size is restricted to 80\% of available memory. In the case of this baseline, this is 80\% of a single node's 4 GB.
+
+Using values of block size NB from 32 to 256, in increments of 8, and using formula ?? to ensure the problem size N is an integer multiple of NB, results in the table below of NB and N combinations.
 
 \begin{center}
 	\begin{tabular}{ |c|c|c|c|c|c|c|c|c|c| } 
@@ -795,23 +802,42 @@ NB 32 to 256 in increments of 8...
 	\end{tabular}
 \end{center}
 
-Explain bind to core...
+The HPL input file HPL.dat is populated with these NB and N combinations as follows, in this example using an NB of 32 and an N of 18528: 
 
-1x1
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+1            # of problems sizes (N)
+18528        Ns
+1            # of NBs
+32           NBs
+\end{lstlisting}
+
+For this baseline a single \verb|xhpl| process is run on both the pure OpenMPI and Hybrid OpenMPI/OpenMP topologies. In both of these cases HPL.dat is populated with processor grid parameters P and Q as follows:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+1            # of process grids (P x Q)
+1            Ps
+1            Qs
+\end{lstlisting}
+
+This baseline is run on a pure OpenMPI topology with the following command:
 
 \lstset{style=type}
 \begin{lstlisting}[]
 $ mpirun --bind-to core -host node1:1 -np 1 xhpl
 \end{lstlisting}
 
-Explain bind to socket...
+Explain bind to core...
 
-1x1
+This baseline is run on a hybrid OpenMPI/OpenMP topology with the following command:
 
 \lstset{style=type}
 \begin{lstlisting}[]
 $ mpirun --bind-to socket -host node1:1 -np 1 -x OMP_NUM_THREADS=1 xhpl
 \end{lstlisting}
+
+Explain bind to socket...
 
 \begin{figure}
 	\begin{subfigure}{1.0\textwidth}
@@ -831,7 +857,19 @@ $ mpirun --bind-to socket -host node1:1 -np 1 -x OMP_NUM_THREADS=1 xhpl
 \label{fig:image2}
 \end{figure}
 
-As expected... no difference between a pure OpenMPI and hybrid OpenMPI/OpenMP for a single process...
+The results are plotted in Figure ??.
+
+
+%
+% SUB SUB SECTION
+%
+\subsubsection{Observations}
+
+As expected, there is no noticeable performance difference between a pure OpenMPI and hybrid OpenMPI/OpenMP topology for a single \verb|xhpl| process running on a single core.
+
+Both topologies attain 80\% $R_{peak}$ for a single core.
+
+Discussion about OpenBLAS and BLIS internal kernel blocking...
 
 
 %
@@ -1014,6 +1052,28 @@ Suggests... improve network efficiency?
 %
 % SUB SECTION
 %
+\subsection{reclaim memory}
+A closer look at the memory use above indicates that 65536k of memory is being used as \emph{cma-reserved}. This Contiguous Memory Allocator (CMA) memory is reserved at boot time for certain kernel drivers, in particular some video drivers. Since the Aerin Cluster is not using video, it may be possible to reclaim some of this memory to increase the amount available for the benchmark problem size.
+
+The \verb|/proc| filesystem enables access to kernel data structures at run time. Running the following command it is possible to see how the \emph{cma-reserved} memory is being utilised:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ cat /proc/meminfo | grep Cma
+\end{lstlisting}
+
+\lstset{style=type}
+\begin{lstlisting}
+CmaTotal:          65536 kB
+CmaFree:           63732 kB
+\end{lstlisting}
+
+As can be seen, the majority of \emph{cma-reserved} memory is not being used. So, although this is a relatively small amount of memory on a single node, it is approximately 0.5 GB across all 8 nodes. This is worth trying to reclaim for the benchmark problem size via a rebuild of the kernel, something that is investigated later.
+
+
+%
+% SUB SECTION
+%
 \subsection{Single Core Optimisation}
 
 
@@ -1037,7 +1097,7 @@ cpuid\_arm64.c
 in function void get\_cpuconfig(void)
 
 
-\lstset{style=listingstyle}
+\lstset{style=listing}
 \begin{lstlisting}[caption=cpuid\_arm64.c, numbers=none]
 ...
 	case CPU_CORTEXA57:
@@ -1066,7 +1126,7 @@ REFERENCE: Arm...
 
 The following two lines are incorrect for the Arm Cortex-A72:
 
-\lstset{style=listingstyle}
+\lstset{style=listing}
 \begin{lstlisting}[numbers=none]
 		printf("#define L2_SIZE 524288\n");
 		printf("#define DTB_DEFAULT_ENTRIES 64\n");
@@ -1074,7 +1134,7 @@ The following two lines are incorrect for the Arm Cortex-A72:
 
 To reflect the 1MB of L2 cache of the BCM\textcolor{red}{??????}, and the 32 entry L1 Data TLB, they should be:
 
-\lstset{style=listingstyle}
+\lstset{style=listing}
 \begin{lstlisting}[numbers=none]
 		printf("#define L2_SIZE 1048576\n");
 		printf("#define DTB_DEFAULT_ENTRIES 32\n");
@@ -1084,7 +1144,7 @@ To reflect the 1MB of L2 cache of the BCM\textcolor{red}{??????}, and the 32 ent
 Having changed these to the correct values, the build process now accurately reflects the 1MB of L2 cache on line 18 of 0-serial/config.h from which the libopenblas0-serial package is built:
 
 
-\lstset{style=listingstyle}
+\lstset{style=listing}
 \begin{lstlisting}[caption=0-serial/config.h]
 #define OS_LINUX 1
 #define ARCH_ARM64 1
@@ -1147,7 +1207,7 @@ The Linux kernel has 3 Preemption Models...
 
 As per the Help in the Kernel Configuration...
 
-\lstset{style=listingstyle}
+\lstset{style=listing}
 \begin{lstlisting}[numbers=none, caption=Kernel Configuration Preemption Model Help]
 CONFIG_PREEMPT_NONE:                                                                                                                                                                                                                                                 
 
@@ -1471,7 +1531,7 @@ REFERENCE...
 
 https://www.open-mpi.org/faq/?category=tcp
 
-\lstset{style=listingstyle}
+\lstset{style=listing}
 \begin{lstlisting}[caption=/etc/sysctl.d/picluster.conf]
 net.core.rmem_max = 16777216
 net.core.wmem_max = 16777216
@@ -1569,7 +1629,7 @@ This will create two files... in ...
 
 On \verb\macbook\, using your favourite editor, add the following to /etc/hosts:
 
-\lstset{style=listingstyle}
+\lstset{style=listing}
 \begin{lstlisting}[]
 192.168.0.1 node1
 192.168.0.2 node2
@@ -1644,7 +1704,7 @@ Double click the \verb|.img| file to mount the image in the \verb|macbook| files
 We now need to edit the \verb|user-data| file which stores the \verb|cloud-init| configuration. The \verb|user-data| file used to create the Aerin Cluster is at Listing 7.
 
 
-\lstset{style=listingstyle}
+\lstset{style=listing}
 \lstinputlisting[caption=/Volumes/system-boot/user-data]{picluster/cloud-init/user-data-dissertation}
 
 
@@ -1770,7 +1830,7 @@ $ sudo vim /etc/apt/sources/list.d/picluster.list
 
 ... and add the following source repositories...
 
-\lstset{style=listingstyle}
+\lstset{style=listing}
 \begin{lstlisting}[caption=/etc/apt/sources.list.d/picluster.list]
 deb-src http://archive.ubuntu.com/ubuntu focal main universe
 deb-src http://archive.ubuntu.com/ubuntu focal-updates main universe
@@ -1900,7 +1960,7 @@ $ cd ..
 
 Amend \verb|Make.picluster| as per listing ???.
 
-\lstset{style=listingstyle}
+\lstset{style=listing}
 \lstinputlisting[caption=~/picluster/hpl/hpl-2.3/Make.picluster]{picluster/hpl/hpl-2.3/Make.picluster}
 
 Build HPL...
@@ -2081,7 +2141,7 @@ $ sudo vim kernelconfig
 
 And make the following change...
 
-\lstset{style=listingstyle}
+\lstset{style=listing}
 \begin{lstlisting}[caption=diff kernelconfig kernelconfig.original, numbers=none]
 5c5
 < 	archs="arm64"
@@ -2125,7 +2185,7 @@ $ sudo vim changelog
 
 And make the following change, where \verb|+picluster0| is our kernel identifier...
 
-\lstset{style=listingstyle}
+\lstset{style=listing}
 \begin{lstlisting}[caption=diff changelog changelog.original, numbers=none]
 1c1
 < linux-raspi (5.4.0-1015.15+picluster0) focal; urgency=medium
@@ -2447,7 +2507,7 @@ $ cp Make.picluster Make.picluster-armpl
 
 Make the following changes to \verb|Make.picluster-armpl|.
 
-\lstset{style=listingstyle}
+\lstset{style=listing}
 \begin{lstlisting}[caption=Make.picluster-armpl, numbers=none]
 LAdir        = /opt/arm/armpl_20.2_gcc-9.3
 LAinc        =
