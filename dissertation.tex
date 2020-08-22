@@ -750,9 +750,9 @@ $ dmesg | grep Memory
 
 As can be seen, 37838776k of memory is available, which equates to 90\% of the 4 GB (4194304k) on each node. It would be optimistic to expect to use every byte of this 90\%, and using any more than this would result in swap space being used which would negatively impact benchmark results.
 
-So, for the Baseline benchmarks, 80\% of memory was chosen for the problem size. This is the amount suggested as an initial \emph{good guess} in the HPL Frequently Asked Questions.
+So, for the HPL baseline benchmarks, 80\% of memory was chosen for the problem size. This is the amount suggested as an initial \emph{good guess} in the HPL Frequently Asked Questions.
 
-The above necessarily results in the Baseline benchmarks only being able to achieve 80\% of $R_{peak}$ at best, 4.8 Gflops for a single core, 19.2 Gflops for a single node, and 153.6 Gflops for the 8 node cluster. These values are indicated on the following Baseline result plots.
+The above necessarily results in the baseline benchmarks only being able to achieve 80\% of $R_{peak}$ at best, 4.8 Gflops for a single core, 19.2 Gflops for a single node, and 153.6 Gflops for the 8 node cluster. These values are indicated on the HPL baseline result plots.
 
 TODO: REFERENCE (https://www.netlib.org/benchmark/hpl/faqs.html).
 
@@ -875,7 +875,7 @@ Discussion about OpenBLAS and BLIS internal kernel blocking...
 %
 % SUB SECTION
 %
-\subsection{1 Node Baseline}
+\subsection{1 Node HPL Baseline}
 
 The purpose of this baseline is to determine the performance of the 4 cores of a single node. In this case each core has to share access to the L2 cache, which will result in more main memory accesses. It is therefore anticipated that this will result in a performance reduction, per core, compared to the single core case.
 
@@ -964,9 +964,9 @@ The hybrid OpenMPI/OpenMP topology attains a $R_{max}$ of ?? with an NB of ??.
 %
 % SUB SECTION
 %
-\subsection{2 Node Baseline}
+\subsection{2 Node HPL Baseline}
 
-The purpose of this baseline is to determine the performance of 2 nodes. Now, each core on each node not only has to share access to the L2 cache, but the cache may be refreshed with data less frequently due to network delays and overhead. It is therefore anticipated that this will result in a performance reduction, per node, compared to the single node case.
+The purpose of this baseline is to determine the performance of 2 nodes. Now, each core not only has to share access to the L2 cache, but the cache may be refreshed with data less frequently due to network delays and competition between the nodes for network resources. It is therefore anticipated that this will result in a performance reduction, per node, compared to the single node case.
 
 For this baseline the HPL problem size is restricted to 80\% of 2 nodes combined memory, 80\% of 8 GB. This results in NB and N combinations as tabulated below:
 
@@ -1050,11 +1050,70 @@ The results are plotted in Figure ??
 %
 % SUB SECTION
 %
-\subsection{Cluster Baseline}
+\subsection{Cluster HPL Baseline}
 
-1x32
-2x16
-4x8
+This cluster baseline uses the optimum values of NB from the 2 Node Baseline. For each of the 4 BLAS library combinations, OpenBLAS serial, OpenBLAS OpenMP, BLIS serial, and BLIS OpenMP, with the corresponding value of N for 80\% of memory for the particular node count is used, as tabulated below.
+
+\begin{center}
+	\begin{tabular}{ |c|c|c|c|c|c|c|c| } 
+		\hline
+		\multicolumn{2}{|c|}{} & \multicolumn{6}{c|}{Nodes} \\
+		\hline
+		BLAS & NB & 3 & 4 & 5 & 6 & 7 & 8 \\ 
+		\hline
+		OpenBLAS Serial & 000 & 32000 & 36000 & 41000 & 45000 & 48000 & 52000 \\ 
+		OpenBLAS OpenMP & 000 & 32000 & 36000 & 41000 & 45000 & 48000 & 52000 \\ 
+ 		BLIS Serial     & 000 & 32000 & 36000 & 41000 & 45000 & 48000 & 52000 \\
+		BLIS OpenMP     & 000 & 32000 & 36000 & 41000 & 45000 & 48000 & 52000 \\ 
+ 		\hline
+	\end{tabular}
+\end{center}
+
+These NB and N combinations are used to populate HPL.dat, as per the example below for the 3 node OpenBLAS Serial case.
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+1            # of problems sizes (N)
+32000        Ns
+1            # of NBs
+000          NBs
+\end{lstlisting}
+
+For the 3 node pure OpenMPI baseline, the following HPL.dat processor grid shapes are used: 
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+3            # of process grids (P x Q)
+1 2 3        Ps
+12 6 4       Qs
+\end{lstlisting}
+
+And the 3 node pure OpenMPI baseline is run with the following command:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ mpirun --bind-to core -host node1:4,node2:4,node3:4 -np 12 xhpl
+\end{lstlisting}
+
+For the 3 node hybrid OpenMPI/OpenMP baseline, the following HPL.dat processor grid shapes are used: 
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+1            # of process grids (P x Q)
+1            Ps
+3            Qs
+\end{lstlisting}
+
+And the 3 node hybrid OpenMPI/OpenMP baseline is run with the following command:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ mpirun --bind-to socket -host node1:1,node2:1,node3:1 -np 3 -x OMP_NUM_THREADS=4 xhpl
+\end{lstlisting}
+
+For the 4, 5, 6, 7 and 8 node pure OpenMPI and hybrid OpenMPI/OpenMP baselines, HPL.dat is populated with the processor grid parameters P and Q in a similar manner. Likewise, the baselines are run in a similar manner.
+
+The baseline results are presented in Figure ??.
 
 \begin{figure}[H]
 	\begin{subfigure}{1.0\textwidth}
