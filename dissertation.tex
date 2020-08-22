@@ -877,6 +877,10 @@ Discussion about OpenBLAS and BLIS internal kernel blocking...
 %
 \subsection{1 Node Baseline}
 
+The purpose of this baseline is to determine the performance of the 4 cores of a single node. In this case each core has to share access to the L2 cache, which will result in more main memory accesses. It is therefore anticipated that this will result in a performance reduction, per core, compared to the single core case.
+
+As per the single core benchmark, the HPL problem size is restricted to 80\% of available memory. Again, in the case, this is 80\% of a single node's 4 GB. This results in the same table of NB and N combinations as the single core benchmark.
+
 \begin{center}
 	\begin{tabular}{ |c|c|c|c|c|c|c|c|c|c| } 
 		\hline
@@ -892,24 +896,39 @@ Discussion about OpenBLAS and BLIS internal kernel blocking...
 	\end{tabular}
 \end{center}
 
-Explain bind to core...
+For the pure OpenMPI topology, 4 \verb|xhpl| processes are run, one on each core. In this case HPL.dat is populated with processor grid parameters P and Q as follows:
 
-1x4
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+1            # of process grids (P x Q)
+1            Ps
+4            Qs
+\end{lstlisting}
+
+And the pure OpenMPI topology baseline is run with the following command:
 
 \lstset{style=type}
 \begin{lstlisting}[]
 $ mpirun --bind-to core -host node1:4 -np 4 xhpl
 \end{lstlisting}
 
-Explain bind to socket...
+For the hybrid OpenMPI/OpenMP topology, a single \verb|xhpl| process is run on the node. In this case the HPL.dat P and Q processor grid parameters are populated as follows:
 
-1x1
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+1            # of process grids (P x Q)
+1            Ps
+1            Qs
+\end{lstlisting}
+
+With 4 cores available to the multi-threaded BLAS library, the hybrid OpenMPI/OpenMP topology baseline is run with the following command:
 
 \lstset{style=type}
 \begin{lstlisting}[]
 $ mpirun --bind-to socket -host node1:1 -np 1 -x OMP_NUM_THREADS=4 xhpl
 \end{lstlisting}
 
+The results are plotted in Figure ??
 
 \begin{figure}[H]
 	\begin{subfigure}{1.0\textwidth}
@@ -929,6 +948,11 @@ $ mpirun --bind-to socket -host node1:1 -np 1 -x OMP_NUM_THREADS=4 xhpl
 \label{fig:image2}
 \end{figure}
 
+
+%
+% SUB SUB SECTION
+%
+\subsubsection{Observations}
 
 
 %
