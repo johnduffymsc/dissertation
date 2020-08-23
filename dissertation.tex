@@ -256,7 +256,7 @@ https://github.com/johnduffymsc/dissertation
 %
 % CHAPTER
 %
-\chapter{ARM Architectures for HP}
+\chapter{ARM Architecture for HPC}
 
 
 
@@ -1168,50 +1168,18 @@ Suggests... improve network efficiency?
 %
 % SUB SECTION
 %
-\subsection{reclaim memory}
-A closer look at the memory use above indicates that 65536k of memory is being used as \emph{cma-reserved}. This Contiguous Memory Allocator (CMA) memory is reserved at boot time for certain kernel drivers, in particular some video drivers. Since the Aerin Cluster is not using video, it may be possible to reclaim some of this memory to increase the amount available for the benchmark problem size.
+\subsection{Rebuild BLAS Libraries}
 
-The \verb|/proc| filesystem enables access to kernel data structures at run time. Running the following command it is possible to see how the \emph{cma-reserved} memory is being utilised:
-
-\lstset{style=type}
-\begin{lstlisting}
-$ cat /proc/meminfo | grep Cma
-\end{lstlisting}
-
-\lstset{style=type}
-\begin{lstlisting}
-CmaTotal:          65536 kB
-CmaFree:           63732 kB
-\end{lstlisting}
-
-As can be seen, the majority of \emph{cma-reserved} memory is not being used. So, although this is a relatively small amount of memory on a single node, it is approximately 0.5 GB across all 8 nodes. This is worth trying to reclaim for the benchmark problem size via a rebuild of the kernel, something that is investigated later.
+The Debian Science Wiki suggests that for optimum performance, for architectures other than x86, the Debian BLAS library packages should be rebuilt locally. The instructions for doing so are included in the Debian source package for each library.
 
 
 %
-% SUB SECTION
+% SUB SUB SECTION
 %
-\subsection{Single Core Optimisation}
+\subsubsection{Rebuild OpenBLAS}
+The OpenBLAS build process attempts to detect the architecture in use and build OpenBLAS optimised for this architecture. The architecture is detected by checking specific ``magic numbers'' in known processor registers. Having detected the architecture, source code macros are defined specific to the architecture. 
 
-
-%
-% SUB SECTION
-%
-\subsubsection{Rebuild libopenblas0-serial}
-
-Better BLAS library...
-
-The Debian Science Wiki suggests...
-
-So, following the instructions in /usr/local/share/
-
-Details are in Appendix ?...
-
-Poking around in the OpenBLAS source code, I noticed...
-
-cpuid\_arm64.c
-
-in function void get\_cpuconfig(void)
-
+The architecture detection functionality is implemented in the file \verb|cpuid_arm64.c|, in which the function \verb|get_cpuconfig()| is used to define the source code macros. It was noticed that some macro definitions in this function which may affect performance were not correct for the BCM2711.
 
 \lstset{style=listing}
 \begin{lstlisting}[caption=cpuid\_arm64.c, numbers=none]
@@ -1238,9 +1206,7 @@ in function void get\_cpuconfig(void)
 ...
 \end{lstlisting}
 
-REFERENCE: Arm...
-
-The following two lines are incorrect for the Arm Cortex-A72:
+Listing ?? shows the macro definitions for the Arm Cortex-A72. The following two lines are incorrect for the L2 cache size and Data Translation Lookaside Buffer (DTB) for the BMC2711:
 
 \lstset{style=listing}
 \begin{lstlisting}[numbers=none]
@@ -1248,7 +1214,7 @@ The following two lines are incorrect for the Arm Cortex-A72:
 		printf("#define DTB_DEFAULT_ENTRIES 64\n");
 \end{lstlisting}
 
-To reflect the 1MB of L2 cache of the BCM\textcolor{red}{??????}, and the 32 entry L1 Data TLB, they should be:
+To reflect the 1 MB L2 cache and DTB default entries of the BCM2711 these should be:
 
 \lstset{style=listing}
 \begin{lstlisting}[numbers=none]
@@ -1256,12 +1222,10 @@ To reflect the 1MB of L2 cache of the BCM\textcolor{red}{??????}, and the 32 ent
 		printf("#define DTB_DEFAULT_ENTRIES 32\n");
 \end{lstlisting}
 
-
-Having changed these to the correct values, the build process now accurately reflects the 1MB of L2 cache on line 18 of 0-serial/config.h from which the libopenblas0-serial package is built:
-
+These values were changed and OpenBLAS was rebuilt following the instructions in the source package. The \verb|config.h| file generated during the build process accurately reflects the changes to \verb|cpuid_arm64.c|:
 
 \lstset{style=listing}
-\begin{lstlisting}[caption=0-serial/config.h]
+\begin{lstlisting}[caption=config.h]
 #define OS_LINUX 1
 #define ARCH_ARM64 1
 #define C_GCC 1
@@ -1289,30 +1253,29 @@ Having changed these to the correct values, the build process now accurately ref
 #define GEMM_MULTITHREAD_THRESHOLD 4
 \end{lstlisting}
 
+On completion of the build process, the original OpenBLAS library was uninstalled and replaced by the locally rebuilt library.
 
-On completion of the build process, and after uninstalling the original libopenblas0-serial package and installing the new one...
+It was anticipated that a doubling of the L2 cache size from 0.5 MB to 1 MB would have a positive impact on OpenBLAS performance, but this was not the case. There was no impact on performance, positive or negative, at all. The Linpack performance was exactly the same.
 
-% Plot of old and new vs NB...
+Since the L2 cache size of any processor is a major feature of the processor architecture, it is reasonable to expect a doubling of L2 cache size to result in a positive impact on performance, even marginal. The fact that there was no impact on performance at all seemed odd. So, an experiment was conducted with the L2 cache size set to 0 MB, and OpenBLAS was rebuilt. And the resulting Linpack performance was exactly the same. 
 
-Discussion...
+In light of this experiment, a search through the OpenBLAS source code was conducted for L2\_SIZE, and it was determined that this macro definition is not used.
+
+Following an email exchange with an OpenBLAS developer, it would appear that a previous change to the source code to improve performance on server-class Arm architectures has somehow resulted in source code issues for smaller Arm architectures.
+
+Time permitting, it would be an interesting project to fix these source code issues for smaller Arm architectures. But for this project, the locally built library was uninstalled, and the Debian/Ubuntu package re-installed.
+
+
+%
+% SUB SUB SECTION
+%
+\subsubsection{Rebuild BLIS}
 
 
 %
 % SUB SECTION
 %
-\subsubsection{Rebuild libblis3-serial}
-
-
-%
-% SUB SECTION
-%
-\subsection{Single Node Optimisation}
-
-
-%
-% SUB SECTION
-%
-\subsubsection{Kernel Preemption Model}
+\subsection{Kernel Preemption Model}
 
 The Linux kernel has 3 Preemption Models...
 
@@ -1680,6 +1643,32 @@ sudo shutdown -r now
 \begin{lstlisting}
 Aug 11 03:35:40 node5 kernel: [19256.425779] bcmgenet fd580000.ethernet eth0: bcmgenet_xmit: tx ring 1 full when queue 2 awake
 \end{lstlisting}
+
+
+
+%
+% SUB SECTION
+%
+\subsection{reclaim memory}
+A closer look at the memory use above indicates that 65536k of memory is being used as \emph{cma-reserved}. This Contiguous Memory Allocator (CMA) memory is reserved at boot time for certain kernel drivers, in particular some video drivers. Since the Aerin Cluster is not using video, it may be possible to reclaim some of this memory to increase the amount available for the benchmark problem size.
+
+The \verb|/proc| filesystem enables access to kernel data structures at run time. Running the following command it is possible to see how the \emph{cma-reserved} memory is being utilised:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ cat /proc/meminfo | grep Cma
+\end{lstlisting}
+
+\lstset{style=type}
+\begin{lstlisting}
+CmaTotal:          65536 kB
+CmaFree:           63732 kB
+\end{lstlisting}
+
+As can be seen, the majority of \emph{cma-reserved} memory is not being used. So, although this is a relatively small amount of memory on a single node, it is approximately 0.5 GB across all 8 nodes. This is worth trying to reclaim for the benchmark problem size via a rebuild of the kernel, something that is investigated later.
+
+
+
 
 
 %
