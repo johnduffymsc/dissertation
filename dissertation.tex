@@ -752,11 +752,11 @@ The mathematical operation implemented by \verb|dgemm| is:
 
 \[C := \alpha \times A \times B + \beta \times C\]
 
-where $A$ is a M x K matrix, $B$ is a K x N matrix, $C$ is a M x N matrix, and $\alpha$ and $\beta$ are scalars.
+where $A$ is a $M \times K$ matrix, $B$ is a $K \times N$ matrix, $C$ is a $M \times N$ matrix, and $\alpha$ and $\beta$ are scalars.
 
 In the case of the HPL benchmark, $M = N = K$.
 
-Efficient BLAS libraries ``block'' matrix multiplication into smaller sub-matrix multiplications. The ``block'' sizes of these sub-matrices multiplications are carefully chosen to make optimum use of CPU registers and L1, L2, and L3 (when available) cache sizes. These sub-matrix multiplications are referred to as \emph{kernels}, or sometimes \emph{micro-kernels}.
+Efficient BLAS libraries ``block'' matrix multiplication into smaller sub-matrix multiplications. The ``block'' sizes of these sub-matrices multiplications are carefully chosen to make optimum use of CPU registers, and L1, L2, and L3 (when available) cache sizes. These sub-matrix multiplications are referred to as \emph{kernels}, or sometimes \emph{micro-kernels}.
 
 Maximum performance is achieved when the matrix multiplication problem size in an integer multiple of the \verb|dgemm| ``block'' size. In the case of the HPL benchmark, maximum performance is achieved when the the problem size N is an integer multiple of the HPL NB block size, which in turn is an integer multiple of the BLAS ``block'' size.
 
