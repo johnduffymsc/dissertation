@@ -10,6 +10,7 @@
 \usepackage[]{subcaption}
 \usepackage{gensymb}
 \usepackage{amsmath}
+%\usepackage[a4paper, total={5.5in, 9in}]{geometry}
 
 %\definecolor{termcolor}{RGB}{1.0, 0.97, 0.86}
 %\definecolor{listingcolor}{RGB}{0.61, 0.87, 1.0}
@@ -177,11 +178,11 @@ The final aim of this project was to investigate where the Aerin cluster might f
 
 This has been a very hands-on computing project with lots of Linux command line use. To enable a reader to replicate the cluster build and results, the Linux commands, output and file listings are included in the dissertation text, and colour coded as follows to aid readability.
 
-This is a computer name.
+This is a computer name:
 
 \verb|node1|
 
-This is a command to type.
+This is a command to type:
 
 \lstset{style=type}
 \begin{lstlisting}[]
@@ -189,7 +190,7 @@ $ cat /proc/softirqs
 \end{lstlisting}
 
 
-This is the command output.
+This is the command output:
 
 \lstset{style=term}
 \begin{lstlisting}
@@ -210,26 +211,29 @@ This is a long command to type.
 
 \lstset{style=type}
 \begin{lstlisting}[]
-$ mpirun -bind-to-socket -host node1:1,node2:1,node3:1 -np 3 -x OMP_NUM_THREADS=4 xhpl
+$ mpirun --bind-to socket -host node1:1,node2:1,node3:1 -np 3 -x OMP_NUM_THREADS=4 xhpl
 \end{lstlisting}
 
-Yes, in the command above, it is possible to reduce typing by putting the host data in a \verb|hostfile|, but this illustrates the typography.
+In the command above, it is possible to reduce typing by putting the host names and corresponding processor slots information in a \verb|hostfile|, but this illustrates the typography.
 
 % TODO: Change to Ubuntu /etc/hosts...
-This is a file listing.
+This is a file listing, note the line numbering commencing at 1:
 
 \lstset{style=listing}
 \lstinputlisting[caption=/etc/hosts]{/etc/hosts}
 
+This is a partial file listing, note the lack of line numbering:
 
-And this is something to take note of.
+\lstset{style=listing}
+\lstinputlisting[caption=/etc/hosts, numbers=none]{/etc/hosts}
+
+And this is something to take note of:
 
 \lstset{style=hack}
 \begin{lstlisting}
-This is a 'gotcha', or
+This is a "gotcha", or
 This differs from a similar build procedure, or
-This is a 'hack' to be fixed permanently later, or
-Don't do this at home, or,
+This is a "hack" to be fixed permanently later, or
 Something similar
 \end{lstlisting}
 
@@ -257,6 +261,38 @@ https://github.com/johnduffymsc/dissertation
 % CHAPTER
 %
 \chapter{ARM Architecture for HPC}
+
+Fugatku...
+
+Numer of Arm-based in Top/Green 500...
+
+48 core workstation...
+
+RISC paper...
+
+RISC/CISC
+
+Load/Store architecture
+
+Simplicity of design...
+
+Transistor count...
+
+Electrical power...
+
+armv7...
+
+armv8... 64-bit
+
+armv8.1...
+
+armv8.2...
+
+SVE...
+
+Fugaku chip...
+
+Fujitsu chip... 
 
 
 
@@ -543,7 +579,7 @@ node1... done
 
 \lstset{style=hack}
 \begin{lstlisting}
-Pi Cluster Tools are not production quality, yet!
+Pi Cluster Tools are not production quality.
 \end{lstlisting}
 
 
@@ -677,6 +713,50 @@ HPCG...
 %
 \section{BLAS Libraries}
 
+If we use the Linux \verb|perf| command to sample and record CPU stack traces (via frame pointers) for an \verb|xhpl| process (with Process ID 6595) for 30 seconds:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ sudo perf record -p 6595 -g -- sleep 30
+\end{lstlisting}
+
+And then look at the stack trace report: 
+
+\lstset{style=type}
+\begin{lstlisting}
+$ sudo perf report
+\end{lstlisting}
+
+\lstset{style=term}
+\begin{lstlisting}
++ 100.00% 0.00% xhpl xhpl             [.] _start                                                                                        
++ 100.00% 0.00% xhpl libc-2.31.so     [.] __libc_start_main                                                                             
++ 100.00% 0.00% xhpl xhpl             [.] main                                                                                          
++ 100.00% 0.00% xhpl xhpl             [.] HPL_pdtest                                                                                    
++ 100.00% 0.00% xhpl xhpl             [.] HPL_pdgesv                                                                                    
++ 100.00% 0.00% xhpl xhpl             [.] HPL_pdgesv0                                                                                   
++  98.03% 0.00% xhpl xhpl             [.] HPL_pdupdateTT                                                                                
++  97.71% 0.00% xhpl libblas.so.3     [.] 0x0000ffffaa839ff0                                                                            
++  97.71% 0.00% xhpl libgomp.so.1.0.0 [.] GOMP_parallel                                                                                 
++  97.70% 0.00% xhpl libblas.so.3     [.] 0x0000ffffaa839e80                                                                            
+-  96.56% 0.00% xhpl xhpl             [.] HPL_dgemm                                                                                     
+    HPL_dgemm                                                                                                                                           
+    dgemm_            
+\end{lstlisting}
+
+It can be seen that 96.56\% of the time within the \verb|xhpl| process is spent in the \verb|HPL_dgemm| function, which subsequently calls the BLAS \verb|dgemm| function (the \verb|_| appended to \verb|dgemm| function name is a Fortran function name decoration).
+ 
+It is for this reason that the efficiency of the BLAS library is critical for benchmark and real-world application performance. The efficiency of the \verb|dgemm| (\textbf{d}ouble precision \textbf{ge}neral \textbf{m}atrix \textbf{m}ultiplication) function is particularly important for the dense matrix HPL benchmark.
+
+The mathematical operation implemented by \verb|dgemm| is:
+
+\[C := \alpha \times A \times B + \beta \times C\]
+
+where $A$ is a M x K matrix, $B$ is a K x N matrix, $C$ is a M x N matrix, and $\alpha$ and $\beta$ are scalars.
+
+In the case of the HPL benchmark, $M = N = K$.
+
+
 \subsection{GotoBLAS}
 
 \subsection{OpenBLAS}
@@ -712,6 +792,7 @@ HPCG...
 \caption{Single Node Toplologies.}
 \label{fig:image2}
 \end{figure}
+
 
 
 %
