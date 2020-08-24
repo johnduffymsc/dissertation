@@ -744,7 +744,7 @@ $ sudo perf report
     dgemm_            
 \end{lstlisting}
 
-It can be seen that 96.56\% of the time within the \verb|xhpl| process is spent in the \verb|HPL_dgemm| function, which subsequently calls the BLAS \verb|dgemm| function (the \verb|_| appended to \verb|dgemm| function name is a Fortran function name decoration).
+It can be seen that 96.56\% of the time within the \verb|xhpl| process is spent in the \verb|HPL_dgemm| function, which subsequently calls the BLAS \verb|dgemm_| function (the \verb|_| appended to \verb|dgemm| function name is a Fortran function name decoration).
  
 It is for this reason that the efficiency of the BLAS library is critical for benchmark and real-world application performance. The efficiency of the \verb|dgemm| (\textbf{d}ouble precision \textbf{ge}neral \textbf{m}atrix \textbf{m}ultiplication) function is particularly important for the dense matrix HPL benchmark.
 
@@ -756,11 +756,28 @@ where $A$ is a M x K matrix, $B$ is a K x N matrix, $C$ is a M x N matrix, and $
 
 In the case of the HPL benchmark, $M = N = K$.
 
+Efficient BLAS libraries ``block'' matrix multiplication into smaller sub-matrix multiplications. The ``block'' sizes of these sub-matrices multiplications are carefully chosen to make optimum use of CPU registers and L1, L2, and L3 (when available) cache sizes. These sub-matrix multiplications are referred to as \emph{kernels}, or sometimes \emph{micro-kernels}.
 
+Maximum performance is achieved when the matrix multiplication problem size in an integer multiple of the \verb|dgemm| ``block'' size. In the case of the HPL benchmark, maximum performance is achieved when the the problem size N is an integer multiple of the HPL NB block size, which in turn is an integer multiple of the BLAS ``block'' size.
+
+This above is depicted in Figure ??.
+
+
+%
+% SECTION
+%
 \subsection{GotoBLAS}
 
+
+%
+% SECTION
+%
 \subsection{OpenBLAS}
 
+
+%
+% SECTION
+%
 \subsection{BLIS}
 
 
@@ -768,6 +785,7 @@ In the case of the HPL benchmark, $M = N = K$.
 % SECTION
 %
 \section{Pure OpenMPI Topology}
+
 
 %
 % SECTION
