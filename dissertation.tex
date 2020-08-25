@@ -31,6 +31,7 @@ backgroundcolor=\color{Ivory},
 basicstyle=\verbatim@font\small,
 numbers=none,
 tabsize=2,
+breaklines=false,
 %breaklines=true,
 %postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space}
 }
@@ -40,7 +41,11 @@ frame=single,
 backgroundcolor=\color{MistyRose},   
 basicstyle=\verbatim@font\small,
 numbers=none,
-tabsize=2
+tabsize=2,
+breaklines=true,
+breakindent=0pt,
+breakautoindent=true,
+postbreak={}
 }
 
 \lstdefinestyle{listing}{
@@ -49,9 +54,9 @@ backgroundcolor=\color{AliceBlue},
 basicstyle=\verbatim@font\small,
 numbers=left,
 numberstyle=\tiny,                    
-tabsize=2
+tabsize=2,
+breaklines=false
 }
-
 
 
 \title{MSc Scientific Computing Dissertation\\Benchmarking a Raspberry Pi 4 Cluster}
@@ -793,7 +798,7 @@ The above is depicted in Figure ??.
 %
 \section{Pure OpenMPI Topology}
 
-In a pure OpenMPI topology, work is distributed across the cluster nodes, and the processor cores on each node, by OpenMPI. Processor cores are referred to as \verb|slots|. The number of nodes in the cluster, and the number of slots on each node, are specified using either the \verb|-host| or \verb|-hostfile| parameter of the \verb|mpirun| command. Each processor slot is a target for work process. The number of work processes to be started is specified by the \verb|-np| parameter.
+In a pure OpenMPI topology, work is distributed across the cluster nodes, and the processor cores on each node, by OpenMPI. Processor cores are referred to as \emph{slots}. The number of nodes in the cluster, and the number of slots on each node, are specified using either the \verb|-host| or \verb|-hostfile| parameter of the \verb|mpirun| command. Each processor slot is a target for a work process. The total number of work processes to be run is specified by the \verb|-np| parameter.
 
 The \verb|-host| parameter is used to specify nodes and slots on the command line.
 
@@ -806,7 +811,7 @@ In the following example, the \verb|-host| parameter is used to specify 2 nodes,
 $ mpirun --bind-to core -host node1:4,node2:4 -np 8 xhpl
 \end{lstlisting}
 
-The same number of nodes, slots and work processes to run is specified using the \verb|-hostfile| parameter as follows:
+The same number of nodes, slots and work processes is specified using the \verb|-hostfile| parameter as follows:
 
 \lstset{style=type}
 \begin{lstlisting}
@@ -823,13 +828,7 @@ node2 slots=4
 
 The \verb|--bind-to core| parameter instructs \verb|mpirun| to not migrate a work processes from the core on which it was started. Once started on a specific core, a work process will remain \emph{bound} to that core. This is an optimisation which reduces cache refreshes when a work process is interrupted, by a kernel system call for example, and then restarted.
 
-The distribution of \verb|xhpl| work processes on a single node with 4 cores/slots is depicted in Figure ?? (a). Each \verb|xhpl| process calls the functions of a single-threaded BLAS serial library.
-
-%
-% SECTION
-%
-\section{Hybrid OpenMPI/OpenMP Topology}
-
+A pure OpenMPI distribution of \verb|xhpl| work processes on a single node with 4 cores/slots is depicted in Figure ?? (a). Each \verb|xhpl| process calls the functions of a single-threaded BLAS serial library.
 
 \begin{figure}
 	\begin{subfigure}{1.0\textwidth}
@@ -848,6 +847,29 @@ The distribution of \verb|xhpl| work processes on a single node with 4 cores/slo
 \caption{Single Node Toplologies.}
 \label{fig:image2}
 \end{figure}
+
+%
+% SECTION
+%
+\section{Hybrid OpenMPI/OpenMP Topology}
+In a hybrid OpenMPI/OpenMP topology, OpenMPI is used to distribute work between the nodes. Each node runs a single work process. OpenMP is then used to distribute the work of this single process between the node cores using a multi-threaded BLAS library.
+
+The \verb|-host|, \verb|-hostfile| and \verb|-np| parameters of the \verb|mpirun| command are used in a same manner as the pure OpenMPI case, noting that each node now has 1 slot on which to run a work process.
+
+The additional parameter \verb|-x| is required now required. This parameter distributes and sets the \emph{environmental variable} \verb|OMP_NUM_THREADS| on each node prior to a work process being started on each node. This variable is queried by the multi-threaded BLAS library, and the appropriate number of threads are utilized.
+
+Using 2 nodes, and 4 cores per node, as per the pure OpenMPI example, 2 \verb|xhpl| processes are run, one on each node, with the multi-threaded BLAS library utilising 4 cores, as follows:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ mpirun --bind-to socket -host node1:1,node2:1 -np 2 -x OMP_NUM_THREADS=4 xhpl
+\end{lstlisting}
+
+The \verb|--bind-to socket| parameter indicates to \verb|mpirun| that the \verb|xhpl| process is not associated with a particular core, it is not to be \emph{bound} to a specific core. The OpenMP runtime will determine which core(s) are used to run the \verb|xhpl| process.
+
+Note, without the \verb|--bind-to socket| parameter only a single thread will be utilised for a multi-threaded BLAS library, even if the \verb|OMP_NUM_THREADS| environmental variable is set correctly.
+
+A hybrid OpenMPI/OpenMP distribution of work is depicted in Figure ?? (b). A single \verb|xhpl| process calls functions from a multi-threaded BLAS library which run as threads on the processor cores.
 
 
 
