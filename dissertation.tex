@@ -793,6 +793,37 @@ The above is depicted in Figure ??.
 %
 \section{Pure OpenMPI Topology}
 
+In a pure OpenMPI topology, work is distributed across the cluster nodes, and the processor cores on each node, by OpenMPI. Processor cores are referred to as \verb|slots|. The number of nodes in the cluster, and the number of slots on each node, are specified using either the \verb|-host| or \verb|-hostfile| parameter of the \verb|mpirun| command. Each processor slot is a target for work process. The number of work processes to be started is specified by the \verb|-np| parameter.
+
+The \verb|-host| parameter is used to specify nodes and slots on the command line.
+
+The \verb|-hostfile| parameter is used to specify a file which contains the nodes and slots information.
+
+In the following example, the \verb|-host| parameter is used to specify 2 nodes, each with 4 slots, on which to run 8 \verb|xhpl| work processes:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ mpirun --bind-to core -host node1:4,node2:4 -np 8 xhpl
+\end{lstlisting}
+
+The same number of nodes, slots and work processes to run is specified using the \verb|-hostfile| parameter as follows:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ mpirun --bind-to core -hostfile nodes -np 8 xhpl
+\end{lstlisting}
+
+Where \verb|nodes| is a file containing the following:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none, caption=nodes]
+node1 slots=4
+node2 slots=4
+\end{lstlisting}
+
+The \verb|--bind-to core| parameter instructs \verb|mpirun| to not migrate a work processes from the core on which it was started. Once started on a specific core, a work process will remain \emph{bound} to that core. This is an optimisation which reduces cache refreshes when a work process is interrupted, by a kernel system call for example, and then restarted.
+
+The distribution of \verb|xhpl| work processes on a single node with 4 cores/slots is depicted in Figure ?? (a). Each \verb|xhpl| process calls the functions of a single-threaded BLAS serial library.
 
 %
 % SECTION
