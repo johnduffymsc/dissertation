@@ -770,7 +770,7 @@ The above is depicted in Figure ??.
 \begin{figure}
 	\centering
 	\includegraphics[width=1.0\textwidth]{dgemm.pdf}
-	\caption{dgemm \emph{kernel} Matrix-Matrix Multiplication.}
+	\caption{\texttt{dgemm} \emph{kernel} Matrix-Matrix Multiplication.}
 	\label{fig:image2}
 \end{figure}
 
@@ -826,27 +826,10 @@ node1 slots=4
 node2 slots=4
 \end{lstlisting}
 
-The \verb|--bind-to core| parameter instructs \verb|mpirun| to not migrate a work processes from the core on which it was started. Once started on a specific core, a work process will remain \emph{bound} to that core. This is an optimisation which reduces cache refreshes when a work process is interrupted, by a kernel system call for example, and then restarted.
+The \verb|--bind-to core| parameter instructs \verb|mpirun| to not migrate a work processes from the core on which it was started. Once started on a specific core, a work process will remain \emph{bound} to that core. This is an optimisation which reduces cache refreshes when a work process is interrupted, by a kernel system call for example, and is then restarted.
 
 A pure OpenMPI distribution of \verb|xhpl| work processes on a single node with 4 cores/slots is depicted in Figure ?? (a). Each \verb|xhpl| process calls the functions of a single-threaded BLAS serial library.
 
-\begin{figure}
-	\begin{subfigure}{1.0\textwidth}
-		\centering
-		\includegraphics[width=0.71\textwidth]{core-pure-openmpi.pdf}
-		\caption{Pure OpenMPI}
-		\label{fig:subim1}
-	\end{subfigure}
-	\par\bigskip
-	\begin{subfigure}{1.0\textwidth}
-		\centering
-		\includegraphics[width=0.71\textwidth]{core-hybrid-openmpi-openmp.pdf}
-		\caption{Hybrid OpenMPI/OpenMP}
-		\label{fig:subim2}
-	\end{subfigure}
-\caption{Single Node Toplologies.}
-\label{fig:image2}
-\end{figure}
 
 %
 % SECTION
@@ -871,13 +854,30 @@ Note, without the \verb|--bind-to socket| parameter only a single thread will be
 
 A hybrid OpenMPI/OpenMP distribution of work is depicted in Figure ?? (b). A single \verb|xhpl| process calls functions from a multi-threaded BLAS library which run as threads on the processor cores.
 
+\begin{figure}
+	\begin{subfigure}{1.0\textwidth}
+		\centering
+		\includegraphics[width=0.71\textwidth]{core-pure-openmpi.pdf}
+		\caption{Pure OpenMPI}
+		\label{fig:subim1}
+	\end{subfigure}
+	\par\bigskip
+	\begin{subfigure}{1.0\textwidth}
+		\centering
+		\includegraphics[width=0.71\textwidth]{core-hybrid-openmpi-openmp.pdf}
+		\caption{Hybrid OpenMPI/OpenMP}
+		\label{fig:subim2}
+	\end{subfigure}
+\caption{Single Node Toplologies.}
+\label{fig:image2}
+\end{figure}
+
 
 
 %
 % CHAPTER
 %
 \chapter{Benchmarking the Aerin Cluster}
-
 
 %
 % SECTION
