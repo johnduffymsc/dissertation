@@ -2051,37 +2051,37 @@ Add relevant PDFs.
 \begin{figure}
 	\centering	
 	\includegraphics[width=1.0\textwidth]{router-wan-setup}
-	\caption{Router/Firewall WAN Setup.}
+	\caption{Router/Firewall WAN Setup. This is the outside-world facing side of the cluster router/firewall. The WAN IP address is set to a static IP address of 192.168.1.253, with an IP subnet mask of 255.255.255.0. In my home environment this is the internal home subnet of my ADSL router. The ADSL router is the internet Gateway with an IP address of 192.168.1.254, and also acts as the Primary DNS Server. The Secondary DNS Server IP address of 8.8.8.8 is Google's public DNS Server. Once re-located to UCL, these IP addresses would be changed to match the UCL's internal network.}
 \end{figure}
 
 \begin{figure}
 	\centering	
 	\includegraphics[width=1.0\textwidth]{router-lan-setup}
-	\caption{Router/Firewall LAN Setup.}
+	\caption{Router/Firewall LAN Setup. This is the internal cluster LAN side of the router/firewall. The router/firewall has an internal LAN address of 192.168.0.254, with an IP subnet mask of 255.255.255.0. Note, this is a different network than the WAN; 192.168.1 for the WAN, and 192.168.0 for the LAN. The router/firewall DNS Server is enabled for the LAN, and will serve addresses to connecting hosts in the range 192.168.0.101 to 192.168.0.201. These are hosts plugged into one of the LAN sockets of the router/firewall or network switch. This does not include the cluster compute nodes, which have IP addresses reserved based on their MAC addresses. See LAN IP Address Reservations in Figure ??. There should be no need to change these settings when the Aerin Cluster is relocated to UCL.}
 \end{figure}
 
 \begin{figure}
 	\centering	
 	\includegraphics[width=1.0\textwidth]{router-lan-ip-reservations}
-	\caption{Router/Firewall LAN IP Address Reservations.}
+	\caption{Router/Firewall LAN IP Address Reservations. To guarantee each compute node is assigned the same LAN IP address across reboots, the router/firewall is configured to serve IP addresses to connecting hosts based upon the host network card MAC address. This is ``reserving" an IP address for a particular host. This router/firewall setup page permits the relationship between MAC and IP addresses to be configured. Each line represents a compute node, or \texttt{macbook}, with a host name, e.g. \texttt{node1}, an IP address to reserve for this host, and the network card MAC address of the host. The MAC address must be known in advance.}
 \end{figure}
 
 \begin{figure}
 	\centering	
 	\includegraphics[width=1.0\textwidth]{router-remote-admin}
-	\caption{Router/Firewall Remote Management.}
+	\caption{Router/Firewall Remote Management. It is convenient to be able to configure the router/firewall remotely from the WAN side of the router firewall. This means that a network cable does not have to be plugged into one of the LAN sockets on the router/firewall or network switch to configure the router/firewall. For example, once re-located to UCL, the Aerin Cluster, with router/firewall and switch, can be sited in a suitable location and the router/firewall configured from anywhere on the UCL internal network.}
 \end{figure}
 
 \begin{figure}
 	\centering	
 	\includegraphics[width=1.0\textwidth]{router-ssh-access}
-	\caption{Router/Firewall \texttt{ssh} Access.}
+	\caption{Router/Firewall \texttt{ssh} Access. This setup page is used to configure the router/firewall to pass \texttt{ssh} packets from the WAN side of the router/firewall through the firewall to \texttt{node1}. This permits access to the compute nodes from the WAN. So, in a similar manner to the remote administration of the router/firewall, the Aerin Cluster can be sited in a suitable location at UCL, and the Aerin Cluster compute nodes, via \texttt{node1}, can be accessed using \texttt{ssh} from anywhere on the internal UCL network.}
 \end{figure}
 
 \begin{figure}
 	\centering	
 	\includegraphics[width=1.0\textwidth]{router-respond-to-ping}
-	\caption{Router/Firewall Respond to \texttt{ping}.}
+	\caption{Router/Firewall Respond to \texttt{ping}. Particularly during the build stage of the Aerin Cluster, it was useful to be able to \texttt{ping} the router/firewall to test for network connectivity. For enhanced security, by default, the router/firewall is not configured to respond to \texttt{ping} requests. This setup page enables \texttt{ping} request responses.}
 \end{figure}
 
 
