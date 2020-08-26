@@ -10,6 +10,8 @@
 \usepackage[]{subcaption}
 \usepackage{gensymb}
 \usepackage{amsmath}
+\usepackage{hyperref}
+
 %\usepackage[a4paper, total={5.5in, 9in}]{geometry}
 
 %\definecolor{termcolor}{RGB}{1.0, 0.97, 0.86}
@@ -622,6 +624,11 @@ HPCG...
 %
 \section{High Performance Linpack (HPL)}
 
+%
+% SUB SECTION
+%
+\subsection{Algorithmn}
+
 Reference Paper...
 
 https://www.netlib.org/benchmark/hpl/...
@@ -630,72 +637,131 @@ Describe algorithm...
 
 Terminology $R_{peak}$, $R_{max}$..., problem size...
 
-Describe methodology for determining main parameters NB, N, P and Q...
 
-N formula...
-
-Reference http://hpl-calculator.sourceforge.net
 
 
 %
 % SUB SECTION
 %
-\subsection{HPL.dat}
+\subsection{Determining Input Parameters}
 
-Describe HPL.dat parameters...
+The main parameters which affect benchmark results are the block size NB, the problem size N, and the processor grid dimensions P and Q.
+
+The block size NB is used for two purposes. Firstly, to ``block'' the problem size matrix of dimension N x N into sub-matrices of dimension NB x NB. This is described in more detail in the following section ?? BLAS Libraries. And secondly, as the message size (or multiples of) for distributing data between cluster nodes.
+
+The optimum size for NB is related to the BLAS library \verb|dgemm| \emph{kernel} block size, which is related to CPU register and L1, L2, and L3 (when available) cache sizes. But this is not easily determined as a simple multiple of the \emph{kernel} block size. Some experimentation is required to determine the optimum size for NB.
+
+\href{https://www.netlib.org/benchmark/hpl/faqs.html}{HPL Frequently Asked Questions} suggests NB should be in the range 32 to 256. A smaller size is better for data distribution latency, but may result in data not being available in sufficiently large chunks to be processed efficiently. Too high a value may result in data starvation while nodes wait for data due to network latency.
+
+For this project, HPL benchmarks were run with NB in the range 32 to 256 in order to determine the optimum size for the Aerin Cluster, and for each BLAS library in serial and OpenMP versions. 
+
+For maximum data processing efficiency, and therefore optimum benchmark results, the problem size N should be as large as possible. This optimises the cluster processing/communications ratio. Optimum efficiency is achieved when the problem size utilises 100\% of memory. But this is never actually achievable, since the operating system and benchmark software require memory to run. \href{https://www.netlib.org/benchmark/hpl/faqs.html}{HPL Frequently Asked Questions} suggests 80\% of total available memory as a good starting point, and this value was used for this project.
+
+For optimum benchmark performance the problem size N needs to be an integer multiple of the block size NB. This ensures every NB x NB sub-matrix is a full sub-matrix of the N x N problem size, i.e. there are no partially full NB x NB sub-matrices at N x N matrix boundaries.
+
+For each value of NB, the following formula is used to determine the problem size N, taking into account 80\% memory usage:
+
+\[N = \left[\left(0.8 \sqrt{\frac{\text{Memory in GB} \times 1024^3}{8}}\right) \div NB\right] \times NB\]
+
+The division by 8 in the inner parenthesis is the size in bytes of a double precision floating point number.
+
+
+The online tool \href{http://hpl-calculator.sourceforge.net}{HPL Calculator} by Mohammad Sindi automates the process of calculating the problem size N for block sizes NB in the range 96 to 256, and for memory usage 80\% to 100\%.
+
+The values of N determined using HPL Calculator were cross-checked with the formula above.
+
+The processor grid dimensions P and Q represent a P x Q grid of processor cores. For example, the Aerin cluster has 8 nodes, each with 4 cores, giving a total of 32 processor cores. These core can be organised in compute grids of 1 x 32, 2 x 16 and 4 x 8.
+
+The HPL algorithm favours P x Q grids as square as possible, i.e. with P almost equal to Q, but with P smaller than Q. So, for a single node with 4 cores, a processor grids of 1 x 4 gives better benchmark performance than 2 x 2.
+
+If the Aerin Cluster used a high speed interconnect between nodes, such as InfiniBand as used on large HPC clusters, maximum performance would be expected to be achieved using a processor grid of 4 x 8. This is the squarest possible P x Q grid using 32 cores whilst maintaining P less than Q. However, as noted in \href{https://www.netlib.org/benchmark/hpl/faqs.html}{HPL Frequently Asked Questions}, Ethernet is not a high speed interconnect. An Ethernet network is simplistically a single wire connecting the nodes, with each node competing (using random transmission times) for access to the wire to transmit data. This physical limitation reduces potential maximum cluster performance, and the maximum achievable performance is seen using a flatter P x Q grid. This proved to be the case, and maximum cluster performance was observed using a processor grid of 2 x 16 for all 8 nodes. This phenomena was also observed using when using less than 8 nodes.
+
+
+%
+% SUB SECTION
+%
+\subsection{Running HPL}
+
+HPL uses the input file \verb|HPL.dat| to specify the input parameters for each benchmark run.
+
+Each of these has a preceding count parameter (\verb|#|) which specifies the number of each parameter (for example, there may be more than 1 processor grid shape).
+
+The problem size N and block size NB are set as follows, in this case there being a single problem size and a single block size:
 
 \lstset{style=listing}
-\lstinputlisting[caption=Example HPL.dat]{files/HPL.dat}
-
-A detailed description of each line of this file is ...
-
-
-%
-% SUB SECTION
-%
-\subsection{HPL.out}
-
-Describe HPL.out...
-
-It is very easy to use \verb grep to find the lines in HPL.out containing the results. And to then conduct a general numeric sort, first by P and then by Gflops, to find Rmax for each P and Q pair, squeezing repeated white space down to a single space for readability.
-
-\lstset{style=type}
-\begin{lstlisting}
-$ grep WR HPL.out | sort -g -k 4 -k 7 | tr -s ' ' > HPL.out.sorted
+\begin{lstlisting}[numbers=none, caption=HPL.dat]
+1            # of problems sizes (N)
+52360        Ns
+1            # of NBs
+88           NBs
 \end{lstlisting}
+
+The processor grid shapre parameters P and Q are set as follows, in this case there being 32 cores/slots with 3 possible grid shapes, 1 x 32, 2 x 16 and 4 x 8:
 
 \lstset{style=listing}
-\lstinputlisting[caption=Example HPL.out.sorted]{files/HPL.out.sorted}
+\begin{lstlisting}[numbers=none, caption=HPL.dat]
+3            # of process grids (P x Q)
+1 2 4        Ps
+32 16 8      Qs
+\end{lstlisting}
+
+For each benchmark run, the above parameters are set accordingly.
+
+For this project the remaining parameters, which have a lesser effect on benchmark results, were set in accordance with the advice in \href{https://www.netlib.org/benchmark/hpl/tuning.html}{HPL Tuning}, with \verb|swapping threshold| being set to match NB, as follows:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none, caption=HPL.dat]
+16.0         threshold
+1            # of panel fact
+1            PFACTs (0=left, 1=Crout, 2=Right)
+2            # of recursive stopping criterium
+4 8          NBMINs (>= 1)
+1            # of panels in recursion
+2            NDIVs
+1            # of recursive panel fact.
+2            RFACTs (0=left, 1=Crout, 2=Right)
+2            # of broadcast
+1 3          BCASTs (0=1rg,1=1rM,2=2rg,3=2rM,4=Lng,5=LnM)
+2            # of lookahead depth
+0 1          DEPTHs (>=0)
+2            SWAP (0=bin-exch,1=long,2=mix)
+88           swapping threshold
+0            L1 in (0=transposed,1=no-transposed) form
+0            U  in (0=transposed,1=no-transposed) form
+1            Equilibration (0=no,1=yes)
+8            memory alignment in double (> 0)
+\end{lstlisting}
 
 
 
-%
-% SUB SECTION
-%
-\subsection{Running xhpl}
+TODO: Describe HPL.out...
 
-To run xhpl on the Aerin Cluster...
+The results generated by each benchmark run are either printed on \verb|stdout| (\verb|node1| terminal), \verb|stderr|, or placed in a file, depending on the \verb|HPL.dat| parameter \verb|device out|.
 
-To run xhpl using the serial version of OpenBLAS...
+For this project, all benchmark results were placed in a file called \verb|HPL.out| by setting \verb|device out| to zero as follows:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none, caption=HPL.dat]
+HPL.out      output file name (if any)
+0            device out (6=stdout,7=stderr,file)
+\end{lstlisting}
+
+
+The \verb|HPL.out| file from each benchmark run was renamed to reflect the N, NB, P and Q parameters used, and also the BLAS library used. For example:
 
 \lstset{style=type}
 \begin{lstlisting}
-$ ~/picluster/tools/picluster-set-libblas-openblas-serial
+$ mv HPL.out HPL.out.6_node_45320_88_1_6_2_3.openblas_openmp
 \end{lstlisting}
 
-or, with the serial version of BLIS...
-
-\lstset{style=type}
-\begin{lstlisting}
-$ ~/picluster/tools/picluster-set-libblas-blis-serial
-\end{lstlisting}
+Each results file was then stored appropriately in the \verb|~/picluster/results| directory structure. 
 
 
-\lstset{style=type}
-\begin{lstlisting}
-cd ~/picluster/hpl/hpl-2.3/bin/serial
-mpirun -np 4 xhpl
-\end{lstlisting}
+%\lstset{style=listing}
+%\lstinputlisting[caption=Example HPL.out.sorted]{files/HPL.out.sorted}
+
+
+
 
 
 %
@@ -928,10 +994,13 @@ The above necessarily results in the baseline benchmarks only being able to achi
 
 TODO: REFERENCE (https://www.netlib.org/benchmark/hpl/faqs.html).
 
+
 %
 % SECTION
 %
 \section{HPL Baseline}
+
+The HPL benchmark software was compiled locally from source. Detailed instructions on how to do this are in Part II Chapter??
 
 Ubuntu 20.04 LTS 64-bit packages, without any tweaks...
 
@@ -1328,6 +1397,29 @@ cache misses...
 software interrupts...
 
 Suggests... improve network efficiency?
+
+
+
+%
+% SECTION
+%
+\section{HPC Challenge Baseline}
+
+The HPC Challenge benchmark software was compiled locally from source. Detailed instructions on how to do this are in Part II Chapter ??.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
