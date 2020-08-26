@@ -1902,12 +1902,12 @@ $ ssh-genkey -t rsa -C john
 This will create two files... in ...
 
 
-\subsection{Amend macbook /etc/hosts}
+\subsection{Amend \texttt{macbook} \text{/etc/hosts}}
 
-On \verb\macbook\, using your favourite editor, add the following to /etc/hosts:
+To enable access to a cluster node (from within the cluster LAN) without having to type the LAN IP address, add the following to \verb|macbook| \verb|/etc/hosts|:
 
 \lstset{style=listing}
-\begin{lstlisting}[]
+\begin{lstlisting}[numbers=none, caption=/etc/hosts]
 192.168.0.1 node1
 192.168.0.2 node2
 192.168.0.3 node3
@@ -1919,21 +1919,21 @@ On \verb\macbook\, using your favourite editor, add the following to /etc/hosts:
 192.168.0.9 node9
 \end{lstlisting}
 
-This enables...
+This enables the easier to remember and type:
 
 \lstset{style=type}
 \begin{lstlisting}[]
 $ ssh john@node1
 \end{lstlisting}
 
-or, the abbreviated...
+And, providing the username on \verb|macbook| is the same as the Linux username created by \verb|cloud-init|,
+the abbreviated:
 
 \lstset{style=type}
 \begin{lstlisting}[]
 $ ssh node1
 \end{lstlisting}
 
-provided the user name on the macbook is the same as the Linux user created by cloud-init.
 
 
 
@@ -1985,7 +1985,7 @@ Add relevant PDFs.
 \begin{figure}
 	\centering	
 	\includegraphics[width=1.0\textwidth]{router-respond-to-ping}
-	\caption{Router/Firewall Respond to Pings.}
+	\caption{Router/Firewall Respond to \texttt{ping}.}
 \end{figure}
 
 
