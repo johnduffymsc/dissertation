@@ -602,9 +602,13 @@ Pi Cluster Tools are not production quality.
 %
 \section{Landscape}
 
-High Performance Linpack (HPL) is the industry standard HPC benchmark and has been for ??? years. It is used by Top500 and Green500 lists described in the following section. However, it has been criticised for producing a single number, and not being a true measure of real-world application performance. This has led to the creation of complementary benchmarks, namely HPC Challenge (HPCC) and High Performance Conjugate Gradients (HPCG). These benchmarks measure whole system performance, including processing power, memory bandwidth and network speed, in relation to standard HPC algorithms such as FFT and CG.
+High Performance Linpack (HPL) is the industry standard HPC benchmark and has been for ?? years. It is used by the Top500 and Green500 lists to rank supercomputers in terms of raw performance and performance per Watt, respectively. However, it has been criticised for producing a single number, and not being a true measure of real-world application performance. This has led to the creation of complementary benchmarks, namely HPC Challenge (HPCC) and High Performance Conjugate Gradients (HPCG). These benchmarks measure whole system performance, including processing power, memory bandwidth, and network speed and latency, in relation to standard HPC algorithms such as FFT and CG.
 
-A more detailed description of each benchmark follows. 
+HPL has been the main focus of this project, mainly because it is the industry standard HPC benchmark, but also because tuning performance for HPL will also produce optimum results for HPCC (HPCC includes HPL) and HPCG.
+
+A detailed description of each benchmark follows.
+
+Because BLAS (Basic Linear Algebra Subroutine) library performance and cluster topology, pure OpenMPI and hybrid OpenMPI/OpenMP, have a direct impact on benchmark performance, a discussion of these topics is also included in this chapter. 
 
 
 %
@@ -627,7 +631,7 @@ HPCG...
 %
 % SUB SECTION
 %
-\subsection{Algorithmn}
+\subsection{Algorithm}
 
 Reference Paper...
 
@@ -647,7 +651,7 @@ Terminology $R_{peak}$, $R_{max}$..., problem size...
 
 The main parameters which affect benchmark results are the block size NB, the problem size N, and the processor grid dimensions P and Q.
 
-The block size NB is used for two purposes. Firstly, to ``block'' the problem size matrix of dimension N x N into sub-matrices of dimension NB x NB. This is described in more detail in the following section ?? BLAS Libraries. And secondly, as the message size (or multiples of) for distributing data between cluster nodes.
+The block size NB is used for two purposes. Firstly, to ``block'' the problem size matrix of dimension N x N into sub-matrices of dimension NB x NB. This is described in more detail in the Section ??. And secondly, as the message size (or multiples of) for distributing data between cluster nodes.
 
 The optimum size for NB is related to the BLAS library \verb|dgemm| \emph{kernel} block size, which is related to CPU register and L1, L2, and L3 (when available) cache sizes. But this is not easily determined as a simple multiple of the \emph{kernel} block size. Some experimentation is required to determine the optimum size for NB.
 
@@ -655,7 +659,7 @@ The optimum size for NB is related to the BLAS library \verb|dgemm| \emph{kernel
 
 For this project, HPL benchmarks were run with NB in the range 32 to 256 in order to determine the optimum size for the Aerin Cluster, and for each BLAS library in serial and OpenMP versions. 
 
-For maximum data processing efficiency, and therefore optimum benchmark results, the problem size N should be as large as possible. This optimises the cluster processing/communications ratio. Optimum efficiency is achieved when the problem size utilises 100\% of memory. But this is never actually achievable, since the operating system and benchmark software require memory to run. \href{https://www.netlib.org/benchmark/hpl/faqs.html}{HPL Frequently Asked Questions} suggests 80\% of total available memory as a good starting point, and this value was used for this project.
+For maximum data processing efficiency, and therefore optimum benchmark performance, the problem size N should be as large as possible. This optimises the cluster processing/communications ratio. Optimum efficiency is achieved when the problem size utilises 100\% of memory. But this is never actually achievable, since the operating system and benchmark software require memory to run. \href{https://www.netlib.org/benchmark/hpl/faqs.html}{HPL Frequently Asked Questions} suggests 80\% of total available memory as a good starting point, and this value was used for this project.
 
 For optimum benchmark performance the problem size N needs to be an integer multiple of the block size NB. This ensures every NB x NB sub-matrix is a full sub-matrix of the N x N problem size, i.e. there are no partially full NB x NB sub-matrices at N x N matrix boundaries.
 
@@ -672,9 +676,9 @@ The values of N determined using HPL Calculator were cross-checked with the form
 
 The processor grid dimensions P and Q represent a P x Q grid of processor cores. For example, the Aerin cluster has 8 nodes, each with 4 cores, giving a total of 32 processor cores. These core can be organised in compute grids of 1 x 32, 2 x 16 and 4 x 8.
 
-The HPL algorithm favours P x Q grids as square as possible, i.e. with P almost equal to Q, but with P smaller than Q. So, for a single node with 4 cores, a processor grids of 1 x 4 gives better benchmark performance than 2 x 2.
+The HPL algorithm favours P x Q grids as square as possible, i.e. with P almost equal to Q, but with P smaller than Q. So, for a single node with 4 cores, a processor grid of 1 x 4 gives better benchmark performance than 2 x 2.
 
-If the Aerin Cluster used a high speed interconnect between nodes, such as InfiniBand as used on large HPC clusters, maximum performance would be expected to be achieved using a processor grid of 4 x 8. This is the squarest possible P x Q grid using 32 cores whilst maintaining P less than Q. However, as noted in \href{https://www.netlib.org/benchmark/hpl/faqs.html}{HPL Frequently Asked Questions}, Ethernet is not a high speed interconnect. An Ethernet network is simplistically a single wire connecting the nodes, with each node competing (using random transmission times) for access to the wire to transmit data. This physical limitation reduces potential maximum cluster performance, and the maximum achievable performance is seen using a flatter P x Q grid. This proved to be the case, and maximum cluster performance was observed using a processor grid of 2 x 16 for all 8 nodes. This phenomena was also observed using when using less than 8 nodes.
+If the Aerin Cluster used a high speed interconnect between nodes, such as InfiniBand, as used on large HPC clusters, maximum performance would be expected to be achieved using a processor grid of 4 x 8. This is the ``squarest'' possible P x Q grid using 32 cores whilst maintaining P less than Q. However, as noted in \href{https://www.netlib.org/benchmark/hpl/faqs.html}{HPL Frequently Asked Questions}, Ethernet is not a high speed interconnect. An Ethernet network is simplistically a single wire connecting the nodes, with each node competing (using random transmission times) for access to the wire to transmit data. This physical limitation reduces potential maximum cluster performance, and the maximum achievable performance is seen using a flatter P x Q grid. This proved to be the case, and maximum cluster performance was observed using a processor grid of 2 x 16 for all 8 nodes. This phenomena was also observed using when using less than 8 nodes.
 
 
 %
