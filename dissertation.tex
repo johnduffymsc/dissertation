@@ -2370,13 +2370,9 @@ Subsequent \verb|ssh| access to \verb|node2| to \verb|node9| from \verb|node1| w
 % SUB SECTION
 %
 
-\subsection{Uninstall unattended-upgrades}
+\subsection{Uninstall \texttt{unattended-upgrades}}
 
-The \verb|unattended-upgrades| package is installed automatically...
-
-This can potentially interferer with long running benchmarks...
-
-Remove...
+The \verb|unattended-upgrades| package is installed automatically. This can potentially interfere with long running benchmarks, so it is preferable to uninstall this package from each node. This can be done using Pi Cluster Tools.
 
 From \verb|macbook|:
 
@@ -2386,7 +2382,7 @@ $ ssh node1
 $ ~/picluster/tools/do "sudo apt remove unattended-upgrades"
 \end{lstlisting}
 
-Don't forget to upgrade your cluster regularly at convenient times with...
+It is important not to forget to manually upgrade the cluster regularly using Pi Cluster Tools:
 
 \lstset{style=type}
 \begin{lstlisting}[]
@@ -2395,18 +2391,21 @@ $ ~/picluster/tools/upgrade
 \end{lstlisting}
 
 
+
+%
+% SUB SECTION
+%
 \subsection{Add Ubuntu Source Repositories}
 
-We are going to be rebuilding some packages from source...
+The Ubuntu source repositories are required to rebuilding the kernel and other Ubuntu packages. These repositories are added as follows:
 
 \lstset{style=type}
 \begin{lstlisting}[]
 $ ssh node1
 $ sudo touch /etc/apt/sources/list.d/picluster.list
-$ sudo vim /etc/apt/sources/list.d/picluster.list
 \end{lstlisting}
 
-... and add the following source repositories...
+Then add the following to the newly created \verb|picluster.list| file:
 
 \lstset{style=listing}
 \begin{lstlisting}[caption=/etc/apt/sources.list.d/picluster.list]
@@ -2414,7 +2413,7 @@ deb-src http://archive.ubuntu.com/ubuntu focal main universe
 deb-src http://archive.ubuntu.com/ubuntu focal-updates main universe
 \end{lstlisting}
 
-... and then update the repository cache...
+And finally, update the \verb|apt| repository cache:
 
 \lstset{style=type}
 \begin{lstlisting}[]
@@ -2425,7 +2424,9 @@ $ sudo apt update
 
 \subsection{Create a Project Repository}
 
-Xpand upon...
+A project repository on \verb|node1| is required to hold all project software and results. This repository is mirrored with the GitHub project repository.
+
+The project repository is created as follows:
 
 \lstset{style=type}
 \begin{lstlisting}[]
@@ -2435,75 +2436,6 @@ $ cd picluster
 $ git init
 \end{lstlisting}
 
-Ensure you do push your repository to a remote repository at regular intervals...
-
-
-\subsection{Select BLAS Library}
-
-The \verb|cloud-init| process will have installed four BLAS libraries, namely...
-
-\verb|libopenblas0-serial|
-
-\verb|libopenblas0-openmp|
-
-\verb|libblis0-serial|
-
-\verb|libblis0-openmp|
-
-To query the BLAS library currently in use on each node we can use one of our Pi Cluster tools...
-
-\lstset{style=type}
-\begin{lstlisting}[]
-$ ~/picluster/tools/libblas-query
-\end{lstlisting}
-
-\lstset{style=type}
-\begin{lstlisting}[]
-node8... /usr/lib/aarch64-linux-gnu/openblas-openmp/libblas.so.3
-node7... /usr/lib/aarch64-linux-gnu/openblas-openmp/libblas.so.3
-node6... /usr/lib/aarch64-linux-gnu/openblas-openmp/libblas.so.3
-node5... /usr/lib/aarch64-linux-gnu/openblas-openmp/libblas.so.3
-node4... /usr/lib/aarch64-linux-gnu/openblas-openmp/libblas.so.3
-node3... /usr/lib/aarch64-linux-gnu/openblas-openmp/libblas.so.3
-node2... /usr/lib/aarch64-linux-gnu/openblas-openmp/libblas.so.3
-node1... /usr/lib/aarch64-linux-gnu/openblas-openmp/libblas.so.3
-\end{lstlisting}
-
-To select an alternative library we can use another of our Pi Cluster tools...
-
-\lstset{style=type}
-\begin{lstlisting}[]
-$ ~/picluster/tools/libblas-set blis-serial
-\end{lstlisting}
-
-\lstset{style=type}
-\begin{lstlisting}[]
-node8... done
-node7... done
-node6... done 
-node5... done 
-node4... done 
-node3... done 
-node2... done 
-node1... done 
-\end{lstlisting}
-
-\lstset{style=type}
-\begin{lstlisting}[]
-$ ~/picluster/tools/libblas-query
-\end{lstlisting}
-
-\lstset{style=type}
-\begin{lstlisting}[]
-node8... /usr/lib/aarch64-linux-gnu/blis-serial/libblas.so.3
-node7... /usr/lib/aarch64-linux-gnu/blis-serial/libblas.so.3
-node6... /usr/lib/aarch64-linux-gnu/blis-serial/libblas.so.3
-node5... /usr/lib/aarch64-linux-gnu/blis-serial/libblas.so.3
-node4... /usr/lib/aarch64-linux-gnu/blis-serial/libblas.so.3
-node3... /usr/lib/aarch64-linux-gnu/blis-serial/libblas.so.3
-node2... /usr/lib/aarch64-linux-gnu/blis-serial/libblas.so.3
-node1... /usr/lib/aarch64-linux-gnu/blis-serial/libblas.so.3
-\end{lstlisting}
 
 
 %
