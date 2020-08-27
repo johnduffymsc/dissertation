@@ -1119,11 +1119,9 @@ $ dmesg | grep Memory
 
 As can be seen, 37838776k of memory is available, which equates to 90\% of the 4 GB (4194304k) on each node. It would be optimistic to expect to use every byte of this 90\%, and using any more than this would result in swap space being used which would negatively impact benchmark results.
 
-So, for the HPL baseline benchmarks, 80\% of memory was chosen for the problem size. This is the amount suggested as an initial \emph{good guess} in the HPL Frequently Asked Questions.
+So, for the HPL baseline benchmarks, 80\% of memory was chosen for the problem size. This is the amount suggested as an initial ``good guess'' in the HPL Frequently Asked Questions.
 
 The above necessarily results in the baseline benchmarks only being able to achieve 80\% of $R_{peak}$ at best, 4.8 Gflops for a single core, 19.2 Gflops for a single node, and 153.6 Gflops for the 8 node cluster. These values are indicated on the HPL baseline result plots.
-
-TODO: REFERENCE (https://www.netlib.org/benchmark/hpl/faqs.html).
 
 
 %
@@ -2064,12 +2062,11 @@ As can be seen, the majority of \emph{cma-reserved} memory is not being used. So
 
 
 
-
-
 %
 % CHAPTER
 %
 \chapter{Summary}
+
 
 
 %
@@ -2082,50 +2079,94 @@ As can be seen, the majority of \emph{cma-reserved} memory is not being used. So
 %
 \chapter{The Aerin Cluster}
 
+
+%
+% SECTION
+%
 \section{Introduction}
 
-This appendix is intended to be a complete and self contained guide for building a Raspberry Pi Cluster. With the caveat that the cluster has the bare minimum software/functionality necessary to compile and run the High Performance Linpack (HPL) benchmark, namely the build-essential package, two BLAS libraries (OpenBLAS and BLIS), and Open-MPI. A number of performance measurement tools are also installed, such as perf and iperf. The latest version of HPL is downloaded and built from source.
+This chapter is intended to be a complete and self-contained guide for building a replica of the Aerin Cluster. The items required to build the cluster are listed in Chapter 3.
 
-It would be a relatively simple task to add... SLIRM or...
-
-The cluster consists of the following components...
-
-8 x Raspberry Pi 4 Model B 4GB compute nodes, node1 to node8
-1 x software development and build node, node9
-9 x Official Raspberry Pi 4 Model B power supplies
-9 x 32GB Class 10 MicroSD cards
-1 x \emph{workstation}, in my case my MacBook Pro, macbook
-1 x 8 port Gigabit Router/Firewall
-1 x 16 port Gigabit switch with Jumbo Frame support
-
-Items
-
-Photo
+Throughout this chapter, \verb|macbook| refers to my local workstation which is not part of the Aerin Cluster. This workstation could be another Raspberry Pi or a Windows PC/Laptop. For either case, the following instructions should require little change, providing the workstation has a command line similar to Linux (on a Windows PC this could be MinGW or Windows Subsystem for Linux, or similar).
 
 
-\clearpage\section{Preliminary Tasks}
+%
+% SECTION
+%
+\section{Preliminary Tasks}
 
 
-\subsection{Update Raspberry Pi EE-PROMs}
+%
+% SUB SECTION
+%
+\subsection{Update Raspberry Pi EEPROMs}
+
+The firmware for the Raspberry Pi 4 is stored in Electrically Erasable Programmable Read-Only Memory (EEPROM). Updates to the firmware, which include functionality enhancements and bug fixes, are published at regular intervals. These updates are ``flashed'' to the EEPROM.
+
+It is important that each node of the cluster is using the same firmware. This ensures each node operates in the same manner, and performance is uniform across the cluster.
+
+It is recommended to update the EEPROM using the \verb|rpi-eeprom-update| command included with Raspberry Pi OS. A separate MicroSD card was used to install Raspberry Pi OS for this purpose.
+
+Having booted each Raspberry Pi with Raspberry Pi OS, to determine if any firmware updates are available, type the following:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ sudo rpi-eeprom-update
+\end{lstlisting}
+
+This will advise if a firmware update is available.
+
+If an update is available, update the firmware using the following commands:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ sudo rpi-eeprom-update -a
+$ sudo reboot
+\end{lstlisting}
+
+Following the reboot the new firmware will be installed (now is a convenient time to obtain the node MAC address, see next section). On completion, the Raspberry Pi can be shutdown and rebooted with Ubuntu 20.04 LTS 64-bit. 
 
 
-
+%
+% SUB SECTION
+%
 \subsection{Obtain Raspberry Pi MAC Addresses}
 
+The MAC address of each node is required to configure the cluster LAN IP address reservations. To determine the MAC address, type the following on each node:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ ip addr show eth0 | grep link/ether 
+\end{lstlisting}
+
+This will display output similar to this:
+
+\lstset{style=term}
+\begin{lstlisting}[]
+link/ether dc:a6:32:60:7b:cd brd ff:ff:ff:ff:ff:ff
+\end{lstlisting}
+
+The MAC address is the \verb|dc:a6:32:60:7b:cd| part of the command output. Make a note of this for each node.
 
 
+%
+% SUB SECTION
+%
 \subsection{Generate User Key Pair}
 
-On macbook (no passphrase):
+OpenMPI requires password-less access to each node. This is achieved with \verb|ssh| using public-key encryption. The private and public keys for user \verb|john| are generated on \verb|macbook|. The public key is distributed to each node via \verb|cloud-init| during Ubuntu installation. The private key is subsequently manually copied to \verb|node1|.
 
+To generate the key pair on \verb|macbook| (a passphrase is not used):
+
+\lstset{style=type}
 \begin{lstlisting}[]
 $ ssh-genkey -t rsa -C john
 \end{lstlisting}
 
-This will create two files... in ...
+This creates two files, the private key \verb|id_rsa|, and the public key \verb|id_rsa.pub|. The contents of the public key file is copied to the \verb|users| section of the \verb|cloud-init| \verb|user-data| file, in this case for user \verb|john|. The private key is copied to \verb|node1| during post-installation tasks.
 
 
-\subsection{Amend \texttt{macbook} \text{/etc/hosts}}
+\subsection{Amend \texttt{macbook} \texttt{/etc/hosts}}
 
 To enable access to a cluster node (from within the cluster LAN) without having to type the LAN IP address, add the following to \verb|macbook| \verb|/etc/hosts|:
 
@@ -2142,7 +2183,7 @@ To enable access to a cluster node (from within the cluster LAN) without having 
 192.168.0.9 node9
 \end{lstlisting}
 
-This enables the easier to remember and type:
+This enables the easier to remember (and type):
 
 \lstset{style=type}
 \begin{lstlisting}[]
@@ -2158,54 +2199,58 @@ $ ssh node1
 \end{lstlisting}
 
 
-
+%
+% SUB SECTION
+%
 
 \subsection{Router/Firewall Configuration}
 
-Local network behind firewall/switch: 192.168.0.254
+The router/firewall configuration consists of the following actions:
 
-WAN address
-LAN address
+\begin{itemize}
+  \item Set the WAN IP address, subnet mask and DNS servers
+  \item Set the LAN IP address, subnet mask, and DHCP server IP address range
+  \item Configure the LAN IP address reservations (this requires the node MAC addresses)
+  \item Enable router/firewall remote administration
+  \item Enable WAN access to \verb|node1| via \verb|ssh|
+  \item Enable router/firewall response to \verb|ping| (for network connectivity testing)
+\end{itemize}
 
-Firewall/Switch (Netgear FVS318G)
+Each of these actions is carried out using the router/firewall web-based setup, and is depicted in Figure 7.1 to Figure 7.6.
 
-Describe DHCP reservations mapping IP to MAC addresses.
+The default (and unchanged) LAN IP address for the router/firewall is \verb|192.168.0.254|. The default (and unchanged) username and password for the web-based setup is \verb|admin| and \verb|password|.
 
-Describe ssh access
-
-Add relevant PDFs.
-
-\begin{figure}
+\begin{figure}[H]
 	\centering	
 	\includegraphics[width=1.0\textwidth]{router-wan-setup}
 	\caption{Router/Firewall WAN Setup. This is the outside-world facing side of the cluster router/firewall. The WAN IP address is set to a static IP address of 192.168.1.253, with an IP subnet mask of 255.255.255.0. In my home environment this is the internal home subnet of my ADSL router. The ADSL router is the internet Gateway with an IP address of 192.168.1.254, and also acts as the Primary DNS Server. The Secondary DNS Server IP address of 8.8.8.8 is Google's public DNS Server. Once re-located to UCL, these IP addresses would be changed to match the UCL's internal network.}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[H]
 	\centering	
 	\includegraphics[width=1.0\textwidth]{router-lan-setup}
 	\caption{Router/Firewall LAN Setup. This is the internal cluster LAN side of the router/firewall. The router/firewall has an internal LAN address of 192.168.0.254, with an IP subnet mask of 255.255.255.0. Note, this is a different network than the WAN; 192.168.1 for the WAN, and 192.168.0 for the LAN. The router/firewall DNS Server is enabled for the LAN, and will serve addresses to connecting hosts in the range 192.168.0.101 to 192.168.0.201. These are hosts plugged into one of the LAN sockets of the router/firewall or network switch. This does not include the cluster compute nodes, which have IP addresses reserved based on their MAC addresses. See LAN IP Address Reservations in Figure ??. There should be no need to change these settings when the Aerin Cluster is relocated to UCL.}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[H]
 	\centering	
 	\includegraphics[width=1.0\textwidth]{router-lan-ip-reservations}
 	\caption{Router/Firewall LAN IP Address Reservations. To guarantee each compute node is assigned the same LAN IP address across reboots, the router/firewall is configured to serve IP addresses to connecting hosts based upon the host network card MAC address. This is ``reserving" an IP address for a particular host. This router/firewall setup page permits the relationship between MAC and IP addresses to be configured. Each line represents a compute node, or \texttt{macbook}, with a host name, e.g. \texttt{node1}, an IP address to reserve for this host, and the network card MAC address of the host. The MAC address must be known in advance.}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[H]
 	\centering	
 	\includegraphics[width=1.0\textwidth]{router-remote-admin}
 	\caption{Router/Firewall Remote Management. It is convenient to be able to configure the router/firewall remotely from the WAN side of the router firewall. This means that a network cable does not have to be plugged into one of the LAN sockets on the router/firewall or network switch to configure the router/firewall. For example, once re-located to UCL, the Aerin Cluster, with router/firewall and switch, can be sited in a suitable location and the router/firewall configured from anywhere on the UCL internal network.}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[H]
 	\centering	
 	\includegraphics[width=1.0\textwidth]{router-ssh-access}
 	\caption{Router/Firewall \texttt{ssh} Access. This setup page is used to configure the router/firewall to pass \texttt{ssh} packets from the WAN side of the router/firewall through the firewall to \texttt{node1}. This permits access to the compute nodes from the WAN. So, in a similar manner to the remote administration of the router/firewall, the Aerin Cluster can be sited in a suitable location at UCL, and the Aerin Cluster compute nodes, via \texttt{node1}, can be accessed using \texttt{ssh} from anywhere on the internal UCL network.}
 \end{figure}
 
-\begin{figure}
+\begin{figure}[H]
 	\centering	
 	\includegraphics[width=1.0\textwidth]{router-respond-to-ping}
 	\caption{Router/Firewall Respond to \texttt{ping}. Particularly during the build stage of the Aerin Cluster, it was useful to be able to \texttt{ping} the router/firewall to test for network connectivity. For enhanced security, by default, the router/firewall is not configured to respond to \texttt{ping} requests. This setup page enables \texttt{ping} request responses.}
@@ -2215,9 +2260,9 @@ Add relevant PDFs.
 %
 % SECTION
 %
-\clearpage\section{Ubuntu 20.04 64-bit LTS Installation}
+\section{Ubuntu 20.04 64-bit LTS Installation}
 
-The idea is to have a single (modified) Ubuntu 20.04 image which can be used to install Ubuntu 20.04 on all of the nodes...
+The idea is to have a single (tweaked) Ubuntu 20.04 64-bit image which can be used to install Ubuntu 20.04 on all of the compute nodes. This is described in Chapter 3. This section details the steps required.
 
 
 %
@@ -2225,83 +2270,80 @@ The idea is to have a single (modified) Ubuntu 20.04 image which can be used to 
 %
 \subsection{Create the Installation Image}
 
-The instructions below are for MacOS but should be straightforward to adjust for other operating systems.
+On \verb|macbook|:
 
-On \verb|macbook|...
+\begin{itemize}
+  \item Download the Raspberry Pi 4 Ubuntu 20.04 LTS 64-bit pre-installed server image from the Ubuntu website
+  \item Double click the compressed the \verb|.xz| file to extract the \verb|.img| file
+  \item Double click the \verb|.img| file to mount the image in the \verb|macbook| filesystem as \verb|/Volumes/system-boot|
+  \item Amend the \verb|user-data| file which stores the \verb|cloud-init| configuration, as per Listing 7.2
+  \item Eject/unmount the \verb|.img| file
+  \item Use Raspberry Pi Imager to erase each node's MicroSD card and burn the Ubuntu image, as per Figure 7.7 and Figure 7.8
+\end{itemize}
 
-Download the Raspberry Pi 4 Ubuntu 20.04 LTS 64-bit pre-installed server image from the Ubuntu website.
-
-Double click the compressed the \verb|.xz| file to extract the \verb|.img| file. 
-
-Double click the \verb|.img| file to mount the image in the \verb|macbook| filesystem as:
-
-\verb|/Volumes/system-boot|
-
-We now need to edit the \verb|user-data| file which stores the \verb|cloud-init| configuration. The \verb|user-data| file used to create the Aerin Cluster is at Listing 7.
-
-
-\lstset{style=listing}
+\lstset{style=listing, float=H}
 \lstinputlisting[caption=/Volumes/system-boot/user-data]{picluster/cloud-init/user-data-dissertation}
 
-
-Eject/unmount the \verb|.img| file.
-
-Use Raspberry Pi Imager to erase...
-
-\begin{figure}
+\begin{figure}[H]
 	\centering	
 	\includegraphics[width=1.0\textwidth]{screenshots/imager-erase.png}
 	\caption{Using Raspberry Pi Imager to erase and format a MicroSD card.}
 \end{figure}
 
-Then use the Raspberry Pi Imager to write preinstalled server image to the MicroSD card...
-
-\begin{figure}
+\begin{figure}[H]
 	\centering	
 	\includegraphics[width=1.0\textwidth]{screenshots/imager-write.png}
 	\caption{Using Raspberry Pi Imager to write the server image to a MicroSD card.}
 \end{figure}
 
-When complete, remove the MicroSD card from the card reader, place it the Raspberry Pi and plug in the power cable.
-
-The cloud-init configuration process will now start. The Raspberry Pi will acquire its IP address from the router, setup users, update apt, upgrade the system, download software packages, set the hostname (based on the IP address), and finally the system will reboot.
 
 
 %
 % SECTION
 %
-\clearpage\section{Post-Installation Tasks}
+\section{Ubuntu Installation}
 
-\subsection{Enable No Password Access}
+Having burnt the installation image to each MicroSD card, place the card in each node and plug in the power cable. The \verb|cloud-init| configuration process will now start. Each node will acquire its IP address from the router/firewall, setup system users, update the \verb|apt| cache, upgrade the system, download software packages, set the hostname (based on the IP address), and finally reboot.
 
-This is required for Open-MPI...
 
-Our public key was installed on each node by cloud-init. So, we can ssh into each node without a password, and use the abbreviated ssh node1, instead of ssh john@node1 (assuming john is the user name on the workstation).
+%
+% SECTION
+%
+\section{Post-Installation Tasks}
 
-We need to copy our private key to node1 (only node1)...
+
+%
+% SUB SECTION
+%
+\subsection{Complete the OpenMPI Password-Less Process}
+
+The user \verb|john|'s public key was installed on each node by \verb|cloud-init|.
+
+It remains to copy the private key to \verb|node1|:
 
 \lstset{style=type}
 \begin{lstlisting}
 $ scp ~/.ssh/id_rsa node1:~/.ssh
 \end{lstlisting}
 
-Then to enable access to nodes node2 to node9 without a password from node1, we need to import the ... keys into the node1 knownhosts file...
+To complete the process the host keys from \verb|node2| to \verb|node9| need to be imported into the \verb|known_hosts| file of \verb|node1|.
 
-This is easily done. From \verb|macbook|...
+From \verb|macbook|, \verb|ssh| into \verb|node1|:
 
 \lstset{style=type}
 \begin{lstlisting}[]
 $ ssh node1
 \end{lstlisting}
 
-And then from node1, for \verb|node2| to \verb|node9|...
+Then from \verb|node1|, \verb|ssh| into \verb|node2| to \verb|node9| in turn, for example:
 
 \lstset{style=type}
 \begin{lstlisting}[]
 $ ssh node2
 \end{lstlisting}
 
-This will generate will generate a message similar to...
+
+This will generate a message similar to this:
 
 \lstset{style=type}
 \begin{lstlisting}[]
@@ -2310,18 +2352,18 @@ ECDSA key fingerprint is SHA256:5VgsnN2nPvpfbJmALh3aJdOeT/NvDXqN8TCreQyNaFA.
 Are you sure you want to continue connecting (yes/no/[fingerprint])?
 \end{lstlisting}
 
-Respond yes to this, which imports the host key into the \verb|~/.ssh/knownhosts| file of \verb|node1|.
+Responding \verb|yes| to this this message, imports the \verb|node2| host key into the \verb|~/.ssh/known_hosts| file of \verb|node1|.
 
-And then exit from the connected node...
+Then exit from the connected node:
 
 \lstset{style=type}
 \begin{lstlisting}[]
 $ exit
 \end{lstlisting}
 
-Repeat the above for \verb|node2| to \verb|node9|.
+This completes the process.
 
-The above is only required to be done once (unless the host keys on \verb|node2| to \verb|node9| change).
+Subsequent \verb|ssh| access to \verb|node2| to \verb|node9| from \verb|node1| will be done using password-less public key authentication. This is the mechanism that OpenMPI will use.
 
 
 %
