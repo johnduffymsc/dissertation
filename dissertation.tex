@@ -11,6 +11,7 @@
 \usepackage{gensymb}
 \usepackage{amsmath}
 \usepackage{hyperref}
+\usepackage{dirtytalk}
 
 %\usepackage[a4paper, total={5.5in, 9in}]{geometry}
 
@@ -864,7 +865,22 @@ Each results file was then stored appropriately in the \verb|picluster/results| 
 %
 \section{High Performance Conjugate Gradients (HPCG)}
 
-HPCG...
+HPCG is intended to be complementary to HPL, and to incentivise hardware manufacturers to improve computer architectures for modern HPC workloads. 
+
+Quoting the Super Computing 2019 HPCG Handout:
+
+\say{The HPC Conjugate Gradient (HPCG) benchmark uses a preconditioned conjugate gradient (PCG) algorithm to measure the performance of HPC platforms with respect to frequently observed, yet challenging, patterns of execution, memory access, and global communication.}
+
+\say{The PCG implementation uses a regular 27-point stencil discretixation in 3 dimensions of an elliptic partial differential equation (PDE) with zero Dirichlet boundary condition. The 3-D domain is scaled to fill a 3-D virtual process grid of all available MPI process ranks. The CG iteration includes a local and symmetric Gauss-Seidel preconditioner, which computes a forward and a back solve with a triangular matrix. All of these features combined allow HPCG to deliver a more accurate performance metric for modern HPC architectures.}
+
+
+%
+% SUB SECTION
+%
+\subsection{Running HPCG}
+
+TODO:
+
 
 %
 % SECTION
@@ -933,17 +949,37 @@ The above is depicted in Figure ??.
 %
 \subsection{GotoBLAS}
 
+GotoBLAS is a high performance BLAS library developed by Kazushige Goto at the Texas Advanced Computing Center (TACC), a department of the University of Texas at Austin.
+
+GotoBLAS achieves high performance through the use of hand-crafted assembly language \emph{kernels}. Higher level BLAS routines are decomposed in \emph{kernels}, which stream data from the L1 and L2 CPU caches. These kernels typically reflect the size of the CPU registers, and L1 and L2 caches. For example, a CPU architecture may have a 4 x 4 \emph{dgemm kernel} and a 4 x 8 \emph{dgemm kernel} which conduct a double precision matrix-matrix multiplication on 4 x 4 and 4 x 8 matrices, respectively, and which have been sized for a specific architecture.
+
+The source code for GotoBLAS and GotoBLAS2 is still available as Open Source software, but the library is no longer in active development.
+
 
 %
 % SECTION
 %
 \subsection{OpenBLAS}
 
+OpenBLAS is an Open Source fork of the original GotoBLAS2 library, and is in active development by volunteers led by Zhang Xianyi at the Lab of Parallel Software and Computational Science, Institute of Software, Chinese Academy of Sciences (ISCAS).
+
+OpenBLAS is used by many of the Top500 supercomputers, including the Fugaku supercomputer which tops the June 2020 TOP500 List.
+
+For the Arm64 architecture, OpenBLAS implements the following \verb|dgemm| \emph{kernels}, where \verb|.S| indicates an assembly language file:
+
+\begin{itemize}
+  \item dgemm\_kernel\_4x4.S
+  \item dgemm\_kernel\_4x8.S
+  \item dgemm\_kernel\_8x4.S 
+\end{itemize}
+
 
 %
 % SECTION
 %
 \subsection{BLIS}
+
+BLIS 
 
 
 %
