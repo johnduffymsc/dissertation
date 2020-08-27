@@ -979,7 +979,15 @@ For the Arm64 architecture, OpenBLAS implements the following \verb|dgemm| \emph
 %
 \subsection{BLIS}
 
-BLIS 
+The ``BLAS-like Library Instantiation Software'' (BLIS) is a BLAS library implementation for many CPU architectures, and also a framework for implementing new BLAS libraries for new architectures. Using the BLIS framework, by solely implementing an optimised \verb|dgemm| \emph{kernel} in assembly language or compiler intrinsics, BLAS library functionality can be realised which achieves 60\% - 90\% of theoretical maximum performance.
+
+BLIS is developed by the Science of High-Performance Computing (SHPC) group of the Oden Institute for Computational Engineering and Sciences, at The University of Texas at Austin.
+
+For the Arm64 architecture, BLIS implements the following \verb|dgemm| assembly language \emph{kernel}:
+
+\begin{itemize}
+  \item gemm\_armv8a\_asm\_6x8
+\end{itemize}
 
 
 %
