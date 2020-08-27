@@ -602,46 +602,35 @@ Pi Cluster Tools are not production quality.
 %
 \section{Landscape}
 
-High Performance Linpack (HPL) is the industry standard HPC benchmark and has been for ?? years. It is used by the Top500 and Green500 lists to rank supercomputers in terms of raw performance and performance per Watt, respectively. However, it has been criticised for producing a single number, and not being a true measure of real-world application performance. This has led to the creation of complementary benchmarks, namely HPC Challenge (HPCC) and High Performance Conjugate Gradients (HPCG). These benchmarks measure whole system performance, including processing power, memory bandwidth, and network speed and latency, in relation to standard HPC algorithms such as FFT and CG.
+High Performance Linpack (HPL) is the industry standard HPC benchmark and has been for since 1993. It is used by the Top500 and Green500 lists to rank supercomputers in terms of raw performance and performance per Watt, respectively. However, it has been criticised for producing a single number, and not being a true measure of real-world application performance. This has led to the creation of complementary benchmarks, namely HPC Challenge (HPCC) and High Performance Conjugate Gradients (HPCG). These benchmarks measure whole system performance, including processing power, memory bandwidth, and network speed and latency, in relation to standard HPC algorithms such as FFT and CG.
 
 HPL has been the main focus of this project, mainly because it is the industry standard HPC benchmark, but also because tuning performance for HPL will also produce optimum results for HPCC (HPCC includes HPL) and HPCG.
-
-A detailed description of each benchmark follows.
 
 Because BLAS (Basic Linear Algebra Subroutine) library performance and cluster topology, pure OpenMPI and hybrid OpenMPI/OpenMP, have a direct impact on benchmark performance, a discussion of these topics is also included in this chapter. 
 
 
-%
-% SECTION
-%
-\section{Lists} 
-
-Top500...
-
-Green500...
-
-HPCG...
-
+A detailed description of each benchmark follows.
 
 %
 % SECTION
 %
 \section{High Performance Linpack (HPL)}
 
-%
-% SUB SECTION
-%
-\subsection{Algorithm}
+HPL did not begin life as a supercomputer benchmark. LINPACK is a software package for solving Linear Algebra problems. And in 1979 the ``LINPACK Report'' appeared as an appendix to the LINPACK User Manual. It listed the performance of 23 commonly used computers of the time when solving a matrix problem of size 100. The intention was that users could use this data to extrapolate the execution time of their matrix problems.
 
-Reference Paper...
+As technology progressed, LINPACK evolved through LINPACK 100, LINPACK 1000 to HPLinpack, developed for use on parallel computers. High Performance Linpack (HPL) is an implementation of HPLinpack.
 
-https://www.netlib.org/benchmark/hpl/...
+In 1993 the Top500 List was created to rank the performance of supercomputers and HPL was used, and still is used, to measure performance and create the rankings.
 
-Describe algorithm...
+HPL solves a dense system of equations of the form:
 
-Terminology $R_{peak}$, $R_{max}$..., problem size...
+\[A\mathbf{x}=\mathbf{b}\]
 
+HPL generates random data for a problem size N. It then solves the problem using LU decomposition and partial row pivoting.
 
+HPL requires an implementation of MPI (Message Passing Interface) and a BLAS (Basic Linear Algebra Subroutines) library to be installed. For this project, OpenMPI was the MPI implementation used, and OpenBLAS and BLIS were the BLAS libraries used. Both BLAS libraries were used in the single-threaded serial version and also the multi-threaded OpenMP version.
+
+In HPL terminology, $R_{peak}$ is the theoretical maximum performance. And $R_{max}$ is the maximum achieved performance, which will normally be observed using the maximum problem size $N_{max}$.
 
 
 %
@@ -771,13 +760,6 @@ $ mv HPL.out HPL.out.6_node_45320_88_1_6_2_3.openblas_openmp
 Each results file was then stored appropriately in the \verb|picluster/results| directory structure. 
 
 
-%\lstset{style=listing}
-%\lstinputlisting[caption=Example HPL.out.sorted]{files/HPL.out.sorted}
-
-
-
-
-
 %
 % SECTION
 %
@@ -867,6 +849,14 @@ $ mpirun --bind-to socket -host node1:1,node2:1 -np 2 -x OMP_NUM_THREADS=4 hpcc
 
 The benchmark results are placed in an output file \verb|hpccoutf.txt|.  
 
+For this project each benchmark \verb|hpccoutf.txt| file was renamed to reflect the N, NB, P and Q parameters used, and also the BLAS library used. For example:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ mv hpccoutf.txt hpccoutf.txt.8_node_52400_200_1_8_2_4.blis_openmp
+\end{lstlisting}
+
+Each results file was then stored appropriately in the \verb|picluster/results| directory structure. 
 
 
 %
