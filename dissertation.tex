@@ -773,7 +773,90 @@ Each results file was then stored appropriately in the \verb|picluster/results| 
 %
 \section{HPC Challenge (HPCC)}
 
-HPCC...
+HPCC is a suite of benchmarks which test different aspects of cluster performance. These benchmarks include tests for processing performance, memory bandwidth, and network bandwidth and latency. HPCC is intended to give a broader view of cluster performance, which will reflect real-world application performance more closely, than HPL alone. HPCC includes HPL as one of the suite of benchmarks.
+
+The HPCC suite consists of the following 7 benchmarks, where \emph{single} indicates the benchmark is run a single randomly selected node, \emph{star} indicates the benchmark in run independently on all nodes, and \emph{global} indicates the benchmark is run using all nodes in a coordinated manner. 
+
+
+%
+% SUB SECTION
+%
+\subsection{HPL}
+
+HPL is a \emph{global} benchmark which solves a dense system of linear equations.
+
+
+%
+% SUB SECTION
+%
+\subsection{DGEMM}
+
+The DGEMM benchmark tests double precision matrix-matrix multiplication performance in both \emph{single} and \emph{star} modes.
+
+ 
+%
+% SUB SECTION
+%
+\subsection{STREAM}
+
+The STREAM benchmark tests memory bandwidth, to and from memory, in both \emph{single} and \emph{star} modes.
+
+
+%
+% SUB SECTION
+%
+\subsection{PTRANS}
+
+PTRANS, Parallel Matrix Transpose, is a \emph{global} benchmark which tests system performance in transposing a large matrix.
+
+
+%
+% SUB SECTION
+%
+\subsection{RandomAccess}
+
+The RandomAccess benchmark tests the performance of random updates to a large table in memory, in \emph{single}, \emph{star}, and \emph{global} modes.
+
+
+%
+% SUB SECTION
+%
+\subsection{FFT}
+
+FFT tests the Fast Fourier Transform performance of a large vector, in \emph{single}, \emph{star}, and \emph{global} modes.
+
+
+%
+% SUB SECTION
+%
+\subsection{Network Bandwidth and Latency}
+
+This benchmark measures network/communications bandwidth and latency in \emph{global} mode.
+
+
+%
+% SUB SECTION
+%
+\section{Running HPCC}
+
+HPCC is run in the same manner as HPL. An input file \verb|hpccinf.txt| is created, which is of same format as \verb|HPL.dat|, but may contain additional problem sizes and block sizes for the PTRANS benchmark.
+
+HPCC is run using a serial BLAS library as follows, in this case using 2 nodes with 4 cores/slots:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ mpirun --bind-to core -host node1:4,node2:4 -np 8 hpcc
+\end{lstlisting}
+
+HPCC is run using a multi-threaded BLAS library as follows, again, in this case using 2 nodes with 4 cores/slots:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ mpirun --bind-to socket -host node1:1,node2:1 -np 2 -x OMP_NUM_THREADS=4 hpcc
+\end{lstlisting}
+
+The benchmark results are placed in an output file \verb|hpccoutf.txt|.  
+
 
 
 %
@@ -2404,7 +2487,9 @@ $ scp xhpl node8:~picluster/hpl/hpl-2.3/bin/picluster
 
 These instructions are derived from the README.txt file in the top level directory of the HPCC source code.
 
-Download and install the latest version of HPCC on \verb|node1|...
+It is assumed that HPL has previously been installed, and a HPL build file \verb|Make.picluster| has already been created. This file is copied to the HPCC build directory. See Chapter 8 for the instructions on how to install HPL.
+
+Download and install the latest version of HPCC on \verb|node1|:
 
 \lstset{style=type}
 \begin{lstlisting}
@@ -2419,7 +2504,7 @@ $ rm hpcc-1.5.0.tar
 $ cd hpcc-1.5.0
 \end{lstlisting}
 
-Copy the HPL build script \verb|Make.picluster| to the \verb|hpl| directory...
+Copy the HPL build script \verb|Make.picluster| to the HPCC \verb|hpl| directory:
 
 \lstset{style=type}
 \begin{lstlisting}
@@ -2427,44 +2512,44 @@ $ cd hpl
 $ cp ~/picluster/hpl/hpl-2.3/Make.picluster .
 \end{lstlisting}
 
-Make the following changes to \verb|Make.picluster|. These differ from the build instructions for HPL.
+Make the following changes to \verb|Make.picluster|. These differ from the HPL build instructions:
 
-Change the \verb|TOPdir| variable to \verb|../../..|
+Change the \verb|TOPdir| variable:
 
 \lstset{style=hack}
 \begin{lstlisting}[caption=Make.picluster]
 TOPdir = ../../..
 \end{lstlisting}
 
-Add the \verb|math| library explicitly, \verb|-lm|, for the linker...
+Add the \verb|math| library explicitly:
 
 \lstset{style=hack}
 \begin{lstlisting}[caption=Make.picluster]
 LAlib = $(LAdir)/libblas.so.3 -lm
 \end{lstlisting}
 
-Add the constant \verb|OMPI_OMIT_MPI1_COMPAT_DECLS| to \verb|CCFLAGS|, otherwise the compilation fails...
+Add the constant \verb|OMPI_OMIT_MPI1_COMPAT_DECLS| to \verb|CCFLAGS|, otherwise the compilation will fail:
 
 \lstset{style=hack}
 \begin{lstlisting}[caption=Make.picluster]
 CCFLAGS = $(HPL_DEFS) -O3 -march=armv8-a -mtune=cortex-a72 -DOMPI_OMIT_MPI1_COMPAT_DECLS
 \end{lstlisting}
 
-Now move back up into the top level directory...
+Move back up into the top level directory:
 
 \lstset{style=type}
 \begin{lstlisting}
 $ cd ..
 \end{lstlisting}
 
-Build HPCC...
+Build HPCC:
 
 \lstset{style=type}
 \begin{lstlisting}
 $ make arch=picluster
 \end{lstlisting}
 
-Copy the \verb|hpcc| executable to all of the nodes...
+Copy the \verb|hpcc| executable to the compute nodes:
 
 \lstset{style=type}
 \begin{lstlisting}
@@ -2478,24 +2563,16 @@ $ scp hpcc node7:~/picluster/hpcc/hpcc-1.5.0
 $ scp hpcc node8:~/picluster/hpcc/hpcc-1.5.0
 \end{lstlisting}
 
-Create the input file \verb|hpccinf.txt|...
+Create the input file \verb|hpccinf.txt|:
 
 \lstset{style=type}
 \begin{lstlisting}
 $ cp _hpccinf.txt hpccinf.txt
 \end{lstlisting}
 
-And amend as necessary. An input file which uses 80\% of the total cluster memory is at Listing ???.
+The input file is amended as necessary for each benchmark run, as per the HPL input file.
 
-To run HPCC across all 8 nodes...
-
-\lstset{style=type}
-\begin{lstlisting}
-$ mpirun -host node1:4,node2:4,...node7:4,node8:4 -np 32 hpcc
-\end{lstlisting}
-
-The output will be in the file \verb|hpccoutf.txt|.
-
+After each benchmark run the results will be in the output file \verb|hpccoutf.txt|.
 
 
 
