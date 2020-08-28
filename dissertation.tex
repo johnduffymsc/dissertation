@@ -1532,20 +1532,84 @@ Suggests... improve network efficiency?
 %
 % SECTION
 %
-\section{HPC Challenge Baseline}
+\section{HPCC Baseline}
 
-The HPC Challenge benchmark software was compiled locally from source. Detailed instructions on how to do this are in Part II Chapter ??.
-
-
+The HPCC baseline benchmarks were run using all 8 nodes of the Aerin Cluster. The results for each benchmark are presented below, with comparative performance results from ...
 
 
+%
+% SUB SECTION
+%
+\subsection{HPL}
+
+\begin{table}[H]
+\begin{center}
+\begin{tabular}{ |l|c|c|c|c|c|c| } 
+\hline
+                & Nodes & N & NB & P & Q & $R_{max}$ (Gflops) \\ 
+\hline
+OpenBLAS Serial & 8 & 52320 & 120 & 1 & 32 & \\ 
+                & 8 & 52320 & 120 & 2 & 16 & \\ 
+                & 8 & 52320 & 120 & 4 & 8  & \\ 
+\hline
+OpenBLAS OpenMP & 8 & 52360 &  88 & 1 & 8  & 8.685e+01 \\ 
+                & 8 & 52360 &  88 & 2 & 4  & 9.497e+01 \\ 
+\hline
+BLIS Serial     & 8 & 52416 & 168 & 1 & 32 & \\ 
+                & 8 & 52416 & 168 & 2 & 16 & \\ 
+                & 8 & 52416 & 168 & 4 & 8  & \\ 
+\hline
+BLIS OpenMP     & 8 & 52400 & 200 & 1 & 8  & 8.163e+01 \\ 
+                & 8 & 52400 & 200 & 2 & 4  & 8.841e+01 \\ 
+\hline
+\end{tabular}
+\end{center}
+\caption{\label{tab:table-name}HPCC HPL Baseline using 80\% of Memory.}
+\end{table}
 
 
 
+%
+% SUB SECTION
+%
+\subsection{DGEMM}
+
+ 
+%
+% SUB SECTION
+%
+\subsection{STREAM}
+
+
+%
+% SUB SECTION
+%
+\subsection{PTRANS}
+
+
+%
+% SUB SECTION
+%
+\subsection{RandomAccess}
+
+
+%
+% SUB SECTION
+%
+\subsection{FFT}
+
+
+%
+% SUB SECTION
+%
+\subsection{Network Bandwidth and Latency}
 
 
 
-
+%
+% SECTION
+%
+\section{HPCG Baseline}
 
 
 
