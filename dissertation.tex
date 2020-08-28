@@ -1641,7 +1641,7 @@ Suggests... improve network efficiency?
 %
 \section{HPCC Baseline}
 
-The HPCC baseline benchmarks were run using all 8 nodes of the Aerin Cluster. The results for each benchmark are presented below, with comparative performance results from ...
+The HPCC baseline benchmarks were run using all 8 nodes of the Aerin Cluster. The results for each benchmark are presented below.
 
 
 %
@@ -1671,7 +1671,7 @@ BLIS OpenMP     & 8 & 52400 & 200 & 1 & 8  & 8.163e+01 \\
 \hline
 \end{tabular}
 \end{center}
-\caption{\label{tab:table-name}HPCC HPL Baseline.}
+\caption{\label{tab:table-name}HPCC HPL.}
 \end{table}
 
 
@@ -1709,7 +1709,7 @@ BLIS OpenMP     & DGEMM\_N=10695 \\
 
 Table ?? requires some interpretation. For the single-threaded serial versions of the OpenBLAS and BLIS libraries, the cluster consists of 32 processing cores, so the \verb|SingleDGEMM_Gflops| are per core. For the multi-threaded OpenMP versions of the libraries, the cluster consists of 8 processing nodes, so the \verb|SingleDGEMM_Gflops| are per node.
 
-The results of this benchmark are consistent with the HPL benchmark.
+The results are consistent with the HPL benchmarks, which spend 96\%+ of the benchmark time in the BLAS \verb|dgemm| subroutine. 
 
 
 %
@@ -2776,7 +2776,9 @@ $ git init
 %
 \chapter{Install High-Performance Linpack (HPL)}
 
-Download and install the latest version of HPL on \verb|node1|...
+These instructions are derived from the \verb|INSTALL| and \verb|README| files in the \verb|hpl-2.3| top level source directory.
+
+Download and install the latest version of HPL on \verb|node1|:
 
 \lstset{style=type}
 \begin{lstlisting}
@@ -2791,7 +2793,9 @@ $ rm hpl-2.3.tar
 $ cd hpl-2.3
 \end{lstlisting}
 
-Create a \verb|Make.picluster| file...
+Each computer system requires a specific \verb|Make.picluster| file, which specifies the operating system commands and software package locations required to build HPL. 
+
+Create a generic \verb|Make.picluster| file:
 
 \lstset{style=type}
 \begin{lstlisting}
@@ -2801,21 +2805,97 @@ $ cp Make.UNKNOWN ../Make.picluster
 $ cd ..
 \end{lstlisting}
 
-Amend \verb|Make.picluster| as per listing ???.
+Amend \verb|Make.picluster| with the specifics of the Raspberry Pi 4 and Ubuntu 20.04 as follows. The changes below are changes to the generic file created above.
+
+Set the \emph{shell} to use:
 
 \lstset{style=listing}
-\lstinputlisting[caption=~/picluster/hpl/hpl-2.3/Make.picluster]{picluster/hpl/hpl-2.3/Make.picluster}
+\begin{lstlisting}[numbers=none]  
+SHELL        = /usr/bin/bash
+\end{lstlisting}
 
-Build HPL...
+Set the commands to use (these may vary form operating system to operating system):
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]  
+CD           = cd
+CP           = cp
+LN_S         = ln -s
+MKDIR        = mkdir -p
+RM           = rm -f
+TOUCH        = touch
+\end{lstlisting}
+
+Set the platform identifier:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]  
+ARCH         = picluster
+\end{lstlisting}
+
+Set the top level source directory:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]  
+TOPdir       = $(HOME)/picluster/hpl/hpl-2.3
+\end{lstlisting}
+
+Set the location of the OpenMPI library:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]  
+MPdir        = /usr/lib/aarch64-linux-gnu/openmpi
+MPinc        = $(MPdir)/include
+MPlib        = $(MPdir)/lib/libmpi.so
+\end{lstlisting}
+
+Set the location of the BLAS library (Note, this is the location of the Debian \emph{alternatives} \verb|libblas.so.3| library. The actual library that this points to, OpenBLAS or BLIS, is set through the Debian \verb|update-alternatives| command. This can be conveniently done using Pi Cluster Tools.):
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]  
+LAdir        = /usr/lib/aarch64-linux-gnu
+LAinc        =
+LAlib        = $(LAdir)/libblas.so.3
+\end{lstlisting}
+
+Set the ``Fortran to C'' defintitions, the header directories and libraries: 
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]  
+F2CDEFS      = -DAdd_ -DF77_INTEGER=int -DStringSunStyle
+...
+HPL_INCLUDES = -I$(INCdir) -I$(INCdir)/$(ARCH) -I$(MPinc)
+HPL_LIBS     = $(HPLlib) $(LAlib) $(MPlib)
+...
+HPL_DEFS     = $(F2CDEFS) $(HPL_OPTS) $(HPL_INCLUDES)
+\end{lstlisting}
+
+And finally, set the compiler, linker and optimisation flags:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]  
+CC           = mpicc
+CCNOOPT      = $(HPL_DEFS)
+CCFLAGS      = $(HPL_DEFS) -O3 -march=armv8-a -mtune=cortex-a72
+...
+LINKER       = $(CC)
+LINKFLAGS    = $(CCFLAGS)
+...
+ARCHIVER     = ar
+ARFLAGS      = r
+RANLIB       = echo
+\end{lstlisting}
+
+Build HPL:
 
 \lstset{style=type}
 \begin{lstlisting}
 $ make arch=picluster   
 \end{lstlisting}
 
-This creates the executable \verb|xhpl| and input file \verb|HPL.dat| in \verb|bin/picluster|
+This creates the executable \verb|xhpl| and input file \verb|HPL.dat| in the \verb|bin/picluster| directory.
 
-The \verb|xhpl| executable has to exist in the same location on each node, so copy \verb|xhpl| to \verb|node2| to \verb|node8| (only \verb|xhpl|, and not \verb|HPL.dat|)...
+The \verb|xhpl| executable has to exist in the same location on each node, so copy \verb|xhpl| to \verb|node2| to \verb|node8| (only \verb|xhpl|, and not \verb|HPL.dat|):
 
 \lstset{style=type}
 \begin{lstlisting}
