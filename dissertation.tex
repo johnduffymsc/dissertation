@@ -1686,9 +1686,9 @@ BLIS OpenMP     & 8 & 52400 & 200 & 1 & 8  & 8.163e+01 \\
 \hline
                 & Results \\ 
 \hline
-OpenBLAS Serial & \\ 
-                & \\ 
-                & \\ 
+OpenBLAS Serial & DGEMM\_N=5339 \\
+                & StarDGEMM\_Gflops=3.59743 \\
+                & SingleDGEMM\_Gflops=4.91086 \\
 \hline
 OpenBLAS OpenMP & DGEMM\_N=10687 \\
                 & StarDGEMM\_Gflops=14.4261 \\
@@ -1723,7 +1723,16 @@ The results are consistent with the HPL benchmarks, which spend 96\%+ of the ben
 \hline
                 & Results \\ 
 \hline
-OpenBLAS Serial & \\ 
+OpenBLAS Serial & STREAM\_VectorSize=28514400 \\
+                & STREAM\_Threads=1 \\
+                & StarSTREAM\_Copy=0.92926 \\
+                & StarSTREAM\_Scale=0.979969 \\
+                & StarSTREAM\_Add=0.902324 \\
+                & StarSTREAM\_Triad=0.899619 \\
+                & SingleSTREAM\_Copy=5.36868 \\
+                & SingleSTREAM\_Scale=5.41684 \\
+                & SingleSTREAM\_Add=4.75638 \\
+                & SingleSTREAM\_Triad=4.75692 \\
 \hline
 OpenBLAS OpenMP & STREAM\_VectorSize=114232066 \\
                 & STREAM\_Threads=1 \\
@@ -1773,9 +1782,13 @@ BLIS OpenMP     & STREAM\_VectorSize=114406666 \\
 \begin{center}
 \begin{tabular}{ |l|l| } 
 \hline
-                & Results \\ 
+                & Results \\
 \hline
-OpenBLAS Serial & \\ 
+OpenBLAS Serial & PTRANS\_GBs=0.465891 \\
+                & PTRANS\_n=26160 \\ 
+                & PTRANS\_nb=120 \\
+                & PTRANS\_nprow=1 \\
+                & PTRANS\_npcol=32 \\
 \hline
 OpenBLAS OpenMP & PTRANS\_GBs=0.616885 \\
                 & PTRANS\_n=26180 \\
@@ -1812,7 +1825,19 @@ BLIS OpenMP     & PTRANS\_GBs=0.637484 \\
 \hline
                 & Results \\ 
 \hline
-OpenBLAS Serial & \\ 
+OpenBLAS Serial & MPIRandomAccess\_LCG\_N=2147483648 \\
+                & MPIRandomAccess\_LCG\_GUPs=0.000642364 \\
+                \cline{2-2} 
+                & MPIRandomAccess\_N=2147483648 \\
+                & MPIRandomAccess\_GUPs=0.000645338 \\
+                \cline{2-2} 
+                & RandomAccess\_LCG\_N=67108864 \\
+                & StarRandomAccess\_LCG\_GUPs=0.00373175 \\
+                & SingleRandomAccess\_LCG\_GUPs=0.00815537 \\
+                \cline{2-2} 
+                & RandomAccess\_N=67108864 \\
+                & StarRandomAccess\_GUPs=0.00373372 \\
+                & SingleRandomAccess\_GUPs=0.00837312 \\ 
 \hline
 OpenBLAS OpenMP & MPIRandomAccess\_LCG\_N=2147483648 \\
                 & MPIRandomAccess\_LCG\_GUPs=0.000473649 \\
