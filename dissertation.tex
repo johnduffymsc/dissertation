@@ -879,7 +879,39 @@ Quoting the Super Computing 2019 HPCG Handout:
 %
 \subsection{Running HPCG}
 
-TODO:
+In a similar manner to HPL and HPCC, HPCG uses an input file \verb|hpcg.dat| for benchmark run configuration.
+
+The format of \verb|hpcg.dat| is as follows:
+
+\lstset{style=type}
+\begin{lstlisting}
+HPCG benchmark input file
+Sandia National Laboratories; University of Tennessee, Knoxville
+104 104 104
+60
+\end{lstlisting}
+
+Lines 1 and 2 are comments, line 3 specifies the 3 dimensions of the problem size, and line 4 specifies the run time in seconds. For benchmark runs to be submitted for official performance ranking the run time must exceed 30 minutes (1800 seconds).
+
+HPCG can be built in serial and OpenMP versions. See Part II Chapter 10 for details. 
+
+The serial version of HPCG is run as follows, in this case on 2 nodes each with 4 cores:
+
+\lstset{style=type}
+\begin{lstlisting}
+mpirun --bind-by core -host node1:4,node2:4 -np 8 xhpcg
+\end{lstlisting}
+
+The OpenMP version of HPCG is run as follows, again, in this case on 2 nodes each with 4 cores:
+
+\lstset{style=type}
+\begin{lstlisting}
+mpirun --bind-by socket -host node1:1,node2:1 -np 2 -x OMP_NUM_THREADS=4 xhpcg
+\end{lstlisting}
+
+The output from each benchmark run is placed is an output file with a name including a timestamp, for example:
+
+\verb|HPCG-Benchmark_3.1_2020-08-30_15-00-29.txt|
 
 
 %
