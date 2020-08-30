@@ -1937,9 +1937,37 @@ BLIS OpenMP     & MPIRandomAccess\_LCG\_N=2147483648 \\
 %
 \section{HPCG Baseline}
 
+The June 2020 HPCG List ranks 169 computer systems in order of conjugate gradient performance. Ranking number 1 is the Fugaku supercomputer, with the Spaceborne Computer, onboard the International Space Station, ranking number 169:
+
+\begin{table}[H]
+\begin{center}
+\begin{tabular}{ |c|c|c|c|c|c|c| } 
+\hline
+HPCG & Name & Cores & HPL $R_{max}$ & TOP500 & HPCG   & Fraction \\
+Rank &      &       & Pflops        & Rank   & Pflops & of Peak  \\
+\hline
+1 & Fugaku & 6,635,520 & 415.530 & 1 & 13.366 & 2.6\% \\
+\hline
+169 & Spaceborne Computer & 32 & 0.001 & - & 0.000034 & 2.9\% \\
+\hline
+\end{tabular}
+\end{center}
+\caption{\label{tab:table-name}June 2020 HPCG List.}
+\end{table}
+
+The Spaceborne Computer is a 32 core system based on the Intel Xeon E5-2620 v4 8 Core CPU, clocked at 2.1GHz, with an Infiniband interconnect.
 
 
+%
+% SUB SECTION
+%
+\subsection{Serial HPCG}
 
+
+%
+% SECTION
+%
+\subsection{OpenMP HPCG}
 
 
 %
