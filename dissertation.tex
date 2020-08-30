@@ -3037,6 +3037,146 @@ After each benchmark run the results will be in the output file \verb|hpccoutf.t
 %
 \chapter{Install High Performance Conjugate Gradients (HPCG)}
 
+These instructions are derived from the INSTALL and QUICKSTART files in the HPCG 3.1 top-level source directory.
+
+\lstset{style=hack}
+\begin{lstlisting}
+The main build difference between HPCG and HPL is that HPCG can be built as either a single-threaded serial program, or a multi-threaded OpenMP program. It is not the BLAS library which is either single or multi-threaded. In fact, HPCG does not use a BLAS library. To investigate the performance of HPCG in either single-threaded or multi-threaded versions requires building two HPCG programs.
+\end{lstlisting}
+
+Download and install the latest version of HPCG on \verb|node1|:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ ssh node1
+$ cd ~/picluster
+$ mkdir hpcg
+$ cd hpcg
+$ wget http://www.hpcg-benchmark.org/downloads/hpcg-3.1.tar.gz
+$ gunzip hpcg-3.1.tar.gz
+$ tar xvf hpcg-3.1.tar
+$ rm hpcg-3.1.tar
+$ cd hpcg-3.1
+\end{lstlisting}
+
+
+%
+% SECTION
+%
+\section{Serial HPCG}
+
+Create a \verb|Make.picluster_serial| file for the serial build:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ cp setup/Make.Linux_serial setup/Make.picluster_serial
+\end{lstlisting}
+
+Amend \verb|setup/Make.picluster_serial| as follows.
+
+Set the shell:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+SHELL = /usr/bin/bash
+\end{lstlisting}
+
+Set the top level directory:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+TOPdir = $(HOME)/picluster/hpcg/hpcg-3.1
+\end{lstlisting}
+
+Set the OpenMPI package location:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+MPdir = /usr/lib/aarch64-linux-gnu/openmpi
+MPinc = $(MPdir)/include
+MPlib = $(MPdir)/lib/libmpi.so
+\end{lstlisting}
+
+Include the OpenMPI header files and library:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+HPCG_INCLUDES = -I$(INCdir) -I$(INCdir)/$(arch) -I$(MPinc)
+HPCG_LIBS     = $(MPlib)
+\end{lstlisting}
+
+Ensure HPCG is built without OpenMP support:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+HPCG_OPTS = -DHPCG_NO_OPENMP
+\end{lstlisting}
+
+Set C++ compiler flags:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+CXX      = mpic++
+CXXFLAGS = $(HPCG_DEFS) -O3 -march=armv8-a -mtune=cortex-a72
+\end{lstlisting}
+
+Build HPCG:
+
+\lstset{style=type}
+\begin{lstlisting}[numbers=none]
+$ mkdir build_serial
+$ cd build_serial
+$ ../configure picluster_serial
+$ make
+\end{lstlisting}
+
+This creates the serial version of the \verb|xhpcg| executable and the \verb|hpcg.dat| input file in the \verb|build_serial/bin| directory.
+
+
+%
+% SECTION
+%
+\section{OpenMP HPCG}
+
+Create a \verb|Make.picluster_openmp| file for the OpenMP build:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ cp setup/Make.Linux_serial setup/Make.picluster_openmp
+\end{lstlisting}
+
+Amend \verb|setup/Make.picluster_openmp| as per \verb|setup/Make.pcluster_serial|, with the exceptions of not disabling OpenMP, i.e. leave HPCG\_OPTS blank, and adding \verb|-fopenmp| to the compiler flags:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+HPCG_OPTS = 
+\end{lstlisting}
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+CXXFLAGS = $(HPCG_DEFS) -O3 -march=armv8-a -mtune=cortex-a72 -fopenmp
+\end{lstlisting}
+
+This is a bug fix for \verb|src/ComputeResidual.cpp| line 56. Add the variable \verb|n| to the shared variables list of \verb|omp parallel| clause, otherwise a compiler error is generated:
+
+\lstset{style=hack}
+\begin{lstlisting}[numbers=none]
+#pragma omp parallel default(none) shared(n, local_residual, v1v, v2v)
+\end{lstlisting}
+
+
+Build HPCG:
+
+\lstset{style=type}
+\begin{lstlisting}[numbers=none]
+$ mkdir build_openmp
+$ cd build_openmp
+$ ../configure picluster_openmp
+$ make
+\end{lstlisting}
+
+This creates the OpenMP version of the \verb|xhpcg| executable and the \verb|hpcg.dat| input file in the \verb|build_openmp/bin| directory.
+
 
 %
 % CHAPTER
