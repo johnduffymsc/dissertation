@@ -881,7 +881,7 @@ Quoting the Super Computing 2019 HPCG Handout:
 
 In a similar manner to HPL and HPCC, HPCG uses an input file \verb|hpcg.dat| for benchmark run configuration.
 
-The format of \verb|hpcg.dat| is as follows:
+The format of \verb|hpcg.dat| with default parameter values is:
 
 \lstset{style=type}
 \begin{lstlisting}
@@ -891,9 +891,11 @@ Sandia National Laboratories; University of Tennessee, Knoxville
 60
 \end{lstlisting}
 
-Lines 1 and 2 are comments, line 3 specifies the 3 dimensions of the problem size, and line 4 specifies the run time in seconds. For benchmark runs to be submitted for official performance ranking the run time must exceed 30 minutes (1800 seconds).
+Lines 1 and 2 are comments, line 3 specifies the 3 dimensions of the problem size, and line 4 specifies the run time in seconds. The problem size is per OpenMPI process. For benchmark runs to be submitted for official performance ranking the problem size memory usage must exceed 25\% of available memory and the run time must exceed 30 minutes (1800 seconds).
 
-HPCG can be built in serial and OpenMP versions. See Part II Chapter 10 for details. 
+HPCG can be built in serial and OpenMP versions. See Part II Chapter 10 for details.
+
+For the serial version each node runs 4 \verb|xhpcg| processes, one on each core. Foe the OpenMP version a single \verb|xhpcg| process is run on each node.
 
 The serial version of HPCG is run as follows, in this case on 2 nodes each with 4 cores:
 
@@ -1525,7 +1527,6 @@ $ mpirun --bind-to socket -host node1:1,node2:1,node3:1 -np 3 -x OMP_NUM_THREADS
 For the 4, 5, 6, 7 and 8 node pure OpenMPI and hybrid OpenMPI/OpenMP baselines, HPL.dat is populated with the processor grid parameters P and Q in a similar manner. Likewise, the baselines are run in a similar manner.
 
 
-
 \begin{table}
 \begin{center}
 \begin{tabular}{ |l|c|c|c|c|c|c| } 
@@ -1553,19 +1554,19 @@ OpenBLAS Serial & 3 & & & 1 & 12 & \\
                 & 8 & & & 2 & 16 & \\ 
                 & 8 & & & 4 &  8 & \\ 
 \hline
-OpenBLAS OpenMP & 3 & & & 1 & 3  & \\ 
+OpenBLAS OpenMP & 3 & 32032 & 88 & 1 & 3 & 3.7842e+01 \\ 
                 \cline{2-7} 
-                & 4 & & & 1 & 4  & \\ 
+                & 4 & 37048 & 88 & 1 & 4 & 4.8657e+01 \\ 
                 \cline{2-7} 
-                & 5 & & & 1 & 5  & \\ 
+                & 5 & 41448 & 88 & 1 & 5 & 6.0428e+01 \\ 
                 \cline{2-7} 
-                & 6 & & & 1 & 6  & \\ 
-                & 6 & & & 2 & 3  & \\ 
+                & 6 & 45320 & 88 & 1 & 6 & 6.8713e+01 \\ 
+                & 6 & 45320 & 88 & 2 & 3 & 7.3722e+01 \\ 
                 \cline{2-7} 
-                & 7 & & & 1 & 7  & \\ 
+                & 7 & 49016 & 88 & 1 & 7 & 7.8712e+01 \\ 
                 \cline{2-7} 
-                & 8 & & & 1 & 8  & \\ 
-                & 8 & & & 2 & 4  & \\ 
+                & 8 & 52360 & 88 & 1 & 8 & 9.4245e+01 \\ 
+                & 8 & 52360 & 88 & 2 & 4 & 9.6630e+01 \\ 
 \hline
 \end{tabular}
 \end{center}
@@ -1580,40 +1581,42 @@ OpenBLAS OpenMP & 3 & & & 1 & 3  & \\
 \hline
                 & Nodes & N & NB & P & Q & $R_{max}$ (Gflops) \\ 
 \hline
-BLIS Serial     & 3 & & & 1 & 12 & \\ 
-                & 3 & & & 2 &  6 & \\ 
+BLIS Serial     & 3 & 32088 & 168 & 1 & 12 & 3.9005e+01 \\ 
+                & 3 & 32088 & 168 & 2 &  6 & 3.9050e+01 \\ 
+                & 3 & 32088 & 168 & 3 &  4 & 3.8958e+01 \\ 
                 \cline{2-7} 
-                & 4 & & & 1 & 16 & \\ 
-                & 4 & & & 2 &  8 & \\ 
+                & 4 & 36960 & 168 & 1 & 16 & 4.9694e+01 \\ 
+                & 4 & 36960 & 168 & 2 &  8 & 5.4268e+01\\ 
                 \cline{2-7} 
-                & 5 & & & 1 & 20 & \\ 
-                & 5 & & & 2 & 10 & \\ 
-                & 5 & & & 4 &  5 & \\ 
+                & 5 & 41328 & 168 & 1 & 20 & 5.5398e+01 \\ 
+                & 5 & 41328 & 168 & 2 & 10 & 6.5226e+01 \\ 
+                & 5 & 41328 & 168 & 4 &  5 & 6.2356e+01 \\ 
                 \cline{2-7} 
-                & 6 & & & 1 & 24 & \\ 
-                & 6 & & & 2 & 12 & \\ 
-                & 6 & & & 3 &  8 & \\ 
+                & 6 & 45360 & 168 & 1 & 24 & 7.0278e+01 \\ 
+                & 6 & 45360 & 168 & 2 & 12 & 7.9685e+01 \\ 
+                & 6 & 45360 & 168 & 3 &  8 & 7.5475e+01 \\ 
                 \cline{2-7} 
-                & 7 & & & 1 & 28 & \\ 
-                & 7 & & & 2 & 14 & \\ 
+                & 7 & 48888 & 168 & 1 & 28 & 8.0168e+01 \\ 
+                & 7 & 48888 & 168 & 2 & 14 & 8.7571e+01 \\ 
+                & 7 & 48888 & 168 & 4 &  7 & 8.6035e+01 \\ 
                 \cline{2-7} 
-                & 8 & & & 1 & 32 & \\ 
-                & 8 & & & 2 & 16 & \\ 
-                & 8 & & & 4 &  8 & \\ 
+                & 8 & 52416 & 168 & 1 & 32 & 9.1148e+01 \\ 
+                & 8 & 52416 & 168 & 2 & 16 & 1.0341e+02 \\ 
+                & 8 & 52416 & 168 & 4 &  8 & 1.0190e+02 \\ 
 \hline
-BLIS OpenMP     & 3 & & & 1 & 3  & \\ 
+BLIS OpenMP     & 3 & 32000 & 200 & 1 & 3 & 3.5132e+01 \\ 
                 \cline{2-7} 
-                & 4 & & & 1 & 4  & \\ 
+                & 4 & 37000 & 200 & 1 & 4 & 4.6953e+01 \\ 
                 \cline{2-7} 
-                & 5 & & & 1 & 5  & \\ 
+                & 5 & 41400 & 200 & 1 & 5 & 6.2550e+01 \\ 
                 \cline{2-7} 
-                & 6 & & & 1 & 6  & \\ 
-                & 6 & & & 2 & 3  & \\ 
+                & 6 & 45400 & 200 & 1 & 6 & 6.7204e+01 \\ 
+                & 6 & 45400 & 200 & 2 & 3 & 7.2585e+01 \\ 
                 \cline{2-7} 
-                & 7 & & & 1 & 7  & \\ 
+                & 7 & 49000 & 200 & 1 & 7 & 8.1255e+01 \\ 
                 \cline{2-7} 
-                & 8 & & & 1 & 8  & \\ 
-                & 8 & & & 2 & 4  & \\ 
+                & 8 & 52400 & 200 & 1 & 8 & 9.1180e+01 \\ 
+                & 8 & 52400 & 200 & 2 & 4 & 1.0041e+02 \\ 
 \hline
 \end{tabular}
 \end{center}
@@ -1937,7 +1940,7 @@ BLIS OpenMP     & MPIRandomAccess\_LCG\_N=2147483648 \\
 %
 \section{HPCG Baseline}
 
-The June 2020 HPCG List ranks 169 computer systems in order of conjugate gradient performance. Ranking number 1 is the Fugaku supercomputer, with the Spaceborne Computer, onboard the International Space Station, ranking number 169:
+The June 2020 HPCG List ranks 169 computer in order of conjugate gradient performance. Ranking number 1 is the Fugaku supercomputer. And ranking 169 is the Spaceborne Computer onboard the International Space Station (ISS). The Spaceborne Computer is a 32 core system based on the Intel Xeon E5-2620 v4 8 Core CPU, clocked at 2.1GHz, with an Infiniband interconnect. The HPCG List performance reaults of these two computers are in Table ??.
 
 \begin{table}[H]
 \begin{center}
@@ -1955,8 +1958,29 @@ Rank &      &       & Pflops        & Rank   & Pflops & of Peak  \\
 \caption{\label{tab:table-name}June 2020 HPCG List.}
 \end{table}
 
-The Spaceborne Computer is a 32 core system based on the Intel Xeon E5-2620 v4 8 Core CPU, clocked at 2.1GHz, with an Infiniband interconnect.
 
+
+The Aerin Cluster... 
+
+\begin{table}[H]
+\begin{center}
+\begin{tabular}{ |c|c|c|c|c|c|c| } 
+\hline
+HPCG & Name & Cores & HPL $R_{max}$ & TOP500 & HPCG   & Fraction \\
+Rank &      &       & Pflops        & Rank   & Pflops & of Peak  \\
+\hline
+- & OpenBLAS Serial & 32 & & - & & \% \\
+\hline
+- & OpenBLAS OpenMP & 32 & & - & & \% \\
+\hline
+- & BLIS Serial & 32 & & - & & \% \\
+\hline
+- & BLIS OpenMP & 32 & & - & & \% \\
+\hline
+\end{tabular}
+\end{center}
+\caption{\label{tab:table-name}The Aerin Cluster HPCG Benchmark.}
+\end{table}
 
 %
 % SUB SECTION
