@@ -280,7 +280,7 @@ High Performance Computing (HPC) is the solving of numerical problems which are 
 
 The UK Met Office use a number of grids to model global and and UK weather. The finest UK grid being a 1.5 km spaced 622 x 810 point inner grid, with a 4 km spaced 950 x 1025 outer grid, both with 70 vertical levels. To model the atmosphere on these grids the UK Met Office currently uses three Cray XC40 supercomputers, capable of 14 Petaflops ($10^{15}$ Floating Point Operations per Second), and which contain 460,000 computer cores, 2 Petabytes of memory and 24 Petabytes of storage.
 
-Clearly a single Cray XC40 used for NWF is a somewhat different beast than a single imaginary Turing Machine. Some of the differences obviously relate to the imaginary nature of the Turing Machine, with its infinitely long tape, and to what is possible to build within the limits of today's technology. The Cray XC40's 2 Petabytes of memory is large, but not infinite. But possibly the most important differences are architectural. Each Cray XC40 is a massively parallel supercomputer, made up of a large number of individual processing nodes. Each node has a large but finite amount of processing capacity and memory. The problem data and program instructions must be divided up and distributed amongst the nodes. The nodes must be able to communicate in an efficient manner. And opportunities for parallel and concurrent processing should be exploited to minimise processing time. Each of these differences is a requirement to match HPC workloads onto an real-world machine. And each of these difference introduces a degree of complexity.   
+Clearly a single Cray XC40 used for NWF is a somewhat different beast than a single imaginary Turing Machine. Some of the differences obviously relate to the imaginary nature of the Turing Machine, with its infinitely long tape, and to what is possible to build within the limits of today's technology. The Cray XC40's 2 Petabytes of memory is large, but not infinite. But possibly the most important differences are architectural. Each Cray XC40 is a massively parallel supercomputer, made up of a large number of individual processing nodes. Each node has a large but finite amount of processing capacity and memory. The problem data and program instructions must be divided up and distributed amongst the nodes. The nodes must be able to communicate in an efficient manner. And opportunities for \emph{parallel} and \emph{concurrent} processing should be exploited to minimise processing time. Each of these differences is a requirement to map HPC workloads onto a real-world machine. And each of these difference introduces a degree of complexity.   
 
 Since the birth of electronic computing, there has always been a need to know long it will take for a computer to perform a particular task. This may be solely related to allocating computer time efficiently, or simply just wanting to know how long a program will take to run. Or, it may be commercially related; even a moderately sized single computer can be a large investment requiring the maximum performance possible for the purchase price. And more recently, the need to know how much processing power per unit of electricity a computer can achieve has become an important metric. This need for information is addressed by using a benchmark.
 
@@ -293,29 +293,22 @@ The following sections of this chapter describe in more detail the complexities 
 
 \subsection{CISC}
 
-
 \subsection{RISC}
+
+\subsection{Concurrent Computation}
+
+\subsection{Parallel Computation}
+
+\subsection{Scheduling}
 
 
 \section{Main Memory}
 
-Problem size exceeds memory size => more nodes...
-
-VM - Slow... remain in main memory...
-
-Problem size exceeds memory size => more nodes...
-
-HPC workloads...
-
-
 \subsection{Virtual Memory}
-
 
 \subsection{NUMA}
 
-
 \subsection{Shared Memory}
-
 
 \subsection{Distributed Memory}
 
@@ -349,9 +342,11 @@ TLB...
 
 \section{Benchmarks}
 
-A benchmark is a standardised measure of performance...
+\subsection{High Performance Linpack}
 
-HPC benchmarks... measure the above... provide metrics for investment... Big money!!!
+\subsection{HPC CHallenge}
+
+\subsection{HP Conjugate Gradients}
 
 
 %
