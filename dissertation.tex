@@ -308,18 +308,20 @@ Main memory is the largest component of the memory system of a computer. On desk
 
 Each memory location contains a byte of data, where a byte is 8 binary bits. Bytes are stored sequentially at an \emph{addresses}, which is a binary number in the range 0 up to the maximum address supported by the system. The maximum address typically aligns with the register size. For example, 64-bit computer has 64-bit registers which can hold an address in the range 0 to $64^2$. This requires a 64-bit physical \emph{address bus} to address each byte of memory. Practical considerations sometimes limit the size of the address bus. The Raspberry Pi 4 is a 64-bit computer but has a 48-bit physical address bus.
 
-Computers systems without an operating system, such as embedded systems, permit direct access to main memory from software. In this case there is a direct mapping between the memory address within a computer program and the physical address main memory. Most operating systems present an abstracted view of main memory to each program running on the system. This is called \emph{virtual memory}.
+Computers systems without an operating system, such as embedded systems, permit direct access to main memory from software. In this case there is a direct mapping between the memory address within a computer program and the physical address in main memory. Most operating systems present an abstracted view of main memory to each program running on the system. This is called \emph{virtual memory}.
  
     
 \subsection{Virtual Memory}
 
 Virtual memory is the abstracted view of main memory presented to a running program by the operating system. Virtual memory requires both hardware support, through the Memory Management Unit (MMU), and software support by the operating system. Contiguous regions of virtual memory are organised into \emph{pages}, typically 4 KB in size. Each page of virtual memory maps to a page of physical memory through a \emph{page table} which resides in main memory. A smaller page table called the \emph{Translation Lookaside Buffer}, which is a \emph{cache} in close proximity to each processing core, is discussed later.
 
-Virtual memory is implemented for a number of reasons. One is to permit the use of a smaller amount of physical memory than is actually addressable. In this case, pages currently in use are brought into physical main memory, and pages that are no longer in use are \emph{swapped} to slower permanent storage such as a hard disk drive. This illusion of a full amount of addressable main memory is transparent to the user, but is slow and is not used in HPC applications.
+Virtual memory is implemented for a number of reasons. One is to permit the use of a smaller amount of physical memory than is actually addressable. In this case, pages currently in use reside in main memory, and pages no longer required are \emph{swapped} to permanent storage to make space for new pages. This illusion of a full amount of addressable main memory is transparent to the user. But the \emph{paging} between main memory and permanent storage is slow, and is therefore not used in HPC applications.
+
+Another reason to use virtual memory is to implement a protection mechanism called \emph{process isolation}. Each running program, or \emph{process}, executes in its own private address space. This means that it is not possible for a process to overwrite data, possibly due a bug in a program, in another process. This process isolation in managed by the operating system using virtual memory.
+
+It is possible for multiple processes to communicate through \emph{shared memory}, where each process can read and write to the same block of memory, but this requires programs to be specifically written to make use of this mechanism. 
 
   
-
-
 \subsection{NUMA}
 
 \subsection{Shared Memory}
