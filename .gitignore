@@ -5,7 +5,7 @@
 # Except...
 
 !.gitignore
-¡*.tex
+!dissertation*.tex
 !dissertation.pdf
 !picluster.ipynb
 

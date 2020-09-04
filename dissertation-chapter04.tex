@@ -1,0 +1,283 @@
+
+This chapter describes the components of the Aerin Cluster, and includes some advice and lessons learned. Detailed build instructions are included in Part II Chapter 7. 
+
+Photo...
+
+The Aerin Cluster consists of the following hardware and software components.
+%
+% SECTION
+%
+\section{Hardware}
+
+\begin{itemize}
+  \item 8 x Raspberry Pi 4 Model B compute nodes, \verb|node1| to \verb|node8|
+  \item 1 x Raspberry Pi 4 Model B build node, \verb|node9|
+  \item 9 x Official Raspberry Pi 4 power supplies
+  \item 9 x Class 10 A1 MicroSD cards
+  \item 9 x Heatsinks with integrated fans
+  \item 1 x Netgear FVS318G 8 Port Gigabit Router/Firewall
+  \item 1 x Netgear GS316 16 Port Gigabit Switch (with Jumbo Frame Support)
+  \item Cat 7 cabling
+\end{itemize}
+
+
+%
+% SUB SECTION
+%
+\subsection{Raspberry Pi's}
+The 9 x Raspberry Pi 4 used in the cluster are the 4GB RAM version. Recently, an 8GB RAM version became available. This which would be the preferred version for a future cluster.
+
+The compute nodes of the cluster are \verb|node1| to \verb|node8|. These are used to run the benchmarks.  
+
+Some benchmarks require a substantial amount of time to run, so it is helpful to have a dedicated build node for compiling software, developing scripts, etc, while the benchmarks run on compute nodes. This build node is \verb|node9|.
+
+It is convenient to have one of the compute nodes designated the ``master'' node (this is a convenience and not a requirement). This is \verb|node1|. If any software needs to compiled locally to the compute nodes, and not on the build node, then the ``master'' node is used to do this. This node is also used to mirror the GitHub repository and to run the various Pi Cluster Tools. 
+
+
+%
+% SUB SECTION
+%
+\subsection{Power Supplies}
+The Raspberry Pi 4 is sensitive to voltage drops, especially whilst booting. So it was decided to purchase 9 Official Raspberry Pi 4 power supplies, rather than a USB hub with multiple power outlets which may not have been able to maintain output voltage whilst booting 9 nodes. The 9 power supplies do take up some space, so a future development would be to investigate a suitably rated USB hub.
+
+
+%
+% SUB SECTION
+%
+\subsection{MicroSD Cards}
+MicroSD cards are available in a number of speed classes and ``use'' categories. The recommended minimum specification for the Raspberry Pi 4 is Class 10 A1. The ``10'' refers to a 10 MB/s write speed. The ``A'' refers to the ``Application'' category, which supports at least 1500 read operations and 500 write operations per second.
+
+
+%
+% SUB SECTION
+%
+\subsection{Heatsinks}
+Cooling is a major consideration when building any cluster, even an 8 node Raspberry Pi cluster. The Raspberry Pi 4 throttles back the clock speed at approximately 85\degree C, which would not only have had a negative impact on benchmark results, but also on repeatability. So, it was very important to select suitable cooling. After some investigation, it was decided to purchase heatsinks with integrated fans. These proved to be very successful, with no greater than 65\degree C observed at any time, even with 100\% CPU utilisation for many hours. 
+
+
+%
+% SUB SECTION
+%
+\subsection{Network Considerations}
+
+The MTU is the network packet payload size in bytes, i.e. the size of your data that is transmitted in a single network packet. It is actually 28 bytes less than this due to network protocol overhead. We shall see later how a larger MTU can improve network efficiency and improve benchmark performance.
+
+A Jumbo Frame is any MTU greater than 1500 bytes. There is no standard maximum size for a Jumbo Frame, but the norm seems to be 9000 bytes. Not all network devices support Jumbo Frames, and a change of MTU size from the default 1500 bytes has to be supported by all devices on the network (although some devices are smart enough to accommodate multiple MTU's).
+
+As we shall see, the Raspberry Pi 4 has very good Ethernet networking capabilities. The theoretical maximum bandwidth of a Gigabit Ethernet connection is 1 Gbit/s. With the default MTU (Maximum Transmission Unit) of 1500 bytes, the Raspberry Pi 4 can achieve 930 Mbit/s. This is 93\% of the theoretical maximum bandwidth. Increasing the MTU to 9000 bytes increases the achievable, and measurable, bandwidth to 980 Mbit/s. This is, effectively, full Gigabit speed. It is important we make full use of this with adequate network equipment.
+
+It would be tempting to use any old router/firewall, switch, and cabling found lurking around in some dusty cupboard. This would be a mistake, and potentially cripple the cluster network. Courtesy of Ebay, I acquired a professional grade router/firewall and switch for less than £30 each. And the switch supports Jumbo Frames up to 9000 bytes, which we will be making use of.
+
+
+%
+% SUB SECTION
+%
+\subsection{Router/Firewall}
+The router/firewall acts a cluster interface to the outside world. The firewall wall only permits certain network packets access to the cluster through holes in the wall, in our case only \verb|ssh| packets. One side of the firewall is the cluster LAN (Local Area Network). The other side of the firewall is the WAN (Wide Area Network). 
+
+In my home environment the WAN is connected to my ADSL router via an ethernet cable. This permits the compute nodes on the LAN to connect to the internet and download updates. When relocated to UCL, the WAN would be connected to the internal UCL network.
+
+The router exposes a single IP address for the cluster to the WAN. Access from the outside world to the cluster is through this single IP address via \verb|ssh|, which is routed to \verb|node1|.
+
+The router also acts as DHCP (Dynamic Host Configuration Protocol) server for the compute node LAN. Compute node hostnames, such as \verb|node1| etc, are configured by a boot script which determines the node hostname from the last octet of the node IP address, served by the DHCP server based on the MAC address. This ensures that each compute node is always assigned the same LAN IP address and hostname across reboots.
+
+It sounds more complicated than it actually is, and is easily configured through the router/firewall web-based setup. More details are in Part II Chapter 7.
+
+
+%
+% SUB SECTION
+%
+\subsection{Network Switch}
+
+The switch acts as an extension to the number of ports on the compute node LAN. And because it supports Jumbo Frames it can accommodate an MTU increase to 9000 bytes localised to the compute nodes.
+
+My initial build of the Aerin Cluster only used the 8 port router/firewall. Only having 8 ports quickly became tiresome, so a 5 port switch was added so that I could directly connect \verb|node9| and my \verb|macbook| to the compute nodes without having to \verb|ssh| through the firewall. Later, when it became apparent that the 5 port switch didn't support Jumbo Frames, this was replaced with the current 16 port switch. I did anticipate having to replace the router/firewall because it doesn't support Jumbo Frames, but the switch is sufficiently smart to route 9000 byte packets between the compute nodes, and fragment any packets to/from the outside world, through the router/firewall, into 1500 byte packets.
+
+
+%
+% SUB SECTION
+%
+\subsection{Cabling}
+Cat 5 network cables only support 100 Mbit/s, and without any electrical shielding. Cat 5e supports 1 Gbit/s without shielding. Cat 6 supports 1 Gbit/s, possibly with shielding depending on the cable. Cat 6a and Cat 7 support 10 Gbit/s with electrical shielding. Therefore, to ensure maximum use of the network capabilities of the Raspberry Pi 4, a minimum of Cat 5e cabling must be used. Because the Aerin Cluster cable lengths are relatively short, and therefore inexpensive, I opted to use CAT 7 cabling. My advice would be to do the same for any future clusters. Any performance limiting factor is then not the cabling. If you need to use old cable, check the labelling!  
+
+
+
+%
+% SECTION
+%
+\section{Software}
+
+
+%
+% SUB SECTION
+%
+\subsection{Operating System}
+The operating system used for the Aerin Cluster is Ubuntu 20.04 LTS 64-bit Pre-Installed Server for the Raspberry Pi 4. This can be downloaded from the Ubuntu website or installed via Raspberry Pi Imager.
+
+
+%
+% SUB SECTION
+%
+\subsection{\texttt{cloud-init}}
+
+The \verb|cloud-init| system was originally developed by Ubuntu to simplify the instantiation of operating system images in cloud computing environments, such as Amazon's AWS and Microsoft's Azure. It is now an industry standard.
+
+It is also very useful for automating the installation of the same operating system on a number of computers using a single installation image. This dramatically simplifies building a cluster.
+
+The idea is that a \verb|user-data| file is added to the \verb|boot| directory of an installation image. When a node boots using the image, this file is read and the configuration/actions specified in this file are automatically applied/run as the operating system is installed.
+
+For the Aerin Cluster the following configuration/actions were applied to each node:
+
+\begin{itemize}
+\item Add the user \verb|john| to the system and set the initial password 
+\item Add \verb|john's| public key
+\item Update the \verb|apt| data cache
+\item Upgrade the system
+\item Install specified software packages
+\item Create a \verb|/etc/hosts| file
+\item Set the hostname based on the IP address
+\end{itemize}
+
+All of this is done from a single image and \verb|user-data| file. The time invested in getting the \verb|user-data| file right pays off handsomely, especially when the cluster may need to be rebuild from scratch a number of times.
+
+The main software packages used for benchmarking installed by \verb|cloud-init| are:
+
+\begin{itemize}
+\item build-essential
+\item openmpi-bin
+\item libopenblas0-serial
+\item libopenblas0-openmp
+\item libblis3-serial
+\item libblis3-openmp
+\end{itemize}
+
+This installs essential software build tools, such as C/C++ compilers, \verb|make|, etc, OpenMPI binary and development files, and the OpenBLAS and BLIS libraries in both serial and OpenMP versions. 
+
+The package names for the OpenBLAS and BLIS libraries are somewhat cryptic and can cause confusion. For example, the BLIS packages libblis64-serial and libblis64-openmp are not the 64-bit packages we would expect to install on a 64-bit operating system. The ``64'' refers to the integer size for the BLAS library. The packages we need are the libblis3-serial and libblis3-openmp versions, which are still 64-bit packages.
+
+
+%
+% SUB SECTION
+%
+\subsection{Benchmark Software}
+
+The HPL, HPCC and HPCG benchmark software was all compiled locally from source. The instructions for how to do this are in Part II Chapter 7.
+
+
+%
+% SUB SECTION
+%
+\subsection{BLAS Library Management}
+
+On the Aerin Cluster we have two different BLAS libraries installed, OpenBLAS and BLIS, both in serial and OpenMP versions. It is obviously critical to have the same BLAS library configured as the ``the BLAS library in use'' on each node at the same time.
+
+Debian/Ubuntu have a very clever mechanism for setting a particular version of a library to be the ``the BLAS library in use''. The is called the ``alternatives'' mechanism, and is not just used for BLAS libraries, there are lots of software packages with ``alternatives''.
+
+Each ``alternative'' has a name, in the case of the BLAS libraries it is called \verb|libblas.so.3|. What is really clever is that you can build software, such as HPL, to link against \verb|libblas.so.3|, and then change then change what this ``alternative'' points to without having to rebuild the software.
+
+For example, to set the serial version of OpenBLAS to ``the BLAS library in use'' we update the ``alternative'' with the following command:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ sudo update-alternatives --set libblas.so.3-aarch64-linux-gnu /usr/lib/aarch64-linux-gnu/openblas-serial/libblas.so.3
+\end{lstlisting}
+
+Alternatively, there is an interactive version of the command which allows you to select a BLAS library from a list of options:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ sudo update-alternatives --config libblas.so.3-aarch64-linux-gnu
+\end{lstlisting}
+
+The ``alternatives'' mechanism is very clever, but when you need to set the BLAS library on 8 nodes quite frequently this is a lot of typing and also error prone. So to make life easier I wrote two BLAS library management wrapper scripts described in the section below. 
+
+
+%
+% SUB SECTION
+%
+\subsection{Pi Cluster Tools}
+
+Even a cluster of only 8 nodes requires quite a bit of effort, and typing, to keep the system up to date and to ensure the same BLAS library is running on each node. Logging in to each node individually to do this is a chore, and more importantly it is very error prone.
+
+To get around this problem, a number of \verb|bash| scripts were written as Pi Cluster Tools. Each script loops over a list of node names and uses \verb|ssh| to run a command remotely on each node in turn.
+
+The following scripts are included as Pi Cluster Tools.
+
+\begin{itemize}
+\item upgrade
+\item reboot
+\item shutdown
+\item do
+\item libblas-query
+\item libblas-set
+\end{itemize}
+
+Listings of the scripts are included in Part II Chapter 17.
+
+To run a particular tool, for example \verb|upgrade|, type the following command which will upgrade all of the nodes sequentially.
+
+\lstset{style=type}
+\begin{lstlisting}
+$ ~/picluster/tools/upgrade
+\end{lstlisting}
+
+The \verb|do| command ``does'' the same command on each node. Note the required quotation marks.
+
+\lstset{style=type}
+\begin{lstlisting}
+$ ~/picluster/tools/do "mkdir -p ~/picluster/hpl/hpl-2.3/bin/picluster"
+\end{lstlisting}
+
+
+Probably the most useful of the Pi Cluster Tools are the two BLAS library tools.
+
+\verb|libblas-query| queries the ``the BLAS library in use'' on each node. This is extremely useful for ensuring the same library is in use on each node.
+
+For example.
+
+\lstset{style=type}
+\begin{lstlisting}
+$ ~/picluster/tools/libblas-query
+\end{lstlisting}
+
+\lstset{style=term}
+\begin{lstlisting}
+node8... /usr/lib/aarch64-linux-gnu/blis-openmp/libblas.so.3
+node7... /usr/lib/aarch64-linux-gnu/blis-openmp/libblas.so.3
+node6... /usr/lib/aarch64-linux-gnu/blis-openmp/libblas.so.3
+node5... /usr/lib/aarch64-linux-gnu/blis-openmp/libblas.so.3
+node4... /usr/lib/aarch64-linux-gnu/blis-openmp/libblas.so.3
+node3... /usr/lib/aarch64-linux-gnu/blis-openmp/libblas.so.3
+node2... /usr/lib/aarch64-linux-gnu/blis-openmp/libblas.so.3
+node1... /usr/lib/aarch64-linux-gnu/blis-openmp/libblas.so.3
+\end{lstlisting}
+
+
+\verb|libblas-set| takes a single argument, openblas-serial, openblas-openmp, blis-serial, or blis-openmp, and then uses the ``alternatives'' mechanism to set the ``BLAS library in use'' on each node.
+
+For example.
+
+\lstset{style=type}
+\begin{lstlisting}
+$ ~/picluster/tools/libblas-set openblas-serial
+\end{lstlisting}
+
+\lstset{style=term}
+\begin{lstlisting}
+node8... done
+node7... done 
+node6... done 
+node5... done 
+node4... done 
+node3... done 
+node2... done 
+node1... done 
+\end{lstlisting}
+
+\lstset{style=hack}
+\begin{lstlisting}
+Pi Cluster Tools are not production quality.
+\end{lstlisting}
+
+
+

@@ -1,0 +1,1396 @@
+%
+% SECTION
+%
+\section{Theoretical Maximum Performance (Gflops)}
+
+The Raspberry Pi 4 Model B is based on the Broadcom BCM2711 System on a Chip (SoC). The BCM2711 contains 4 Arm Cortex-A72 cores clocked at 1.5 GHz.
+
+Each core implements the 64-bit Armv8-A Instruction Set Architecture (ISA). This instruction set includes Advanced SIMD instructions which operate on a single 128-bit SIMD pipeline. This 128-bit pipeline can conduct two 64-bit double precision floating point operations (Flops) per clock cycle.  
+
+A \emph{fused multiply-add} (FMA) instruction implements a multiplication followed by an add in a single instruction. The main purpose of FMA instructions is to improve result accuracy by conducting a single rounding operation on completion of both the multiplication and the add operations. A single FMA instruction counts as two Flops. 
+
+The theoretical maximum performance of a single Aerin Cluster node, $R_{peak}$, is therefore:
+
+\begin{align}
+R_{peak} &= 4 \textrm{ cores} \times 1.5 \textrm{ GHz} \times 2 \textrm{ doubles} \times 2 \textrm{ FMA}\\
+&= 24 \textrm{ Gflops}
+\end{align}
+
+This is only achievable continuously if every instruction in a program is an FMA instruction, which obviously cannot be the case, since data has to be loaded from memory and stored back into memory. Nevertheless, this is the standard measure of theoretical maximum performance.
+
+The theoretical maximum performance of the Aerin Cluster as a whole is therefore:
+
+\begin{align}
+R_{peak} &= 8 \textrm{ nodes} \times 24 \textrm{ Gflops}\\
+&= 192 \textrm{ Gflops}
+\end{align}
+
+For the High Performance Linpack benchmark, to achieve 100\% performance requires a problem size that utilises 100\% of memory. Because the operating system requires memory, is it not possible to use 100\% for benchmarks.
+
+The Linux \verb|dmesg| command prints out the kernel boot messages, which can be searched using \verb|grep| to determine how memory is utilised on the system:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ dmesg | grep Memory
+\end{lstlisting}
+
+\lstset{style=type}
+\begin{lstlisting}
+[    0.000000] Memory: 3783876K/4050944K available (11772K kernel code, 1236K rwdata, 4244K rodata, 6144K init, 1072K bss, 201532K reserved, 65536K cma-reserved)
+\end{lstlisting}
+
+As can be seen, 37838776k of memory is available, which equates to 90\% of the 4 GB (4194304k) on each node. It would be optimistic to expect to use every byte of this 90\%, and using any more than this would result in swap space being used which would negatively impact benchmark results.
+
+So, for the HPL baseline benchmarks, 80\% of memory was chosen for the problem size. This is the amount suggested as an initial ``good guess'' in the HPL Frequently Asked Questions.
+
+The above necessarily results in the baseline benchmarks only being able to achieve 80\% of $R_{peak}$ at best, 4.8 Gflops for a single core, 19.2 Gflops for a single node, and 153.6 Gflops for the 8 node cluster. These values are indicated on the HPL baseline result plots.
+
+
+%
+% SECTION
+%
+\section{HPL Baseline}
+
+The HPL benchmark software was compiled locally from source. Detailed instructions on how to do this are in Part II Chapter??
+
+Ubuntu 20.04 LTS 64-bit packages, without any tweaks...
+
+80\% of memory
+
+Methodology...
+
+1 core... to investigate single core performance... caveats... use 1GB of memory...
+
+1 node... to investigate inter-core performance...
+
+2 nodes... to investigate inter-core and inter-node performance...
+
+1..8 nodes ... to investigate over scaling of performance with node count... with optimal N, NB, P and Q parameters determined from 2 node investigation... caveats...
+
+
+%
+% SUB SECTION
+%
+\subsection{HPL 1 Core Baseline}
+
+The purpose of this baseline is to determine the performance of a single core running a single \verb|xhpl| process, with the single core having exclusive access to the shared L2 cache. 
+
+As discussed in the previous section, the HPL problem size is restricted to 80\% of available memory. In the case of this baseline, this is 80\% of a single node's 4 GB.
+
+Using values of block size NB from 32 to 256, in increments of 8, and using formula ?? to ensure the problem size N is an integer multiple of NB, results in the table below of NB and N combinations.
+
+\begin{table}[H]
+\begin{center}
+	\begin{tabular}{ |c|c|c|c|c|c|c|c|c|c| } 
+		\hline
+		NB & N & NB & N & NB & N & NB & N & NB & N \\ 
+		\hline
+		32 & 18528 &  80 & 18480 & 128 & 18432 & 176 & 18480 & 224 & 18368 \\ 
+		40 & 18520 &  88 & 18480 & 136 & 18496 & 184 & 18400 & 232 & 18328 \\ 
+ 		48 & 18528 &  96 & 18528 & 144 & 18432 & 192 & 18432 & 240 & 18480 \\
+		56 & 18536 & 104 & 18512 & 152 & 18392 & 200 & 18400 & 248 & 18352 \\ 
+ 		64 & 18496 & 112 & 18480 & 160 & 18400 & 208 & 18512 & 256 & 18432 \\
+		72 & 18504 & 120 & 18480 & 168 & 18480 & 216 & 18360 &   - &     - \\ 
+ 		\hline
+	\end{tabular}
+\end{center}
+\caption{\label{tab:table-name}1 Core NB and N Combinations using 80\% of 4 GB Memory.}
+\end{table}
+
+The HPL input file HPL.dat is populated with these NB and N combinations as follows, in this example using an NB of 32 and an N of 18528: 
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+1            # of problems sizes (N)
+18528        Ns
+1            # of NBs
+32           NBs
+\end{lstlisting}
+
+For this baseline a single \verb|xhpl| process is run on both the pure OpenMPI and Hybrid OpenMPI/OpenMP topologies. In both of these cases HPL.dat is populated with processor grid parameters P and Q as follows:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+1            # of process grids (P x Q)
+1            Ps
+1            Qs
+\end{lstlisting}
+
+This baseline is run on a pure OpenMPI topology with the following command:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ mpirun --bind-to core -host node1:1 -np 1 xhpl
+\end{lstlisting}
+
+Explain bind to core...
+
+This baseline is run on a hybrid OpenMPI/OpenMP topology with the following command:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ mpirun --bind-to socket -host node1:1 -np 1 -x OMP_NUM_THREADS=1 xhpl
+\end{lstlisting}
+
+Explain bind to socket...
+
+\begin{figure}
+	\begin{subfigure}{1.0\textwidth}
+		\centering
+		\includegraphics[width=0.85\textwidth]{openmpi_gflops_vs_nb_1_core_80_percent_memory.pdf}
+		\caption{Pure OpenMPI}
+		\label{fig:subim1}
+	\end{subfigure}
+	\par\bigskip
+	\begin{subfigure}{1.0\textwidth}
+		\centering
+		\includegraphics[width=0.85\textwidth]{openmp_gflops_vs_nb_1_core_80_percent_memory.pdf}
+		\caption{Hybrid OpenMPI/OpenMP}
+		\label{fig:subim2}
+	\end{subfigure}
+\caption{1 Core $R_{max}$ vs NB using 80\% memory.}
+\label{fig:image2}
+\end{figure}
+
+The results are plotted in Figure ??.
+
+
+%
+% SUB SUB SECTION
+%
+\subsubsection{Observations}
+
+As expected, there is no noticeable performance difference between a pure OpenMPI and hybrid OpenMPI/OpenMP topology for a single \verb|xhpl| process running on a single core.
+
+Both topologies attain 80\% $R_{peak}$ for a single core.
+
+Discussion about OpenBLAS and BLIS internal kernel blocking...
+
+
+%
+% SUB SECTION
+%
+\subsection{HPL 1 Node Baseline}
+
+The purpose of this baseline is to determine the performance of the 4 cores of a single node. In this case each core has to share access to the L2 cache, which will result in more main memory accesses. It is therefore anticipated that this will result in a performance reduction, per core, compared to the single core case.
+
+As per the single core benchmark, the HPL problem size is restricted to 80\% of available memory. Again, in the case, this is 80\% of a single node's 4 GB. This results in the same table of NB and N combinations as the single core benchmark.
+
+\begin{table}[H]
+\begin{center}
+	\begin{tabular}{ |c|c|c|c|c|c|c|c|c|c| } 
+		\hline
+		NB & N & NB & N & NB & N & NB & N & NB & N \\ 
+		\hline
+		32 & 18528 &  80 & 18480 & 128 & 18432 & 176 & 18480 & 224 & 18368 \\ 
+		40 & 18520 &  88 & 18480 & 136 & 18496 & 184 & 18400 & 232 & 18328 \\ 
+ 		48 & 18528 &  96 & 18528 & 144 & 18432 & 192 & 18432 & 240 & 18480 \\
+		56 & 18536 & 104 & 18512 & 152 & 18392 & 200 & 18400 & 248 & 18352 \\ 
+ 		64 & 18496 & 112 & 18480 & 160 & 18400 & 208 & 18512 & 256 & 18432 \\
+		72 & 18504 & 120 & 18480 & 168 & 18480 & 216 & 18360 &   - &     - \\ 
+ 		\hline
+	\end{tabular}
+\end{center}
+\caption{\label{tab:table-name}1 Node NB and N Combinations using 80\% of 4 GB Memory.}
+\end{table}
+
+For the pure OpenMPI topology, 4 \verb|xhpl| processes are run, one on each core. In this case HPL.dat is populated with processor grid parameters P and Q as follows:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+1            # of process grids (P x Q)
+1            Ps
+4            Qs
+\end{lstlisting}
+
+And the pure OpenMPI topology baseline is run with the following command:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ mpirun --bind-to core -host node1:4 -np 4 xhpl
+\end{lstlisting}
+
+For the hybrid OpenMPI/OpenMP topology, a single \verb|xhpl| process is run on the node. In this case the HPL.dat P and Q processor grid parameters are populated as follows:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+1            # of process grids (P x Q)
+1            Ps
+1            Qs
+\end{lstlisting}
+
+With 4 cores available to the multi-threaded BLAS library, the hybrid OpenMPI/OpenMP topology baseline is run with the following command:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ mpirun --bind-to socket -host node1:1 -np 1 -x OMP_NUM_THREADS=4 xhpl
+\end{lstlisting}
+
+The results are plotted in Figure ??
+
+\begin{figure}[H]
+	\begin{subfigure}{1.0\textwidth}
+		\centering
+		\includegraphics[width=0.85\textwidth]{openmpi_gflops_vs_nb_1_node_80_percent_memory.pdf}
+		\caption{Pure OpenMPI}
+		\label{fig:subim1}
+	\end{subfigure}
+	\par\bigskip
+	\begin{subfigure}{1.0\textwidth}
+		\centering
+		\includegraphics[width=0.85\textwidth]{openmp_gflops_vs_nb_1_node_80_percent_memory.pdf}
+		\caption{Hybrid OpenMPI/OpenMP}
+		\label{fig:subim2}
+	\end{subfigure}
+\caption{1 Node $R_{max}$ vs NB using 80\% memory.}
+\label{fig:image2}
+\end{figure}
+
+
+%
+% SUB SUB SECTION
+%
+\subsubsection{Observations}
+
+As anticipated, there is indeed a reduction in performance per core, 80\% $R_{peak}$ in no longer attained.
+
+Pure OpenMPI topology attains a $R_{max}$ of ?? with an NB of ??.
+
+The hybrid OpenMPI/OpenMP topology attains a $R_{max}$ of ?? with an NB of ??.
+
+
+%
+% SUB SECTION
+%
+\subsection{HPL 2 Node Baseline}
+
+The purpose of this baseline is to determine the performance of 2 nodes. Now, each core not only has to share access to the L2 cache, but the cache may be refreshed with data less frequently due to network delays and competition between the nodes for access to network. It is therefore anticipated that this will result in a performance reduction, per node, compared to the single node case.
+
+For this baseline the HPL problem size is restricted to 80\% of 2 nodes combined memory, 80\% of 8 GB. This results in NB and N combinations as tabulated below:
+
+\begin{table}[H]
+\begin{center}
+	\begin{tabular}{ |c|c|c|c|c|c|c|c|c|c| } 
+		\hline
+		NB & N & NB & N & NB & N & NB & N & NB & N \\ 
+		\hline
+		32 & 26208 &  80 & 26160 & 128 & 26112 & 176 & 26048 & 224 & 26208 \\ 
+		40 & 26200 &  88 & 26136 & 136 & 26112 & 184 & 26128 & 232 & 25984 \\ 
+ 		48 & 26208 &  96 & 26208 & 144 & 26208 & 192 & 26112 & 240 & 26160 \\
+		56 & 26208 & 104 & 26208 & 152 & 26144 & 200 & 26200 & 248 & 26040 \\ 
+ 		64 & 26176 & 112 & 26208 & 160 & 26080 & 208 & 26208 & 256 & 26112 \\
+		72 & 26208 & 120 & 26160 & 168 & 26208 & 216 & 26136 &   - &     - \\ 
+ 		\hline
+	\end{tabular}
+\end{center}
+\caption{\label{tab:table-name}2 Node NB and N Combinations using 80\% of 8 GB Memory.}
+\end{table}
+
+For the pure OpenMPI topology, 8 \verb|xhpl| processes are run, one on each core of each of the 2 nodes. Now it is possible to have 2 processor grid shapes, 1 x 8 and 2 x 4. In this case HPL.dat is populated with processor grid parameters P and Q as follows:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+2            # of process grids (P x Q)
+1 2          Ps
+8 4          Qs
+\end{lstlisting}
+
+The pure OpenMPI topology baseline is run with the following command:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ mpirun --bind-to core -host node1:4,node2:4 -np 8 xhpl
+\end{lstlisting}
+
+For the hybrid OpenMPI/OpenMP topology, a single \verb|xhpl| process is run on each node. This results in single processor grid shape of 1 x 2, and the HPL.dat P and Q processor grid parameters are populated as follows:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+1            # of process grids (P x Q)
+1            Ps
+2            Qs
+\end{lstlisting}
+
+With the BLAS library utilising the 4 cores on each node, the hybrid OpenMPI/OpenMP topology baseline is run with the following command:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ mpirun --bind-to socket -host node1:1,node2:1 -np 2 -x OMP_NUM_THREADS=4 xhpl
+\end{lstlisting}
+
+The results are plotted in Figure ??
+
+\begin{figure}[H]
+	\begin{subfigure}{1.0\textwidth}
+		\centering
+		\includegraphics[width=0.85\textwidth]{openmpi_gflops_vs_nb_2_node_80_percent_memory.pdf}
+		\caption{Pure OpenMPI}
+		\label{fig:subim1}
+	\end{subfigure}
+	\par\bigskip
+	\begin{subfigure}{1.0\textwidth}
+		\centering
+		\includegraphics[width=0.85\textwidth]{openmp_gflops_vs_nb_2_node_80_percent_memory.pdf}
+		\caption{Hybrid OpenMPI/OpenMP}
+		\label{fig:subim2}
+	\end{subfigure}
+\caption{2 Node $R_{max}$ vs NB using 80\% memory.}
+\label{fig:image2}
+\end{figure}
+
+
+
+%
+% SUB SUB SECTION
+%
+\subsubsection{Observations}
+
+
+
+
+%
+% SUB SECTION
+%
+\subsection{HPL Cluster Baseline}
+
+This cluster baseline uses the optimum values of NB from the 2 Node Baseline. For each of the 4 BLAS library combinations, OpenBLAS serial, OpenBLAS OpenMP, BLIS serial, and BLIS OpenMP, with the corresponding value of N for 80\% of memory for the particular node count is used, as tabulated below.
+
+\begin{center}
+	\begin{tabular}{ |c|c|c|c|c|c|c|c| } 
+		\hline
+		\multicolumn{2}{|c|}{} & \multicolumn{6}{c|}{Nodes} \\
+		\hline
+		BLAS & NB & 3 & 4 & 5 & 6 & 7 & 8 \\ 
+		\hline
+		OpenBLAS Serial & 000 & 32000 & 36000 & 41000 & 45000 & 48000 & 52000 \\ 
+		OpenBLAS OpenMP & 000 & 32000 & 36000 & 41000 & 45000 & 48000 & 52000 \\ 
+ 		BLIS Serial     & 000 & 32000 & 36000 & 41000 & 45000 & 48000 & 52000 \\
+		BLIS OpenMP     & 000 & 32000 & 36000 & 41000 & 45000 & 48000 & 52000 \\ 
+ 		\hline
+	\end{tabular}
+\end{center}
+
+These NB and N combinations are used to populate HPL.dat, as per the example below for the 3 node OpenBLAS Serial case.
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+1            # of problems sizes (N)
+32000        Ns
+1            # of NBs
+000          NBs
+\end{lstlisting}
+
+For the 3 node pure OpenMPI baseline, the following HPL.dat processor grid shapes are used: 
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+3            # of process grids (P x Q)
+1 2 3        Ps
+12 6 4       Qs
+\end{lstlisting}
+
+And the 3 node pure OpenMPI baseline is run with the following command:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ mpirun --bind-to core -host node1:4,node2:4,node3:4 -np 12 xhpl
+\end{lstlisting}
+
+For the 3 node hybrid OpenMPI/OpenMP baseline, the following HPL.dat processor grid shapes are used: 
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+1            # of process grids (P x Q)
+1            Ps
+3            Qs
+\end{lstlisting}
+
+And the 3 node hybrid OpenMPI/OpenMP baseline is run with the following command:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ mpirun --bind-to socket -host node1:1,node2:1,node3:1 -np 3 -x OMP_NUM_THREADS=4 xhpl
+\end{lstlisting}
+
+For the 4, 5, 6, 7 and 8 node pure OpenMPI and hybrid OpenMPI/OpenMP baselines, HPL.dat is populated with the processor grid parameters P and Q in a similar manner. Likewise, the baselines are run in a similar manner.
+
+
+\begin{table}
+\begin{center}
+\begin{tabular}{ |l|c|c|c|c|c|c| } 
+\hline
+                & Nodes & N & NB & P & Q & $R_{max}$ (Gflops) \\ 
+\hline
+OpenBLAS Serial & 3 & 32040 & 120 & 1 & 12 & 3.3720e+01 \\ 
+                & 3 & 32040 & 120 & 2 &  6 & 3.1946e+01 \\
+                & 3 & 32040 & 120 & 3 &  4 & 3.3844e+01 \\
+                \cline{2-7} 
+                & 4 & 36960 & 120 & 1 & 16 & 4.7742e+01 \\ 
+                & 4 & 36960 & 120 & 2 &  8 & 4.9390e+01 \\ 
+                \cline{2-7} 
+                & 5 & 41400 & 120 & 1 & 20 & 5.6513e+01 \\ 
+                & 5 & 41400 & 120 & 2 & 10 & 5.6038e+01 \\ 
+                & 5 & 41400 & 120 & 4 &  5 & 5.5649e+01 \\ 
+                \cline{2-7} 
+                & 6 & 45360 & 120 & 1 & 24 & 6.8392e+01 \\ 
+                & 6 & 45360 & 120 & 2 & 12 & 7.3856e+01 \\ 
+                & 6 & 45360 & 120 & 3 &  8 & 6.9952e+01 \\ 
+                \cline{2-7} 
+                & 7 & 48960 & 120 & 1 & 28 & 7.8248e+01 \\ 
+                & 7 & 48960 & 120 & 2 & 14 & 8.1017e+01 \\ 
+                & 7 & 48960 & 120 & 4 &  7 & 8.1433e+01 \\ 
+                \cline{2-7} 
+                & 8 & 52320 & 120 & 1 & 32 & 8.6787e+01 \\ 
+                & 8 & 52320 & 120 & 2 & 16 & 9.5517e+01 \\ 
+                & 8 & 52320 & 120 & 4 &  8 & 9.5525e+01 \\ 
+\hline
+OpenBLAS OpenMP & 3 & 32032 & 88 & 1 & 3 & 3.7842e+01 \\ 
+                \cline{2-7} 
+                & 4 & 37048 & 88 & 1 & 4 & 4.8657e+01 \\ 
+                \cline{2-7} 
+                & 5 & 41448 & 88 & 1 & 5 & 6.0428e+01 \\ 
+                \cline{2-7} 
+                & 6 & 45320 & 88 & 1 & 6 & 6.8713e+01 \\ 
+                & 6 & 45320 & 88 & 2 & 3 & 7.3722e+01 \\ 
+                \cline{2-7} 
+                & 7 & 49016 & 88 & 1 & 7 & 7.8712e+01 \\ 
+                \cline{2-7} 
+                & 8 & 52360 & 88 & 1 & 8 & 9.4245e+01 \\ 
+                & 8 & 52360 & 88 & 2 & 4 & 9.6630e+01 \\ 
+\hline
+\end{tabular}
+\end{center}
+\caption{\label{tab:table-name}HPL Cluster Baseline using OpenBLAS.}
+\end{table}
+
+
+
+\begin{table}
+\begin{center}
+\begin{tabular}{ |l|c|c|c|c|c|c| } 
+\hline
+                & Nodes & N & NB & P & Q & $R_{max}$ (Gflops) \\ 
+\hline
+BLIS Serial     & 3 & 32088 & 168 & 1 & 12 & 3.9005e+01 \\ 
+                & 3 & 32088 & 168 & 2 &  6 & 3.9050e+01 \\ 
+                & 3 & 32088 & 168 & 3 &  4 & 3.8958e+01 \\ 
+                \cline{2-7} 
+                & 4 & 36960 & 168 & 1 & 16 & 4.9694e+01 \\ 
+                & 4 & 36960 & 168 & 2 &  8 & 5.4268e+01\\ 
+                \cline{2-7} 
+                & 5 & 41328 & 168 & 1 & 20 & 5.5398e+01 \\ 
+                & 5 & 41328 & 168 & 2 & 10 & 6.5226e+01 \\ 
+                & 5 & 41328 & 168 & 4 &  5 & 6.2356e+01 \\ 
+                \cline{2-7} 
+                & 6 & 45360 & 168 & 1 & 24 & 7.0278e+01 \\ 
+                & 6 & 45360 & 168 & 2 & 12 & 7.9685e+01 \\ 
+                & 6 & 45360 & 168 & 3 &  8 & 7.5475e+01 \\ 
+                \cline{2-7} 
+                & 7 & 48888 & 168 & 1 & 28 & 8.0168e+01 \\ 
+                & 7 & 48888 & 168 & 2 & 14 & 8.7571e+01 \\ 
+                & 7 & 48888 & 168 & 4 &  7 & 8.6035e+01 \\ 
+                \cline{2-7} 
+                & 8 & 52416 & 168 & 1 & 32 & 9.1148e+01 \\ 
+                & 8 & 52416 & 168 & 2 & 16 & 1.0341e+02 \\ 
+                & 8 & 52416 & 168 & 4 &  8 & 1.0190e+02 \\ 
+\hline
+BLIS OpenMP     & 3 & 32000 & 200 & 1 & 3 & 3.5132e+01 \\ 
+                \cline{2-7} 
+                & 4 & 37000 & 200 & 1 & 4 & 4.6953e+01 \\ 
+                \cline{2-7} 
+                & 5 & 41400 & 200 & 1 & 5 & 6.2550e+01 \\ 
+                \cline{2-7} 
+                & 6 & 45400 & 200 & 1 & 6 & 6.7204e+01 \\ 
+                & 6 & 45400 & 200 & 2 & 3 & 7.2585e+01 \\ 
+                \cline{2-7} 
+                & 7 & 49000 & 200 & 1 & 7 & 8.1255e+01 \\ 
+                \cline{2-7} 
+                & 8 & 52400 & 200 & 1 & 8 & 9.1180e+01 \\ 
+                & 8 & 52400 & 200 & 2 & 4 & 1.0041e+02 \\ 
+\hline
+\end{tabular}
+\end{center}
+\caption{\label{tab:table-name}HPL Cluster Baseline using BLIS.}
+\end{table}
+
+
+
+The baseline results are presented in Figure ??.
+
+\begin{figure}[H]
+	\begin{subfigure}{1.0\textwidth}
+		\centering
+		\includegraphics[width=0.85\textwidth]{openmpi_gflops_vs_nodes_80_percent_memory.pdf}
+		\caption{Pure OpenMPI}
+		\label{fig:subim1}
+	\end{subfigure}
+	\par\bigskip
+	\begin{subfigure}{1.0\textwidth}
+		\centering
+		\includegraphics[width=0.85\textwidth]{openmp_gflops_vs_nodes_80_percent_memory.pdf}
+		\caption{Hybrid OpenMPI/OpenMP}
+		\label{fig:subim2}
+	\end{subfigure}
+\caption{$R_{max}$ vs Nodes using 80\% memory.}
+\label{fig:image2}
+\end{figure}
+
+
+%
+% SUB SECTION
+%
+\subsection{Observations}
+
+Best NB...
+
+PxQ discussion... 1x8 vs 2x4... ethernet comment...
+
+Iperf...
+
+htop...
+
+top...
+
+perf...
+
+cache misses...
+
+software interrupts...
+
+Suggests... improve network efficiency?
+
+
+
+%
+% SECTION
+%
+\section{HPCC Baseline}
+
+The HPCC baseline benchmarks were run using all 8 nodes of the Aerin Cluster. The results for each benchmark are presented below.
+
+
+%
+% SUB SECTION
+%
+\subsection{HPL}
+
+\begin{table}[H]
+\begin{center}
+\begin{tabular}{ |l|c|c|c|c|c|c| } 
+\hline
+                & Nodes & N & NB & P & Q & $R_{max}$ (Gflops) \\ 
+\hline
+OpenBLAS Serial & 8 & 52320 & 120 & 1 & 32 & \\ 
+                & 8 & 52320 & 120 & 2 & 16 & \\ 
+                & 8 & 52320 & 120 & 4 & 8  & \\ 
+\hline
+OpenBLAS OpenMP & 8 & 52360 &  88 & 1 & 8  & 8.685e+01 \\ 
+                & 8 & 52360 &  88 & 2 & 4  & 9.497e+01 \\ 
+\hline
+BLIS Serial     & 8 & 52416 & 168 & 1 & 32 & 8.866e+01 \\ 
+                & 8 & 52416 & 168 & 2 & 16 & 1.014e+02 \\ 
+                & 8 & 52416 & 168 & 4 & 8  & 1.005e+02 \\ 
+\hline
+BLIS OpenMP     & 8 & 52400 & 200 & 1 & 8  & 8.163e+01 \\ 
+                & 8 & 52400 & 200 & 2 & 4  & 8.841e+01 \\ 
+\hline
+\end{tabular}
+\end{center}
+\caption{\label{tab:table-name}HPCC HPL.}
+\end{table}
+
+
+%
+% SUB SECTION
+%
+\subsection{DGEMM}
+
+\begin{table}[H]
+\begin{center}
+\begin{tabular}{ |l|l| } 
+\hline
+                & Results \\ 
+\hline
+OpenBLAS Serial & DGEMM\_N=5339 \\
+                & StarDGEMM\_Gflops=3.59743 \\
+                & SingleDGEMM\_Gflops=4.91086 \\
+\hline
+OpenBLAS OpenMP & DGEMM\_N=10687 \\
+                & StarDGEMM\_Gflops=14.4261 \\
+                & SingleDGEMM\_Gflops=14.426 \\
+\hline
+BLIS Serial     & DGEMM\_N=5349 \\
+                & StarDGEMM\_Gflops=3.02439 \\
+                & SingleDGEMM\_Gflops=4.95418 \\
+\hline
+BLIS OpenMP     & DGEMM\_N=10695 \\
+                & StarDGEMM\_Gflops=16.3355 \\
+                & SingleDGEMM\_Gflops=15.2042 \\
+\hline
+\end{tabular}
+\end{center}
+\caption{\label{tab:table-name}HPCC DGEMM.}
+\end{table}
+
+Table ?? requires some interpretation. For the single-threaded serial versions of the OpenBLAS and BLIS libraries, the cluster consists of 32 processing cores, so the \verb|SingleDGEMM_Gflops| are per core. For the multi-threaded OpenMP versions of the libraries, the cluster consists of 8 processing nodes, so the \verb|SingleDGEMM_Gflops| are per node.
+
+The results are consistent with the HPL benchmarks, which spend 96\%+ of the benchmark time in the BLAS \verb|dgemm| subroutine. 
+
+
+%
+% SUB SECTION
+%
+\subsection{STREAM}
+
+\begin{table}[H]
+\begin{center}
+\begin{tabular}{ |l|l| } 
+\hline
+                & Results \\ 
+\hline
+OpenBLAS Serial & STREAM\_VectorSize=28514400 \\
+                & STREAM\_Threads=1 \\
+                & StarSTREAM\_Copy=0.92926 \\
+                & StarSTREAM\_Scale=0.979969 \\
+                & StarSTREAM\_Add=0.902324 \\
+                & StarSTREAM\_Triad=0.899619 \\
+                & SingleSTREAM\_Copy=5.36868 \\
+                & SingleSTREAM\_Scale=5.41684 \\
+                & SingleSTREAM\_Add=4.75638 \\
+                & SingleSTREAM\_Triad=4.75692 \\
+\hline
+OpenBLAS OpenMP & STREAM\_VectorSize=114232066 \\
+                & STREAM\_Threads=1 \\
+                & StarSTREAM\_Copy=4.76068 \\
+                & StarSTREAM\_Scale=5.44287 \\
+                & StarSTREAM\_Add=4.51713 \\
+                & StarSTREAM\_Triad=4.53621 \\
+                & SingleSTREAM\_Copy=5.47035 \\
+                & SingleSTREAM\_Scale=5.46963 \\
+                & SingleSTREAM\_Add=4.87128 \\
+                & SingleSTREAM\_Triad=4.89569 \\
+\hline
+BLIS Serial     & STREAM\_VectorSize=28619136 \\
+                & STREAM\_Threads=1 \\
+                & StarSTREAM\_Copy=0.943137 \\
+                & StarSTREAM\_Scale=0.989024 \\
+                & StarSTREAM\_Add=0.910843 \\
+                & StarSTREAM\_Triad=0.909211 \\
+                & SingleSTREAM\_Copy=4.72341 \\
+                & SingleSTREAM\_Scale=4.21768 \\
+                & SingleSTREAM\_Add=3.90016 \\
+                & SingleSTREAM\_Triad=3.94385 \\
+\hline
+BLIS OpenMP     & STREAM\_VectorSize=114406666 \\
+                & STREAM\_Threads=1 \\
+                & StarSTREAM\_Copy=5.05861 \\
+                & StarSTREAM\_Scale=5.39591 \\
+                & StarSTREAM\_Add=4.66044 \\
+                & StarSTREAM\_Triad=4.6751 \\
+                & SingleSTREAM\_Copy=5.41884 \\
+                & SingleSTREAM\_Scale=5.45544 \\
+                & SingleSTREAM\_Add=4.80613 \\
+                & SingleSTREAM\_Triad=4.81397 \\
+\hline
+\end{tabular}
+\end{center}
+\caption{\label{tab:table-name}HPCC STREAM.}
+\end{table}
+
+
+%
+% SUB SECTION
+%
+\subsection{PTRANS}
+
+\begin{table}[H]
+\begin{center}
+\begin{tabular}{ |l|l| } 
+\hline
+                & Results \\
+\hline
+OpenBLAS Serial & PTRANS\_GBs=0.465891 \\
+                & PTRANS\_n=26160 \\ 
+                & PTRANS\_nb=120 \\
+                & PTRANS\_nprow=1 \\
+                & PTRANS\_npcol=32 \\
+\hline
+OpenBLAS OpenMP & PTRANS\_GBs=0.616885 \\
+                & PTRANS\_n=26180 \\
+                & PTRANS\_nb=88 \\
+                & PTRANS\_nprow=2 \\
+                & PTRANS\_npcol=4 \\
+\hline
+BLIS Serial     & PTRANS\_GBs=0.483766 \\
+                & PTRANS\_n=26208 \\
+                & PTRANS\_nb=168 \\
+                & PTRANS\_nprow=1 \\
+                & PTRANS\_npcol=32 \\
+\hline
+BLIS OpenMP     & PTRANS\_GBs=0.637484 \\
+                & PTRANS\_n=26200 \\
+                & PTRANS\_nb=200 \\
+                & PTRANS\_nprow=2 \\
+                & PTRANS\_npcol=4 \\
+\hline
+\end{tabular}
+\end{center}
+\caption{\label{tab:table-name}HPCC PTRANS.}
+\end{table}
+
+
+%
+% SUB SECTION
+%
+\subsection{Random Access}
+
+\begin{table}[H]
+\begin{center}
+\begin{tabular}{ |l|l| } 
+\hline
+                & Results \\ 
+\hline
+OpenBLAS Serial & MPIRandomAccess\_LCG\_N=2147483648 \\
+                & MPIRandomAccess\_LCG\_GUPs=0.000642364 \\
+                \cline{2-2} 
+                & MPIRandomAccess\_N=2147483648 \\
+                & MPIRandomAccess\_GUPs=0.000645338 \\
+                \cline{2-2} 
+                & RandomAccess\_LCG\_N=67108864 \\
+                & StarRandomAccess\_LCG\_GUPs=0.00373175 \\
+                & SingleRandomAccess\_LCG\_GUPs=0.00815537 \\
+                \cline{2-2} 
+                & RandomAccess\_N=67108864 \\
+                & StarRandomAccess\_GUPs=0.00373372 \\
+                & SingleRandomAccess\_GUPs=0.00837312 \\ 
+\hline
+OpenBLAS OpenMP & MPIRandomAccess\_LCG\_N=2147483648 \\
+                & MPIRandomAccess\_LCG\_GUPs=0.000473649 \\
+                \cline{2-2} 
+                & MPIRandomAccess\_N=2147483648 \\
+                & MPIRandomAccess\_GUPs=0.000477404 \\
+                \cline{2-2} 
+                & RandomAccess\_LCG\_N=268435456 \\
+                & StarRandomAccess\_LCG\_GUPs=0.00580416 \\
+                & SingleRandomAccess\_LCG\_GUPs=0.00582959 \\
+                \cline{2-2} 
+                & RandomAccess\_N=268435456 \\
+                & StarRandomAccess\_GUPs=0.00614337 \\
+                & SingleRandomAccess\_GUPs=0.00613214 \\
+\hline
+BLIS Serial     & MPIRandomAccess\_LCG\_N=2147483648 \\
+                & MPIRandomAccess\_LCG\_GUPs=0.000644523 \\
+                \cline{2-2} 
+                & MPIRandomAccess\_N=2147483648 \\
+                & MPIRandomAccess\_GUPs=0.00064675 \\
+                \cline{2-2} 
+                & RandomAccess\_LCG\_N=67108864 \\
+                & StarRandomAccess\_LCG\_GUPs=0.00374527 \\
+                & SingleRandomAccess\_LCG\_GUPs=0.00835127 \\
+                \cline{2-2} 
+                & RandomAccess\_N=67108864 \\
+                & StarRandomAccess\_GUPs=0.00374741 \\
+                & SingleRandomAccess\_GUPs=0.00820883 \\
+\hline
+BLIS OpenMP     & MPIRandomAccess\_LCG\_N=2147483648 \\
+                & MPIRandomAccess\_LCG\_GUPs=0.000475485 \\
+                \cline{2-2} 
+                & MPIRandomAccess\_N=2147483648 \\
+                & MPIRandomAccess\_GUPs=0.000476047 \\
+                \cline{2-2} 
+                & RandomAccess\_LCG\_N=268435456 \\
+                & StarRandomAccess\_LCG\_GUPs=0.00580705 \\
+                & SingleRandomAccess\_LCG\_GUPs=0.00578222 \\
+                \cline{2-2} 
+                & RandomAccess\_N=268435456 \\
+                & StarRandomAccess\_GUPs=0.00614596 \\
+                & SingleRandomAccess\_GUPs=0.00613275 \\
+\hline
+\end{tabular}
+\end{center}
+\caption{\label{tab:table-name}HPCC Random Access.}
+\end{table}
+
+
+%
+% SUB SECTION
+%
+\subsection{FFT}
+
+
+%
+% SUB SECTION
+%
+\subsection{Network Bandwidth and Latency}
+
+
+
+%
+% SECTION
+%
+\section{HPCG Baseline}
+
+The June 2020 HPCG List ranks 169 computer in order of conjugate gradient performance. Ranking number 1 is the Fugaku supercomputer. And ranking 169 is the Spaceborne Computer onboard the International Space Station (ISS). The Spaceborne Computer is a 32 core system based on the Intel Xeon E5-2620 v4 8 Core CPU, clocked at 2.1GHz, with an Infiniband interconnect. The HPCG List performance reaults of these two computers are in Table ??.
+
+\begin{table}[H]
+\begin{center}
+\begin{tabular}{ |c|c|c|c|c|c|c| } 
+\hline
+HPCG & Name & Cores & HPL $R_{max}$ & TOP500 & HPCG   & Fraction \\
+Rank &      &       & Pflops        & Rank   & Pflops & of Peak  \\
+\hline
+1 & Fugaku & 6,635,520 & 415.530 & 1 & 13.366 & 2.6\% \\
+\hline
+169 & Spaceborne Computer & 32 & 0.001 & - & 0.000034 & 2.9\% \\
+\hline
+\end{tabular}
+\end{center}
+\caption{\label{tab:table-name}June 2020 HPCG List.}
+\end{table}
+
+
+
+The Aerin Cluster... 
+
+\begin{table}[H]
+\begin{center}
+\begin{tabular}{ |c|c|c|c|c|c|c| } 
+\hline
+HPCG & Name & Cores & HPL $R_{max}$ & TOP500 & HPCG   & Fraction \\
+Rank &      &       & Pflops        & Rank   & Pflops & of Peak  \\
+\hline
+- & OpenBLAS Serial & 32 & & - & & \% \\
+\hline
+- & OpenBLAS OpenMP & 32 & & - & & \% \\
+\hline
+- & BLIS Serial & 32 & & - & & \% \\
+\hline
+- & BLIS OpenMP & 32 & & - & & \% \\
+\hline
+\end{tabular}
+\end{center}
+\caption{\label{tab:table-name}The Aerin Cluster HPCG Benchmark.}
+\end{table}
+
+%
+% SUB SECTION
+%
+\subsection{Serial HPCG}
+
+
+%
+% SECTION
+%
+\subsection{OpenMP HPCG}
+
+
+%
+% SECTION
+%
+\section{Optimisations}
+
+
+%
+% SUB SECTION
+%
+\subsection{Rebuild BLAS Libraries}
+
+The Debian Science Wiki suggests that for optimum performance, for architectures other than x86, the Debian BLAS library packages should be rebuilt locally. The instructions for doing so are included in the Debian source package for each library.
+
+
+%
+% SUB SUB SECTION
+%
+\subsubsection{Rebuild OpenBLAS}
+The OpenBLAS build process attempts to detect the architecture in use and build OpenBLAS optimised for this architecture. The architecture is detected by checking specific ``magic numbers'' in known processor registers. Having detected the architecture, source code macros are defined specific to the architecture. 
+
+The architecture detection functionality is implemented in the file \verb|cpuid_arm64.c|, in which the function \verb|get_cpuconfig()| is used to define the source code macros. It was noticed that some macro definitions in this function which may affect performance were not correct for the BCM2711.
+
+\lstset{style=listing}
+\begin{lstlisting}[caption=cpuid\_arm64.c, numbers=none]
+...
+	case CPU_CORTEXA57:
+	case CPU_CORTEXA72:
+	case CPU_CORTEXA73:
+		// Common minimum settings for these Arm cores
+		// Can change a lot, but we need to be conservative
+		// TODO: detect info from /sys if possible
+		printf("#define %s\n", cpuname[d]);
+		printf("#define L1_CODE_SIZE 49152\n");
+		printf("#define L1_CODE_LINESIZE 64\n");
+		printf("#define L1_CODE_ASSOCIATIVE 3\n");
+		printf("#define L1_DATA_SIZE 32768\n");
+		printf("#define L1_DATA_LINESIZE 64\n");
+		printf("#define L1_DATA_ASSOCIATIVE 2\n");
+		printf("#define L2_SIZE 524288\n");
+		printf("#define L2_LINESIZE 64\n");
+		printf("#define L2_ASSOCIATIVE 16\n");
+		printf("#define DTB_DEFAULT_ENTRIES 64\n");
+		printf("#define DTB_SIZE 4096\n");
+		break;
+...
+\end{lstlisting}
+
+Listing ?? shows the macro definitions for the Arm Cortex-A72. The following two lines are incorrect for the L2 cache size and Data Translation Lookaside Buffer (DTB) for the BMC2711:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+		printf("#define L2_SIZE 524288\n");
+		printf("#define DTB_DEFAULT_ENTRIES 64\n");
+\end{lstlisting}
+
+To reflect the 1 MB L2 cache and DTB default entries of the BCM2711 these should be:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+		printf("#define L2_SIZE 1048576\n");
+		printf("#define DTB_DEFAULT_ENTRIES 32\n");
+\end{lstlisting}
+
+These values were changed and OpenBLAS was rebuilt following the instructions in the source package. The \verb|config.h| file generated during the build process accurately reflects the changes to \verb|cpuid_arm64.c|:
+
+\lstset{style=listing}
+\begin{lstlisting}[caption=config.h]
+#define OS_LINUX 1
+#define ARCH_ARM64 1
+#define C_GCC 1
+#define __64BIT__ 1
+#define PTHREAD_CREATE_FUNC pthread_create
+#define BUNDERSCORE _
+#define NEEDBUNDERSCORE 1
+#define ARMV8
+#define HAVE_NEON
+#define HAVE_VFPV4
+#define CORTEXA72
+#define L1_CODE_SIZE 49152
+#define L1_CODE_LINESIZE 64
+#define L1_CODE_ASSOCIATIVE 3
+#define L1_DATA_SIZE 32768
+#define L1_DATA_LINESIZE 64
+#define L1_DATA_ASSOCIATIVE 2
+#define L2_SIZE 1048576
+#define L2_LINESIZE 64
+#define L2_ASSOCIATIVE 16
+#define DTB_DEFAULT_ENTRIES 64
+#define DTB_SIZE 4096
+#define NUM_CORES 4
+#define CHAR_CORENAME "CORTEXA72"
+#define GEMM_MULTITHREAD_THRESHOLD 4
+\end{lstlisting}
+
+On completion of the build process, the original OpenBLAS library was uninstalled and replaced by the locally rebuilt library.
+
+It was anticipated that a doubling of the L2 cache size from 0.5 MB to 1 MB would have a positive impact on OpenBLAS performance, but this was not the case. There was no impact on performance, positive or negative, at all. The Linpack performance was exactly the same.
+
+Since the L2 cache size of any processor is a major feature of the processor architecture, it is reasonable to expect a doubling of L2 cache size to result in a positive impact on performance, even marginal. The fact that there was no impact on performance at all seemed odd. So, an experiment was conducted with the L2 cache size set to 0 MB, and OpenBLAS was rebuilt. And the resulting Linpack performance was exactly the same. 
+
+In light of this experiment, a search through the OpenBLAS source code was conducted for L2\_SIZE, and it was determined that this macro definition is not used.
+
+Following an email exchange with an OpenBLAS developer, it would appear that a previous change to the source code to improve performance on server-class Arm architectures has somehow resulted in source code issues for smaller Arm architectures.
+
+Time permitting, it would be an interesting project to fix these source code issues for smaller Arm architectures. But for this project, the locally built library was uninstalled, and the Debian/Ubuntu package re-installed.
+
+
+%
+% SUB SUB SECTION
+%
+\subsubsection{Rebuild BLIS}
+
+
+%
+% SUB SECTION
+%
+\subsection{Kernel Preemption Model}
+
+The Linux kernel has 3 Preemption Models...
+
+1...
+2... The default
+3...
+
+
+As per the Help in the Kernel Configuration...
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none, caption=Kernel Configuration Preemption Model Help]
+CONFIG_PREEMPT_NONE:                                                                                                                                                                                                                                                 
+
+This is the traditional Linux preemption model, geared towards
+throughput. It will still provide good latencies most of the
+time, but there are no guarantees and occasional longer delays
+are possible.                                                                                                                       
+
+Select this option if you are building a kernel for a server or
+scientific/computation system, or if you want to maximize the
+raw processing power of the kernel, irrespective of scheduling
+latencies.
+\end{lstlisting}
+
+So, kernel rebuilt with CONFIG\_PREEMPT\_NONE=y
+
+See Appendix ? on how to rebuild the kernel...
+
+Installed on each node...
+
+So, although this optimisation applies to  single node, the benefits of applying this optimisation may not be apparent until the kernel has to juggle networking etc...
+
+RESULTS...
+
+
+%
+% SUB SECTION
+%
+\subsubsection{Recieve Queues}
+
+\lstset{style=type}
+\begin{lstlisting}
+$ sudo perf record mpirun -allow-run-as-root -np 4 xhpl
+\end{lstlisting}
+
+
+
+Running xhpl on 8 nodes using OpenBLAS...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ mpirun -host node1:4 ... node8:4 -np 32 xhpl
+\end{lstlisting}
+
+
+SHORTLY AFTER PROGRAM START...
+
+On node1,... where we initiated...
+
+top...
+
+\lstset{style=type}
+\begin{lstlisting}
+top - 20:33:15 up 8 days,  6:02,  1 user,  load average: 4.02, 4.03, 4.00
+Tasks: 140 total,   5 running, 135 sleeping,   0 stopped,   0 zombie
+%Cpu(s): 72.5 us, 21.7 sy,  0.0 ni,  0.0 id,  0.0 wa,  0.0 hi,  5.8 si,  0.0 st
+MiB Mem :   3793.3 total,    330.1 free,   3034.9 used,    428.3 buff/cache
+MiB Swap:      0.0 total,      0.0 free,      0.0 used.    698.7 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND                                                   
+  34884 john      20   0  932964 732156   7980 R 100.3  18.8 106:40.29 xhpl                                                      
+  34881 john      20   0  933692 732272   7916 R 100.0  18.9 107:29.75 xhpl                                                      
+  34883 john      20   0  932932 731720   8136 R  99.3  18.8 107:33.25 xhpl                                                      
+  34882 john      20   0  932932 731784   8208 R  97.7  18.8 107:33.64 xhpl                                                      
+\end{lstlisting}
+
+SOFTIRQS...
+
+
+NODE 2 - 2 NODES ONLY TO SEE EFFECT...
+
+IPERF!!!
+
+On node8, running the top command...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ top
+\end{lstlisting}
+
+We can see...
+
+\lstset{style=type}
+\begin{lstlisting}
+top - 18:58:44 up 8 days,  4:29,  1 user,  load average: 4.00, 3.75, 2.35
+Tasks: 133 total,   5 running, 128 sleeping,   0 stopped,   0 zombie
+%Cpu(s): 50.7 us, 47.8 sy,  0.0 ni,  0.0 id,  0.0 wa,  0.0 hi,  1.4 si,  0.0 st
+MiB Mem :   3793.3 total,    392.7 free,   2832.6 used,    568.0 buff/cache
+MiB Swap:      0.0 total,      0.0 free,      0.0 used.    901.1 avail Mem 
+
+    PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND                                                   
+  23928 john      20   0  883880 682456   8200 R 100.0  17.6  13:14.17 xhpl                                                      
+  23927 john      20   0  883988 682432   7932 R  99.7  17.6  13:12.58 xhpl                                                      
+  23930 john      20   0  883912 682664   7832 R  99.7  17.6  13:17.01 xhpl                                                      
+  23929 john      20   0  883880 682640   8376 R  99.3  17.6  13:16.25 xhpl  
+\end{lstlisting}
+
+Indicates that only 50.7\% of CPU time is being utilised by user programs (us), Linpack/OpenMPI...
+
+I hypothesise that the 1.4\% of software interrupts (si) is responsible 47.8\% of CPU time in the kernel (sy) servicing these interupts...
+
+Lets have a look at the software interrupts on the system...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ watch -n 1 cat /proc/softirqs
+\end{lstlisting}
+
+
+\lstset{style=type}
+\begin{lstlisting}
+Every 1.0s: cat /proc/softirqs
+
+                    CPU0       CPU1       CPU2       CPU3
+          HI:          0          1          0          1
+       TIMER:  122234556   86872295   85904119   85646345
+      NET_TX:  222717797     228381     147690     144396
+      NET_RX: 1505715680       1132       1294       1048
+       BLOCK:      63160      11906      13148      11223
+    IRQ_POLL:          0          0          0          0
+     TASKLET:   58902273         33          2          6
+       SCHED:    3239933    3988327    2243001    2084571
+     HRTIMER:       8116         55         53         50
+         RCU:    6277982    4069531    4080009    3994395
+\end{lstlisting}
+
+As can be seen...
+
+1. the majority of software interrupts are being generated by network receive (NET\_RX) activity, followed by network transmit activity (NET\_TX)...
+
+2. these interrupts are being almost exclusively handled by CPU0...
+
+What is there to be done?...
+
+1. Reduce the numbers of interrupts...
+
+1.1 Each packet produces an interrupt - interrupt coalesing...
+
+1.2 Reduce the number of packets - increase MTU...
+
+2.1 Share the interrupt servicing activity evenly across the CPUs...
+
+
+%
+% Network Optimisation
+%
+\subsection{Network Optimisation}
+
+On node2 start the Iperf server...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ iperf -s
+\end{lstlisting}
+
+On node1 start the Iperf client...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ iperf -c
+\end{lstlisting}
+
+ping tests of MTU...
+
+
+
+
+iperf network speed...
+
+
+
+
+
+\subsubsection{Jumbo Frames}
+
+Requires a network switch capable of Jumbo frames...
+
+
+\lstset{style=type}
+\begin{lstlisting}
+$ ip link show eth0
+\end{lstlisting}
+
+
+\lstset{style=type}
+\begin{lstlisting}
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000
+    link/ether dc:a6:32:60:7b:cd brd ff:ff:ff:ff:ff:ff
+\end{lstlisting}
+
+
+
+\lstset{style=type}
+\begin{lstlisting}
+$ ping -c 1 -s 1500 -M do node2
+\end{lstlisting}
+
+\lstset{style=type}
+\begin{lstlisting}
+PING node2 (192.168.0.2) 1500(1528) bytes of data.
+ping: local error: message too long, mtu=1500
+\end{lstlisting}
+
+
+\lstset{style=type}
+\begin{lstlisting}
+$ ping -c 1 -s 1472 -M do node2
+\end{lstlisting}
+
+
+\lstset{style=type}
+\begin{lstlisting}
+PING node2 (192.168.0.2) 1472(1500) bytes of data.
+1480 bytes from node2 (192.168.0.2): icmp_seq=1 ttl=64 time=0.392 ms
+\end{lstlisting}
+
+
+Trying to set the MTU to 9000 bytes...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ sudo ip link set eth0 mtu 9000 
+\end{lstlisting}
+
+... results with...
+
+\lstset{style=type}
+\begin{lstlisting}
+Error: mtu greater than device maximum.
+\end{lstlisting}
+
+In fact, attempting to set the MTU to anything greater than 1500 bytes...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ sudo ip link set eth0 mtu 1501 
+\end{lstlisting}
+
+... results with...
+
+\lstset{style=type}
+\begin{lstlisting}
+Error: mtu greater than device maximum.
+\end{lstlisting}
+
+
+Need to build a kernel with Jumbo frame support...
+
+See Appendix ?...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ ip link show eth0
+\end{lstlisting}
+
+\lstset{style=type}
+\begin{lstlisting}
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9000 qdisc mq state UP mode DEFAULT group default qlen 1000
+    link/ether dc:a6:32:60:7b:cd brd ff:ff:ff:ff:ff:ff
+\end{lstlisting}
+
+\lstset{style=type}
+\begin{lstlisting}
+$ ping -c 1 -s 9000 -M do node2
+\end{lstlisting}
+
+\lstset{style=type}
+\begin{lstlisting}
+PING node2 (192.168.0.2) 9000(9028) bytes of data.
+ping: local error: message too long, mtu=9000
+\end{lstlisting}
+
+\lstset{style=type}
+\begin{lstlisting}
+$ ping -c 1 -s 8972 -M do node2
+\end{lstlisting}
+
+\lstset{style=type}
+\begin{lstlisting}
+PING node2 (192.168.0.2) 8972(9000) bytes of data.
+8980 bytes from node2 (192.168.0.2): icmp_seq=1 ttl=64 time=0.847 ms
+\end{lstlisting}
+
+
+On \verb|node2| create the \verb|Iperf| server...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ iperf -s
+\end{lstlisting}
+
+On \verb|node1| create and run the \verb|Iperf| client...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ iperf -i 1 -c node2
+\end{lstlisting}
+
+\lstset{style=type}
+\begin{lstlisting}
+------------------------------------------------------------
+Client connecting to node2, TCP port 5001
+TCP window size:  682 KByte (default)
+------------------------------------------------------------
+[  3] local 192.168.0.1 port 46216 connected with 192.168.0.2 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0-10.0 sec  1.15 GBytes   991 Mbits/sec
+\end{lstlisting}
+
+
+\begin{figure}
+	\centering	
+	\includegraphics[width=1.0\textwidth]{bandwidth_vs_mtu.pdf}
+	\caption{Network Node to Node Bandwidth vs MTU.}
+\end{figure}
+
+
+\subsection{Kernel TCP Parameters Tuning}
+
+REFERENCE...
+
+https://www.open-mpi.org/faq/?category=tcp
+
+\lstset{style=listing}
+\begin{lstlisting}[caption=/etc/sysctl.d/picluster.conf]
+net.core.rmem_max = 16777216
+net.core.wmem_max = 16777216
+net.ipv4.tcp_rmem = 4096 87380 16777216
+net.ipv4.tcp_wmem = 4096 65536 16777216
+net.core.netdev_max_backlog = 30000
+net.core.rmem_default = 16777216
+net.core.wmem_default = 16777216
+net.ipv4.tcp_mem= 16777216 16777216 16777216
+net.ipv4.route.flush = 1
+\end{lstlisting}
+
+
+\lstset{style=type}
+\begin{lstlisting}
+sudo sysctl --system
+\end{lstlisting}
+
+or
+
+\lstset{style=type}
+\begin{lstlisting}
+sudo shutdown -r now
+\end{lstlisting}
+
+
+
+
+\lstset{style=type}
+\begin{lstlisting}
+Aug 11 03:35:40 node5 kernel: [19256.425779] bcmgenet fd580000.ethernet eth0: bcmgenet_xmit: tx ring 1 full when queue 2 awake
+\end{lstlisting}
+
+
+
+%
+% SUB SECTION
+%
+\subsection{reclaim memory}
+A closer look at the memory use above indicates that 65536k of memory is being used as \emph{cma-reserved}. This Contiguous Memory Allocator (CMA) memory is reserved at boot time for certain kernel drivers, in particular some video drivers. Since the Aerin Cluster is not using video, it may be possible to reclaim some of this memory to increase the amount available for the benchmark problem size.
+
+The \verb|/proc| filesystem enables access to kernel data structures at run time. Running the following command it is possible to see how the \emph{cma-reserved} memory is being utilised:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ cat /proc/meminfo | grep Cma
+\end{lstlisting}
+
+\lstset{style=type}
+\begin{lstlisting}
+CmaTotal:          65536 kB
+CmaFree:           63732 kB
+\end{lstlisting}
+
+As can be seen, the majority of \emph{cma-reserved} memory is not being used. So, although this is a relatively small amount of memory on a single node, it is approximately 0.5 GB across all 8 nodes. This is worth trying to reclaim for the benchmark problem size via a rebuild of the kernel, something that is investigated later.
+
+
+
