@@ -325,6 +325,12 @@ Each memory location contains a byte of data, where a byte is 8 binary bits. Byt
 Computers systems without an operating system, such as embedded systems, permit direct access to main memory from software. In this case there is a direct mapping between the memory address within a computer program and the physical address in main memory. Most operating systems present an abstracted view of main memory to each program running on the system. This is called \emph{virtual memory}.
  
     
+\begin{figure}
+	\centering	
+	\includegraphics[width=0.80\textwidth]{virtual-memory.pdf}
+	\caption{Virtual Memory. Each process has a \emph{virtual address} space mapped to main memory in \emph{pages} by the \emph{page table} which resides in main memory. A smaller page table called the \emph{Translation Lookaside Buffer} (TLB) is a \emph{cache} in close proximity to each core. The TLB enables fast lookup of page addresses in main memory, without having to resort to a slower lookup in main memory.}
+\end{figure}
+
 \subsection{Virtual Memory}
 
 Virtual memory is the abstracted view of main memory presented to a running program by the operating system. Virtual memory requires both hardware support, through the Memory Management Unit (MMU), and software support by the operating system. Contiguous regions of virtual memory are organised into \emph{pages}, typically 4 KB in size. Each page of virtual memory maps to a page of physical memory through a \emph{page table} which resides in main memory. A smaller page table called the \emph{Translation Lookaside Buffer} (TLB), which is a \emph{cache} in close proximity to each processing core, is discussed later.
