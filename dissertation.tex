@@ -286,22 +286,40 @@ Since the birth of electronic computing, there has always been a need to know lo
 
 A benchmark is a standardised measure of performance. In computing terms this is a piece of software which performs a known task, and which tests a particular aspect(s) of computer performance. One aspect may be raw processing performance. High Performance Linpack (HPL) is one such benchmark, which produces a single measure of Floating Point Operations per Second (Flops) for a single, or more commonly, a cluster of computers. To address the complexity of design of modern supercomputers, as discussed above, a number of complementary benchmarks have been introduced, namely HPC Challenge (HPCC) and HP Conjugate Gradient (HPCG). HPC Challenge is a suite of benchmarks which measure processing performance, memory bandwidth, and network latency and bandwidth, to give a broad view of likely real-world application performance. HP Conjugate Gradient is intended to measure the performance of modern HPC workloads.
 
-The following sections of this chapter describe in more detail the complexities of computer system design, particularly in relation to clusters of computers connected by a network, followed by a more detailed description of the HPC benchmarks mentioned above. A discussion of the role that matrix-matrix multiplication plays in the assessment of computer performance is also included.
+To put benchmark results into context, and to extrapolate from the results where performance gains might be realised, it is necessary to have an understanding of the main components of a computer and the network connecting a cluster of computers. The following sections of this chapter describe these components and the network in more detail.
+
+Matrix-matrix multiplication plays an important role in computer benchmarking because the multiplication of large matrices tests processing, memory, and network performance. A more detailed discussion of this topic is also included in this chapter. 
 
 
-\section{CPU Architectures}
+%
+% SECTION
+%
+\section{CPU Architecture}
 
 \subsection{CISC}
 
 \subsection{RISC}
 
-\subsection{Concurrent Computation}
+\subsection{Threads}
+
+\subsection{Processes}
+
+\subsection{Context Switch}
+
+\subsection{Concurrency}
 
 \subsection{Parallel Computation}
 
 \subsection{Scheduling}
 
+\subsection{Interrrupts}
 
+\subsection{Kernel Preemption Model}
+
+
+%
+% SECTION
+%
 \section{Main Memory}
 
 Main memory is the largest component of the memory system of a computer. On desktop, laptop and larger computers, the memory chips usually reside on small circuit boards that fit into sockets on the computer mainboard. These can be upgraded in size by the user. On some smaller computers, such as the Raspberry Pi 4, the memory chip is soldered onto the computer circuit board and is not upgradable.
@@ -315,18 +333,21 @@ Computers systems without an operating system, such as embedded systems, permit 
 
 Virtual memory is the abstracted view of main memory presented to a running program by the operating system. Virtual memory requires both hardware support, through the Memory Management Unit (MMU), and software support by the operating system. Contiguous regions of virtual memory are organised into \emph{pages}, typically 4 KB in size. Each page of virtual memory maps to a page of physical memory through a \emph{page table} which resides in main memory. A smaller page table called the \emph{Translation Lookaside Buffer} (TLB), which is a \emph{cache} in close proximity to each processing core, is discussed later.
 
-Virtual memory is implemented for a number of reasons. One is to permit the use of a smaller amount of physical memory than is actually addressable. In this case, pages currently in use reside in main memory, and pages no longer required are \emph{swapped} to permanent storage to make space for new pages. This illusion of a full amount of addressable main memory is transparent to the user. But the \emph{paging} between main memory and permanent storage is slow, and is therefore not used in HPC applications.
+There are a number of benefits of implementing virtual memory. One is to permit the use of a smaller amount of physical memory than is actually addressable. In this case, pages currently in use reside in main memory, and pages no longer required are \emph{swapped} to permanent storage to make space for new pages. This illusion of a full amount of addressable main memory is transparent to the user. But the \emph{paging} between main memory and permanent storage is slow, and is therefore not used in HPC applications.
 
-Possibly the most important reason to use virtual memory is to implement a protection mechanism called \emph{process isolation}. Each running program, or \emph{process}, executes in its own private address space. This means that it is not possible for a process to overwrite data, possibly due a bug in a program, in another process. This process isolation in managed by the operating system using virtual memory. It is possible for multiple processes to communicate through \emph{shared memory}, where each process can read and write to the same block of memory, but this requires programs to be specifically written to make use of this mechanism. 
+Possibly the most important benefit of using virtual memory is to implement a protection mechanism called \emph{process isolation}. Each running program, or \emph{process}, executes in its own private, virtual address space. This means that it is not possible for a process to overwrite memory in the address space of another process, possibly due a bug in a program. This process isolation in managed by the operating system using virtual memory. It is possible for multiple processes to communicate through \emph{shared memory}, where each process can read and write to the same block of memory, but this requires programs to be specifically written to make use of this mechanism. 
 
   
-\subsection{NUMA}
+\subsection{UMA versus NUMA}
 
 \subsection{Shared Memory}
 
 \subsection{Distributed Memory}
 
 
+%
+% SECTION
+%
 \section{Caches}
 
 If we imagine Turing's infinitely long tape and the inertia that must be overcome to move such a tape left and right, it would not be too much of a leap of the imagination to propose copying some sequential part of the tape onto a finite, lighter tape which could be moved left and right faster. Then if the data required for the current part of our computation was contained within this faster tape, the computation would be conducted faster. The contents of the finite tape would be refreshed with data from the infinite tape as required, which may be expensive in terms of time. And if the speed at which we can perform operations on the lighter tape began to outpace the speed of movement of the tape, we might propose copying some of the data onto an even shorter, even faster tape.
@@ -367,9 +388,16 @@ The SCU uses hybrid Modified Exclusive Shared Invalid (MESI) and Modified Owned 
 The L2 memory system requires support for inclusion between the L1 data caches and the L2 cache. A line that resides in any of the L1 data caches must also reside in the L2 cache. However, the data can differ between the two caches when the L1 cache line is in a dirty state. If another agent, a core in the cluster or another cluster, accesses this line in the L2 then it knows the line is present in the L1 of a processor and then it queries that core for the most recent data.
 
 
-\section{Network}
+%
+% SECTION
+%
+\section{Networking}
+
+\subsection{Ethernet}
 
 \subsection{MTU}
+
+\subsection{Interrupt Coalescing}
 
 \subsection{Receive Side Scaling}
 
@@ -378,14 +406,20 @@ The L2 memory system requires support for inclusion between the L1 data caches a
 \subsection{Receive Flow Steering}
 
 
+%
+% SECTION
+%
 \section{Matrix Multipication}
 
 
+%
+% SECTION
+%
 \section{Benchmarks}
 
 \subsection{High Performance Linpack}
 
-\subsection{HPC CHallenge}
+\subsection{HPC Challenge}
 
 \subsection{HP Conjugate Gradients}
 
