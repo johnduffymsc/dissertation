@@ -1,0 +1,1329 @@
+\documentclass{report}
+\usepackage[utf8]{inputenc}
+\setlength{\parindent}{0em}
+\setlength{\parskip}{1em}
+\usepackage[svgnames]{xcolor}
+\usepackage{listings}
+\usepackage{pdfpages}
+\usepackage{float}
+\usepackage[]{caption}
+\usepackage[]{subcaption}
+\usepackage{gensymb}
+\usepackage{amsmath}
+\usepackage{hyperref}
+\usepackage{dirtytalk}
+
+%\usepackage[a4paper, total={5.5in, 9in}]{geometry}
+
+%\definecolor{termcolor}{RGB}{1.0, 0.97, 0.86}
+%\definecolor{listingcolor}{RGB}{0.61, 0.87, 1.0}
+
+\lstdefinestyle{type}{
+frame=single,
+backgroundcolor=\color{Cornsilk},   
+basicstyle=\verbatim@font\small,
+numbers=none,
+tabsize=2,
+breaklines=true,
+postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space}
+}
+
+\lstdefinestyle{term}{
+frame=single,
+backgroundcolor=\color{Ivory},   
+basicstyle=\verbatim@font\small,
+numbers=none,
+tabsize=2,
+breaklines=false,
+%breaklines=true,
+%postbreak=\mbox{\textcolor{red}{$\hookrightarrow$}\space}
+}
+
+\lstdefinestyle{hack}{
+frame=single,
+backgroundcolor=\color{MistyRose},   
+basicstyle=\verbatim@font\small,
+numbers=none,
+tabsize=2,
+breaklines=true,
+breakindent=0pt,
+breakautoindent=true,
+postbreak={}
+}
+
+\lstdefinestyle{listing}{
+frame=single,
+backgroundcolor=\color{AliceBlue},   
+basicstyle=\verbatim@font\small,
+numbers=left,
+numberstyle=\tiny,                    
+tabsize=2,
+breaklines=false
+}
+
+
+\title{MSc Scientific Computing Dissertation\\Benchmarking a Raspberry Pi 4 Cluster}
+\author{John Duffy}
+\date{September 2020}
+
+\begin{document}
+
+
+%
+% TITLE
+%
+\maketitle
+%\input{dissertation-title}
+
+
+%
+% ABSTRACT
+%
+\chapter*{Abstract}
+%\input{dissertation-abstract}
+
+
+%
+% DEDICATION
+%
+\chapter*{Dedication}
+
+
+
+%
+% DECLARATION
+% 
+\chapter*{Declaration}
+I declare that..
+
+
+%
+% ACKNOWLEDGEMENTS
+%
+\chapter*{Acknowledgements}
+I want to thank...
+
+
+%
+% TOC
+%
+\tableofcontents
+
+
+%
+% CHAPTER 1
+%
+\chapter{Introduction}
+\input{dissertation-chapter01}
+
+
+%
+% CHAPTER 2
+%
+\chapter{Computer Architecture and HPC Benchmarks}
+\input{dissertation-chapter02}
+
+
+%
+% CHAPTER 3
+%
+\chapter{Mathematical Background of HPC Benchmarks}
+
+
+%
+% CHAPTER 4
+%
+\chapter{The Aerin Cluster}
+\input{dissertation-chapter04}
+
+
+%
+% CHAPTER 5
+%
+\chapter{Benchmark Results and Optimisations}
+\input{dissertation-chapter05}
+
+
+%
+% CHAPTER 6
+%
+\chapter{Summary}
+
+
+
+%
+% CHAPTER
+%
+\chapter{The Aerin Cluster}
+
+
+%
+% SECTION
+%
+\section{Introduction}
+
+This chapter is intended to be a complete and self-contained guide for building a replica of the Aerin Cluster. The items required to build the cluster are listed in Chapter 3.
+
+Throughout this chapter, \verb|macbook| refers to my local workstation which is not part of the Aerin Cluster. This workstation could be another Raspberry Pi or a Windows PC/Laptop. For either case, the following instructions should require little change, providing the workstation has a command line similar to Linux (on a Windows PC this could be MinGW or Windows Subsystem for Linux, or similar).
+
+
+%
+% SECTION
+%
+\section{Preliminary Tasks}
+
+
+%
+% SUB SECTION
+%
+\subsection{Update Raspberry Pi EEPROMs}
+
+The firmware for the Raspberry Pi 4 is stored in Electrically Erasable Programmable Read-Only Memory (EEPROM). Updates to the firmware, which include functionality enhancements and bug fixes, are published at regular intervals. These updates are ``flashed'' to the EEPROM.
+
+It is important that each node of the cluster is using the same firmware. This ensures each node operates in the same manner, and performance is uniform across the cluster.
+
+It is recommended to update the EEPROM using the \verb|rpi-eeprom-update| command included with Raspberry Pi OS. A separate MicroSD card was used to install Raspberry Pi OS for this purpose.
+
+Having booted each Raspberry Pi with Raspberry Pi OS, to determine if any firmware updates are available, type the following:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ sudo rpi-eeprom-update
+\end{lstlisting}
+
+This will advise if a firmware update is available.
+
+If an update is available, update the firmware using the following commands:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ sudo rpi-eeprom-update -a
+$ sudo reboot
+\end{lstlisting}
+
+Following the reboot the new firmware will be installed (now is a convenient time to obtain the node MAC address, see next section). On completion, the Raspberry Pi can be shutdown and rebooted with Ubuntu 20.04 LTS 64-bit. 
+
+
+%
+% SUB SECTION
+%
+\subsection{Obtain Raspberry Pi MAC Addresses}
+
+The MAC address of each node is required to configure the cluster LAN IP address reservations. To determine the MAC address, type the following on each node:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ ip addr show eth0 | grep link/ether 
+\end{lstlisting}
+
+This will display output similar to this:
+
+\lstset{style=term}
+\begin{lstlisting}[]
+link/ether dc:a6:32:60:7b:cd brd ff:ff:ff:ff:ff:ff
+\end{lstlisting}
+
+The MAC address is the \verb|dc:a6:32:60:7b:cd| part of the command output. Make a note of this for each node.
+
+
+%
+% SUB SECTION
+%
+\subsection{Generate User Key Pair}
+
+OpenMPI requires password-less access to each node. This is achieved with \verb|ssh| using public-key encryption. The private and public keys for user \verb|john| are generated on \verb|macbook|. The public key is distributed to each node via \verb|cloud-init| during Ubuntu installation. The private key is subsequently manually copied to \verb|node1|.
+
+To generate the key pair on \verb|macbook| (a passphrase is not used):
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ ssh-genkey -t rsa -C john
+\end{lstlisting}
+
+This creates two files, the private key \verb|id_rsa|, and the public key \verb|id_rsa.pub|. The contents of the public key file is copied to the \verb|users| section of the \verb|cloud-init| \verb|user-data| file, in this case for user \verb|john|. The private key is copied to \verb|node1| during post-installation tasks.
+
+
+\subsection{Amend \texttt{macbook} \texttt{/etc/hosts}}
+
+To enable access to a cluster node (from within the cluster LAN) without having to type the LAN IP address, add the following to \verb|macbook| \verb|/etc/hosts|:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none, caption=/etc/hosts]
+192.168.0.1 node1
+192.168.0.2 node2
+192.168.0.3 node3
+192.168.0.4 node4
+192.168.0.5 node5
+192.168.0.6 node6
+192.168.0.7 node7
+192.168.0.8 node8
+192.168.0.9 node9
+\end{lstlisting}
+
+This enables the easier to remember (and type):
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ ssh john@node1
+\end{lstlisting}
+
+And, providing the username on \verb|macbook| is the same as the Linux username created by \verb|cloud-init|,
+the abbreviated:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ ssh node1
+\end{lstlisting}
+
+
+%
+% SUB SECTION
+%
+
+\subsection{Router/Firewall Configuration}
+
+The router/firewall configuration consists of the following actions:
+
+\begin{itemize}
+  \item Set the WAN IP address, subnet mask and DNS servers
+  \item Set the LAN IP address, subnet mask, and DHCP server IP address range
+  \item Configure the LAN IP address reservations (this requires the node MAC addresses)
+  \item Enable router/firewall remote administration
+  \item Enable WAN access to \verb|node1| via \verb|ssh|
+  \item Enable router/firewall response to \verb|ping| (for network connectivity testing)
+\end{itemize}
+
+Each of these actions is carried out using the router/firewall web-based setup, and is depicted in Figure 7.1 to Figure 7.6.
+
+The default (and unchanged) LAN IP address for the router/firewall is \verb|192.168.0.254|. The default (and unchanged) username and password for the web-based setup is \verb|admin| and \verb|password|.
+
+\begin{figure}[H]
+	\centering	
+	\includegraphics[width=1.0\textwidth]{router-wan-setup}
+	\caption{Router/Firewall WAN Setup. This is the outside-world facing side of the cluster router/firewall. The WAN IP address is set to a static IP address of 192.168.1.253, with an IP subnet mask of 255.255.255.0. In my home environment this is the internal home subnet of my ADSL router. The ADSL router is the internet Gateway with an IP address of 192.168.1.254, and also acts as the Primary DNS Server. The Secondary DNS Server IP address of 8.8.8.8 is Google's public DNS Server. Once re-located to UCL, these IP addresses would be changed to match the UCL's internal network.}
+\end{figure}
+
+\begin{figure}[H]
+	\centering	
+	\includegraphics[width=1.0\textwidth]{router-lan-setup}
+	\caption{Router/Firewall LAN Setup. This is the internal cluster LAN side of the router/firewall. The router/firewall has an internal LAN address of 192.168.0.254, with an IP subnet mask of 255.255.255.0. Note, this is a different network than the WAN; 192.168.1 for the WAN, and 192.168.0 for the LAN. The router/firewall DNS Server is enabled for the LAN, and will serve addresses to connecting hosts in the range 192.168.0.101 to 192.168.0.201. These are hosts plugged into one of the LAN sockets of the router/firewall or network switch. This does not include the cluster compute nodes, which have IP addresses reserved based on their MAC addresses. See LAN IP Address Reservations in Figure ??. There should be no need to change these settings when the Aerin Cluster is relocated to UCL.}
+\end{figure}
+
+\begin{figure}[H]
+	\centering	
+	\includegraphics[width=1.0\textwidth]{router-lan-ip-reservations}
+	\caption{Router/Firewall LAN IP Address Reservations. To guarantee each compute node is assigned the same LAN IP address across reboots, the router/firewall is configured to serve IP addresses to connecting hosts based upon the host network card MAC address. This is ``reserving" an IP address for a particular host. This router/firewall setup page permits the relationship between MAC and IP addresses to be configured. Each line represents a compute node, or \texttt{macbook}, with a host name, e.g. \texttt{node1}, an IP address to reserve for this host, and the network card MAC address of the host. The MAC address must be known in advance.}
+\end{figure}
+
+\begin{figure}[H]
+	\centering	
+	\includegraphics[width=1.0\textwidth]{router-remote-admin}
+	\caption{Router/Firewall Remote Management. It is convenient to be able to configure the router/firewall remotely from the WAN side of the router firewall. This means that a network cable does not have to be plugged into one of the LAN sockets on the router/firewall or network switch to configure the router/firewall. For example, once re-located to UCL, the Aerin Cluster, with router/firewall and switch, can be sited in a suitable location and the router/firewall configured from anywhere on the UCL internal network.}
+\end{figure}
+
+\begin{figure}[H]
+	\centering	
+	\includegraphics[width=1.0\textwidth]{router-ssh-access}
+	\caption{Router/Firewall \texttt{ssh} Access. This setup page is used to configure the router/firewall to pass \texttt{ssh} packets from the WAN side of the router/firewall through the firewall to \texttt{node1}. This permits access to the compute nodes from the WAN. So, in a similar manner to the remote administration of the router/firewall, the Aerin Cluster can be sited in a suitable location at UCL, and the Aerin Cluster compute nodes, via \texttt{node1}, can be accessed using \texttt{ssh} from anywhere on the internal UCL network.}
+\end{figure}
+
+\begin{figure}[H]
+	\centering	
+	\includegraphics[width=1.0\textwidth]{router-respond-to-ping}
+	\caption{Router/Firewall Respond to \texttt{ping}. Particularly during the build stage of the Aerin Cluster, it was useful to be able to \texttt{ping} the router/firewall to test for network connectivity. For enhanced security, by default, the router/firewall is not configured to respond to \texttt{ping} requests. This setup page enables \texttt{ping} request responses.}
+\end{figure}
+
+
+%
+% SECTION
+%
+\section{Ubuntu 20.04 64-bit LTS Installation}
+
+The idea is to have a single (tweaked) Ubuntu 20.04 64-bit image which can be used to install Ubuntu 20.04 on all of the compute nodes. This is described in Chapter 3. This section details the steps required.
+
+
+%
+% SUB SECTION
+%
+\subsection{Create the Installation Image}
+
+On \verb|macbook|:
+
+\begin{itemize}
+  \item Download the Raspberry Pi 4 Ubuntu 20.04 LTS 64-bit pre-installed server image from the Ubuntu website
+  \item Double click the compressed the \verb|.xz| file to extract the \verb|.img| file
+  \item Double click the \verb|.img| file to mount the image in the \verb|macbook| filesystem as \verb|/Volumes/system-boot|
+  \item Amend the \verb|user-data| file which stores the \verb|cloud-init| configuration, as per Listing 7.2
+  \item Eject/unmount the \verb|.img| file
+  \item Use Raspberry Pi Imager to erase each node's MicroSD card and burn the Ubuntu image, as per Figure 7.7 and Figure 7.8
+\end{itemize}
+
+\lstset{style=listing, float=H}
+\lstinputlisting[caption=/Volumes/system-boot/user-data]{picluster/cloud-init/user-data-dissertation}
+
+\begin{figure}[H]
+	\centering	
+	\includegraphics[width=1.0\textwidth]{screenshots/imager-erase.png}
+	\caption{Using Raspberry Pi Imager to erase and format a MicroSD card.}
+\end{figure}
+
+\begin{figure}[H]
+	\centering	
+	\includegraphics[width=1.0\textwidth]{screenshots/imager-write.png}
+	\caption{Using Raspberry Pi Imager to write the server image to a MicroSD card.}
+\end{figure}
+
+
+
+%
+% SECTION
+%
+\section{Ubuntu Installation}
+
+Having burnt the installation image to each MicroSD card, place the card in each node and plug in the power cable. The \verb|cloud-init| configuration process will now start. Each node will acquire its IP address from the router/firewall, setup system users, update the \verb|apt| cache, upgrade the system, download software packages, set the hostname (based on the IP address), and finally reboot.
+
+
+%
+% SECTION
+%
+\section{Post-Installation Tasks}
+
+
+%
+% SUB SECTION
+%
+\subsection{Complete the OpenMPI Password-Less Process}
+
+The user \verb|john|'s public key was installed on each node by \verb|cloud-init|.
+
+It remains to copy the private key to \verb|node1|:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ scp ~/.ssh/id_rsa node1:~/.ssh
+\end{lstlisting}
+
+To complete the process the host keys from \verb|node2| to \verb|node9| need to be imported into the \verb|known_hosts| file of \verb|node1|.
+
+From \verb|macbook|, \verb|ssh| into \verb|node1|:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ ssh node1
+\end{lstlisting}
+
+Then from \verb|node1|, \verb|ssh| into \verb|node2| to \verb|node9| in turn, for example:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ ssh node2
+\end{lstlisting}
+
+
+This will generate a message similar to this:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+The authenticity of host 'node2 (192.168.0.2)' can't be established.
+ECDSA key fingerprint is SHA256:5VgsnN2nPvpfbJmALh3aJdOeT/NvDXqN8TCreQyNaFA.
+Are you sure you want to continue connecting (yes/no/[fingerprint])?
+\end{lstlisting}
+
+Responding \verb|yes| to this this message, imports the \verb|node2| host key into the \verb|~/.ssh/known_hosts| file of \verb|node1|.
+
+Then exit from the connected node:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ exit
+\end{lstlisting}
+
+This completes the process.
+
+Subsequent \verb|ssh| access to \verb|node2| to \verb|node9| from \verb|node1| will be done using password-less public key authentication. This is the mechanism that OpenMPI will use.
+
+
+%
+% SUB SECTION
+%
+
+\subsection{Uninstall \texttt{unattended-upgrades}}
+
+The \verb|unattended-upgrades| package is installed automatically. This can potentially interfere with long running benchmarks, so it is preferable to uninstall this package from each node. This can be done using Pi Cluster Tools.
+
+From \verb|macbook|:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ ssh node1
+$ ~/picluster/tools/do "sudo apt remove unattended-upgrades"
+\end{lstlisting}
+
+It is important not to forget to manually upgrade the cluster regularly using Pi Cluster Tools:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ ssh node1
+$ ~/picluster/tools/upgrade
+\end{lstlisting}
+
+
+
+%
+% SUB SECTION
+%
+\subsection{Add Ubuntu Source Repositories}
+
+The Ubuntu source repositories are required to rebuilding the kernel and other Ubuntu packages. These repositories are added as follows:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ ssh node1
+$ sudo touch /etc/apt/sources/list.d/picluster.list
+\end{lstlisting}
+
+Then add the following to the newly created \verb|picluster.list| file:
+
+\lstset{style=listing}
+\begin{lstlisting}[caption=/etc/apt/sources.list.d/picluster.list]
+deb-src http://archive.ubuntu.com/ubuntu focal main universe
+deb-src http://archive.ubuntu.com/ubuntu focal-updates main universe
+\end{lstlisting}
+
+And finally, update the \verb|apt| repository cache:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ sudo apt update
+\end{lstlisting}
+
+
+
+\subsection{Create a Project Repository}
+
+A project repository on \verb|node1| is required to hold all project software and results. This repository is mirrored with the GitHub project repository.
+
+The project repository is created as follows:
+
+\lstset{style=type}
+\begin{lstlisting}[]
+$ ssh node1
+$ mkdir picluster
+$ cd picluster
+$ git init
+\end{lstlisting}
+
+
+
+%
+% CHAPTER
+%
+\chapter{Install High-Performance Linpack (HPL)}
+
+These instructions are derived from the \verb|INSTALL| and \verb|README| files in the \verb|hpl-2.3| top level source directory.
+
+Download and install the latest version of HPL on \verb|node1|:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ ssh node1
+$ cd ~/picluster
+$ mkdir hpl
+$ cd hpl
+$ wget https://www.netlib.org/benchmark/hpl/hpl-2.3.tar.gz
+$ gunzip hpl-2.3.tar.gz
+$ tar xvf hpl-2.3.tar
+$ rm hpl-2.3.tar
+$ cd hpl-2.3
+\end{lstlisting}
+
+Each computer system requires a specific \verb|Make.picluster| file, which specifies the operating system commands and software package locations required to build HPL. 
+
+Create a generic \verb|Make.picluster| file:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ cd setup
+$ bash make_generic
+$ cp Make.UNKNOWN ../Make.picluster
+$ cd ..
+\end{lstlisting}
+
+Amend \verb|Make.picluster| with the specifics of the Raspberry Pi 4 and Ubuntu 20.04 as follows. The changes below are changes to the generic file created above.
+
+Set the \emph{shell} to use:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]  
+SHELL        = /usr/bin/bash
+\end{lstlisting}
+
+Set the commands to use (these may vary form operating system to operating system):
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]  
+CD           = cd
+CP           = cp
+LN_S         = ln -s
+MKDIR        = mkdir -p
+RM           = rm -f
+TOUCH        = touch
+\end{lstlisting}
+
+Set the platform identifier:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]  
+ARCH         = picluster
+\end{lstlisting}
+
+Set the top level source directory:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]  
+TOPdir       = $(HOME)/picluster/hpl/hpl-2.3
+\end{lstlisting}
+
+Set the location of the OpenMPI library:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]  
+MPdir        = /usr/lib/aarch64-linux-gnu/openmpi
+MPinc        = $(MPdir)/include
+MPlib        = $(MPdir)/lib/libmpi.so
+\end{lstlisting}
+
+Set the location of the BLAS library (Note, this is the location of the Debian \emph{alternatives} \verb|libblas.so.3| library. The actual library that this points to, OpenBLAS or BLIS, is set through the Debian \verb|update-alternatives| command. This can be conveniently done using Pi Cluster Tools.):
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]  
+LAdir        = /usr/lib/aarch64-linux-gnu
+LAinc        =
+LAlib        = $(LAdir)/libblas.so.3
+\end{lstlisting}
+
+Set the ``Fortran to C'' defintitions, the header directories and libraries: 
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]  
+F2CDEFS      = -DAdd_ -DF77_INTEGER=int -DStringSunStyle
+...
+HPL_INCLUDES = -I$(INCdir) -I$(INCdir)/$(ARCH) -I$(MPinc)
+HPL_LIBS     = $(HPLlib) $(LAlib) $(MPlib)
+...
+HPL_DEFS     = $(F2CDEFS) $(HPL_OPTS) $(HPL_INCLUDES)
+\end{lstlisting}
+
+And finally, set the compiler, linker and optimisation flags:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]  
+CC           = mpicc
+CCNOOPT      = $(HPL_DEFS)
+CCFLAGS      = $(HPL_DEFS) -O3 -march=armv8-a -mtune=cortex-a72
+...
+LINKER       = $(CC)
+LINKFLAGS    = $(CCFLAGS)
+...
+ARCHIVER     = ar
+ARFLAGS      = r
+RANLIB       = echo
+\end{lstlisting}
+
+Build HPL:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ make arch=picluster   
+\end{lstlisting}
+
+This creates the executable \verb|xhpl| and input file \verb|HPL.dat| in the \verb|bin/picluster| directory.
+
+The \verb|xhpl| executable has to exist in the same location on each node, so copy \verb|xhpl| to \verb|node2| to \verb|node8| (only \verb|xhpl|, and not \verb|HPL.dat|):
+
+\lstset{style=type}
+\begin{lstlisting}
+$ cd bin/picluster
+$ ~/picluster/tools/do "mkdir -p picluster/hpl/hpl-2.3/bin/picluster"
+$ scp xhpl node2:~picluster/hpl/hpl-2.3/bin/picluster
+$ scp xhpl node3:~picluster/hpl/hpl-2.3/bin/picluster
+$ scp xhpl node4:~picluster/hpl/hpl-2.3/bin/picluster
+$ scp xhpl node5:~picluster/hpl/hpl-2.3/bin/picluster
+$ scp xhpl node6:~picluster/hpl/hpl-2.3/bin/picluster
+$ scp xhpl node7:~picluster/hpl/hpl-2.3/bin/picluster
+$ scp xhpl node8:~picluster/hpl/hpl-2.3/bin/picluster
+\end{lstlisting}
+
+
+%
+% CHAPTER
+%
+\chapter{Install HPC Challenge (HPCC)}
+
+These instructions are derived from the README.txt file in the top level directory of the HPCC source code.
+
+It is assumed that HPL has previously been installed, and a HPL build file \verb|Make.picluster| has already been created. This file is copied to the HPCC build directory. See Chapter 8 for the instructions on how to install HPL.
+
+Download and install the latest version of HPCC on \verb|node1|:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ ssh node1
+$ cd ~/picluster
+$ mkdir hpcc
+$ cd hpcc
+$ wget http://icl.cs.utk.edu/projectsfiles/hpcc/download/hpcc-1.5.0.tar.gz
+$ gunzip hpcc-1.5.0.tar.gz
+$ tar xvf hpcc-1.5.0.tar
+$ rm hpcc-1.5.0.tar
+$ cd hpcc-1.5.0
+\end{lstlisting}
+
+Copy the HPL build script \verb|Make.picluster| to the HPCC \verb|hpl| directory:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ cd hpl
+$ cp ~/picluster/hpl/hpl-2.3/Make.picluster .
+\end{lstlisting}
+
+Make the following changes to \verb|Make.picluster|. These differ from the HPL build instructions:
+
+Change the \verb|TOPdir| variable:
+
+\lstset{style=hack}
+\begin{lstlisting}[caption=Make.picluster]
+TOPdir = ../../..
+\end{lstlisting}
+
+Add the \verb|math| library explicitly:
+
+\lstset{style=hack}
+\begin{lstlisting}[caption=Make.picluster]
+LAlib = $(LAdir)/libblas.so.3 -lm
+\end{lstlisting}
+
+Add the constant \verb|OMPI_OMIT_MPI1_COMPAT_DECLS| to \verb|CCFLAGS|, otherwise the compilation will fail:
+
+\lstset{style=hack}
+\begin{lstlisting}[caption=Make.picluster]
+CCFLAGS = $(HPL_DEFS) -O3 -march=armv8-a -mtune=cortex-a72 -DOMPI_OMIT_MPI1_COMPAT_DECLS
+\end{lstlisting}
+
+Move back up into the top level directory:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ cd ..
+\end{lstlisting}
+
+Build HPCC:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ make arch=picluster
+\end{lstlisting}
+
+Copy the \verb|hpcc| executable to the compute nodes:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ ~/picluster/tools/do "mkdir -p ~/picluster/hpcc/hpcc-1.5.0"
+$ scp hpcc node2:~/picluster/hpcc/hpcc-1.5.0
+$ scp hpcc node3:~/picluster/hpcc/hpcc-1.5.0
+$ scp hpcc node4:~/picluster/hpcc/hpcc-1.5.0
+$ scp hpcc node5:~/picluster/hpcc/hpcc-1.5.0
+$ scp hpcc node6:~/picluster/hpcc/hpcc-1.5.0
+$ scp hpcc node7:~/picluster/hpcc/hpcc-1.5.0
+$ scp hpcc node8:~/picluster/hpcc/hpcc-1.5.0
+\end{lstlisting}
+
+Create the input file \verb|hpccinf.txt|:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ cp _hpccinf.txt hpccinf.txt
+\end{lstlisting}
+
+The input file is amended as necessary for each benchmark run, as per the HPL input file.
+
+After each benchmark run the results will be in the output file \verb|hpccoutf.txt|.
+
+
+
+%
+% CHAPTER
+%
+\chapter{Install High Performance Conjugate Gradients (HPCG)}
+
+These instructions are derived from the INSTALL and QUICKSTART files in the HPCG 3.1 top-level source directory.
+
+\lstset{style=hack}
+\begin{lstlisting}
+The main build difference between HPCG and HPL is that HPCG can be built as either a single-threaded serial program, or a multi-threaded OpenMP program. It is not the BLAS library which is either single or multi-threaded. In fact, HPCG does not use a BLAS library. To investigate the performance of HPCG in either single-threaded or multi-threaded versions requires building two HPCG programs.
+\end{lstlisting}
+
+Download and install the latest version of HPCG on \verb|node1|:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ ssh node1
+$ cd ~/picluster
+$ mkdir hpcg
+$ cd hpcg
+$ wget http://www.hpcg-benchmark.org/downloads/hpcg-3.1.tar.gz
+$ gunzip hpcg-3.1.tar.gz
+$ tar xvf hpcg-3.1.tar
+$ rm hpcg-3.1.tar
+$ cd hpcg-3.1
+\end{lstlisting}
+
+
+%
+% SECTION
+%
+\section{Serial HPCG}
+
+Create a \verb|Make.picluster_serial| file for the serial build:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ cp setup/Make.Linux_serial setup/Make.picluster_serial
+\end{lstlisting}
+
+Amend \verb|setup/Make.picluster_serial| as follows.
+
+Set the shell:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+SHELL = /usr/bin/bash
+\end{lstlisting}
+
+Set the top level directory:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+TOPdir = $(HOME)/picluster/hpcg/hpcg-3.1
+\end{lstlisting}
+
+Set the OpenMPI package location:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+MPdir = /usr/lib/aarch64-linux-gnu/openmpi
+MPinc = $(MPdir)/include
+MPlib = $(MPdir)/lib/libmpi.so
+\end{lstlisting}
+
+Include the OpenMPI header files and library:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+HPCG_INCLUDES = -I$(INCdir) -I$(INCdir)/$(arch) -I$(MPinc)
+HPCG_LIBS     = $(MPlib)
+\end{lstlisting}
+
+Ensure HPCG is built without OpenMP support:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+HPCG_OPTS = -DHPCG_NO_OPENMP
+\end{lstlisting}
+
+Set C++ compiler flags:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+CXX      = mpic++
+CXXFLAGS = $(HPCG_DEFS) -O3 -march=armv8-a -mtune=cortex-a72
+\end{lstlisting}
+
+Build HPCG:
+
+\lstset{style=type}
+\begin{lstlisting}[numbers=none]
+$ mkdir build_serial
+$ cd build_serial
+$ ../configure picluster_serial
+$ make
+\end{lstlisting}
+
+This creates the serial version of the \verb|xhpcg| executable and the \verb|hpcg.dat| input file in the \verb|build_serial/bin| directory.
+
+
+%
+% SECTION
+%
+\section{OpenMP HPCG}
+
+Create a \verb|Make.picluster_openmp| file for the OpenMP build:
+
+\lstset{style=type}
+\begin{lstlisting}
+$ cp setup/Make.Linux_serial setup/Make.picluster_openmp
+\end{lstlisting}
+
+Amend \verb|setup/Make.picluster_openmp| as per \verb|setup/Make.pcluster_serial|, with the exceptions of not disabling OpenMP, i.e. leave HPCG\_OPTS blank, and adding \verb|-fopenmp| to the compiler flags:
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+HPCG_OPTS = 
+\end{lstlisting}
+
+\lstset{style=listing}
+\begin{lstlisting}[numbers=none]
+CXXFLAGS = $(HPCG_DEFS) -O3 -march=armv8-a -mtune=cortex-a72 -fopenmp
+\end{lstlisting}
+
+This is a bug fix for \verb|src/ComputeResidual.cpp| line 56. Add the variable \verb|n| to the shared variables list of \verb|omp parallel| clause, otherwise a compiler error is generated:
+
+\lstset{style=hack}
+\begin{lstlisting}[numbers=none]
+#pragma omp parallel default(none) shared(n, local_residual, v1v, v2v)
+\end{lstlisting}
+
+
+Build HPCG:
+
+\lstset{style=type}
+\begin{lstlisting}[numbers=none]
+$ mkdir build_openmp
+$ cd build_openmp
+$ ../configure picluster_openmp
+$ make
+\end{lstlisting}
+
+This creates the OpenMP version of the \verb|xhpcg| executable and the \verb|hpcg.dat| input file in the \verb|build_openmp/bin| directory.
+
+
+%
+% CHAPTER
+%
+\chapter{Ubuntu Kernel Build Procedure}
+
+This procedure is derived from the Ubuntu Wiki BuildYourOwnKernel document...
+
+Make sure you have made the source code repositories available as per...
+
+Create a kernel build directory with the correct directory permissions to prevent source download warnings. 
+
+\lstset{style=type}
+\begin{lstlisting}
+$ ssh node1
+$ mkdir -p ~/picluster/build/kernel
+$ sudo chown _apt:root ~/picluster/build/kernel
+$ cd ~/picluster/build/kernel
+\end{lstlisting}
+
+Install the kernel build dependencies...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ sudo apt-get build-dep linux linux-image-$(uname -r)
+\end{lstlisting}
+
+Download the kernel source...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ sudo apt-get source linux-image-$(uname -r)
+$ cd linux-raspi-5.4.0
+\end{lstlisting}
+
+This bit is a fix for the subsequent \verb|editconfigs| step of the build procedure...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ cd debian.raspi/etc
+$ sudo cp kernelconfig kernelconfig.original
+$ sudo vim kernelconfig
+\end{lstlisting}
+
+And make the following change...
+
+\lstset{style=listing}
+\begin{lstlisting}[caption=diff kernelconfig kernelconfig.original, numbers=none]
+5c5
+< 	archs="arm64"
+---
+> 	archs="armhf arm64"
+\end{lstlisting}
+
+Then move back up to the kernel source top level directory...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ cd ../..
+\end{lstlisting}
+
+Prepare the build scripts...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ sudo chmod a+x debian/rules
+$ sudo chmod a+x debian/scripts/*
+$ sudo chmod a+x debian/scripts/misc/*
+\end{lstlisting}
+
+SOURCE CHANGES AND/OR verb|editconfigs| AT THIS POINT
+
+\lstset{style=type}
+\begin{lstlisting}
+$ sudo apt install libncurses-dev
+$ sudo LANG=C fakeroot debian/rules clean
+$ sudo LANG=C fakeroot debian/rules editconfigs
+\end{lstlisting}
+
+Tweak the kernel name for identification...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ cd debian.raspi
+$ sudo cp changelog changelog.original
+$ sudo vim changelog
+\end{lstlisting}
+
+And make the following change, where \verb|+picluster0| is our kernel identifier...
+
+\lstset{style=listing}
+\begin{lstlisting}[caption=diff changelog changelog.original, numbers=none]
+1c1
+< linux-raspi (5.4.0-1015.15+picluster0) focal; urgency=medium
+---
+> linux-raspi (5.4.0-1015.15) focal; urgency=medium
+\end{lstlisting}
+
+Move up to the top level kernel source directory...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ cd ..
+\end{lstlisting}
+
+And build the kernel...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ sudo LANG=C fakeroot debian/rules clean
+$ sudo LANG=C fakeroot debian/rules binary-arch
+cd ..
+\end{lstlisting}
+
+Install the new kernel...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ sudo dpkg -i linux*picluster0*.deb
+$ sudo shutdown -r now
+\end{lstlisting}
+
+Another build procedure fix...
+
+After each kernel build delete the \verb|linux-libc-dev| directory...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ cd ~/picluster/build/kernel/linux-raspi-5.4.0/debian
+$ rm -rf linux-libc-dev
+$ cd ..
+\end{lstlisting}
+
+
+%
+% CHAPTER
+%
+\chapter{Build Kernel with No Pre-Emption Scheduler}
+
+
+%
+% CHAPTER
+%
+\chapter{Build Kernel with Jumbo Frames Support}
+
+Standard MTU is 1500 bytes...
+
+Maximum payload size is 1472 bytes...
+
+NB of 184 (x 8 bytes for Double Precision) = 1472 bytes...
+
+NB $>$ 184 $=>$ packet fragmentation $=>$ reduced network efficiency...
+
+This causes drop of in performance???...
+
+Max MTU on Raspberry Pi 4 Model B is set at build time to 1500...
+
+Not configurable above 1500...
+
+TODO: EXAMPLE OF ERROR MSG...
+
+Need to build the kernel with higher MTU...
+
+
+Make the required changes to the source... as per REFERENCE
+
+\begin{verbatim}
+    cd linux-raspi-5.4.0 
+
+    sudo vim include/linux/if_vlan.h...
+        #define VLAN_ETH_DATA_LEN   9000
+        #define VLAN_ETH_FRAME_LEN  9018
+    
+    sudo vim include/uapi/linux/if_ether.h...
+        #define ETH_DATA_LEN        9000
+        #define ETH_FRAME_LEN       9014
+    
+    sudo vim drivers/net/ethernet/broadcom/genet/bcmgenet.c...
+        #define RX_BUF_LENGTH       10240
+\end{verbatim}
+
+Add a Jumbo Frames identifier, "+jf", to the new kernel name...
+
+\begin{verbatim}
+    sudo vim debian.raspi/changelog...
+        linux (5.4.0-1013.13+jf) focal; urgency=medium
+        
+\end{verbatim}
+
+
+%
+% CHAPTER
+%
+\chapter{Rebuild OpenBLAS}
+
+\lstset{style=type}
+\begin{lstlisting}
+$ ssh node1
+$ mkdir -p build/openblas
+$ chown -R _apt:root build
+$ cd build/openblas
+$ sudo apt-get source openblas
+$ sudo apt-get build-dep openblas
+$ cd openblas-0.3.8+ds
+\end{lstlisting}
+
+
+Edit cpuid\_arm64.c...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ sudo cp cpuid_arm64.c cpuid_arm64.c.original
+$ sudo vim cpuid_arm64.c
+\end{lstlisting}
+
+
+\lstset{style=type}
+\begin{lstlisting}
+$ diff cpuid_arm64.c cpuid_arm64.c.original
+\end{lstlisting}
+
+\lstset{style=type}
+\begin{lstlisting}
+275c275
+<       printf("#define L2_SIZE 1048576\n");
+---
+>       printf("#define L2_SIZE 524288\n");
+278c278
+<       printf("#define DTB_DEFAULT_ENTRIES 32\n");
+---
+>       printf("#define DTB_DEFAULT_ENTRIES 64\n");
+\end{lstlisting}
+
+
+And, then following the instructions in debian/README.Debian
+
+\lstset{style=type}
+\begin{lstlisting}
+$ DEB_BUILD_OPTIONS=custom dpkg-buildpackage -uc -b
+\end{lstlisting}
+
+Once the build is complete..
+
+\lstset{style=type}
+\begin{lstlisting}
+cd ..
+$ sudo apt remove libopenblas0-serial
+$ sudo dpkg -i libopenblas0-serial\_0.3.8+ds-1\_arm64.deb
+\end{lstlisting}
+
+Ensure the correct BLAS library is being used...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ sudo update-alternatives --config libblas.so.3-aarch64-linux-gnu
+\end{lstlisting}
+
+copy to other nodes
+remove old...
+install new...
+
+If more than one BLAS library is installed, check update-alternatives!!!
+
+ssh node2 .. node8
+\lstset{style=type}
+\begin{lstlisting}
+$ ssh node2 sudo apt remove libblas0-serial
+$ scp libopenblas0-serial\_0.3.8+ds-1\_arm64.deb node2:~
+$ ssh sudo dpkg -i libopenblas0-serial\_0.3.8+ds-1\_arm64.deb
+$ ssh sudo update-alternatives --config libblas.so.3-aarch64-linux-gnu
+\end{lstlisting}
+
+
+%
+% CHAPTER
+%
+\chapter{Rebuild BLIS}
+
+\lstset{style=type}
+\begin{lstlisting}
+$ ssh node1
+$ mkdir -p picluster/build/blis
+$ cd picluster/build/blis
+$ apt-get source blis
+$ sudo apt-get build-dep blis
+$ cd blis-0.6.1
+\end{lstlisting}
+
+
+%
+% CHAPTER
+%
+
+\chapter{Build OpenMPI from Source}
+
+Do all of this on node1...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ ssh node1
+\end{lstlisting}
+
+We want to avoid collisions with multiple OpenMPI installations, so remove original installed version...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ sudo apt remove openmpi-common
+$ sudo apt remove openmpi-bin
+$ sudo apt autoremove 
+\end{lstlisting}
+
+OpenMPI requires the libevent-dev package...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ sudo apt install libevent-dev
+\end{lstlisting}
+
+Create a build directory, and download and, and and following BLAH, BLAH build OpenMPI...
+
+\lstset{style=type}
+\begin{lstlisting}
+$ mkdir -p ~/picluster/build/openmpi
+$ cd ~/picluster/build/openmpi
+$ wget https://download.open-mpi.org/release/open-mpi/v4.0/openmpi-4.0.4.tar.gz
+$ gunzip openmpi-4.0.4.tar.gz
+$ tar xvf openmpi-4.0.4.tar
+$ rm openmpi-4.0.4.tar
+$ cd openmpi-4.0.4
+$ mkdir build
+$ cd build
+$ ../configure CFLAGS="-O3 -march=armv8-a -mtune=cortex=a72"
+$ make all
+$ sudo make install
+$ sudo ldconfig
+\end{lstlisting}
+
+OpenMPI will installed to /usr/local
+
+EXTRACT FROM HPL.dat
+
+
+TODO: HOW TO COPY TO ALL NODES!
+
+
+%
+% CHAPTER
+%
+\chapter{Aerin Cluster Tools}
+
+\lstinputlisting[caption=picluster/tools/upgrade, numbers=left, backgroundcolor=\color{LightSkyBlue}]{picluster/tools/upgrade}
+\lstinputlisting[caption=picluster/tools/reboot, numbers=left, backgroundcolor=\color{LightSkyBlue}]{picluster/tools/reboot}
+\lstinputlisting[caption=picluster/tools/shutdown, numbers=left, backgroundcolor=\color{LightSkyBlue}]{picluster/tools/shutdown}
+\lstinputlisting[caption=picluster/tools/libblas-query, numbers=left, backgroundcolor=\color{LightSkyBlue}]{picluster/tools/libblas-query}
+\lstinputlisting[caption=picluster/tools/libblas-set, numbers=left, backgroundcolor=\color{LightSkyBlue}]{picluster/tools/libblas-set}
+
+
+%
+% CHAPTER
+%
+
+\chapter{Arm Performance Libraries}
+
+\textcolor{red}{This does not work, yet! HPL will compile and link to Arm Performance Libraries, but raises an illegal instruction error at runtime.}
+
+\textcolor{red}{At the time of writing, Arm Performance Libraries release 20.2.0 requires a minimum Instruction Set Architecture (ISA) of armv8.1-a. Unfortunately, the Raspberry Pi's Cortex-A72 ISA is armv8.0-a. An Arm representative has indicated on the Arm HPC Forum that the next release of the libraries will support the armv8.0-a ISA.}
+
+\textcolor{red}{This Chapter is included for future reference.}
+
+The Arm Performance Libraries website states:
+
+"Arm Performance Libraries provides optimised standard core math libraries for high-performance computing applications on Arm processors. This free version of the libraries provides optimised libraries for Arm® Neoverse™ N1-based Armv8 AArch64 implementations that are compatible with various versions of GCC. You do not require a license for this version of the libraries."
+
+To install Arm Performance Libraries, firstly downloaded Arm Performance Libraries 20.2.0 with GCC 9.3 for Ubuntu 16.04+ from the Arm website.
+
+Then follow these instructions.
+
+\lstset{style=type}
+\begin{lstlisting}
+$ ssh node1
+\end{lstlisting}
+
+Install the required \verb|environment_modules| package.
+
+\lstset{style=type}
+\begin{lstlisting}
+$ sudo apt install environment-modules
+\end{lstlisting}
+
+Then extract and install Arm Performance Libraries.
+
+The default installation directory is /opt/arm.
+
+\lstset{style=type}
+\begin{lstlisting}
+$ mkdir ~/picluster/armpl
+$ cd ~/picluster/armpl
+$ tar xvf arm-performance-libraries_20.2_Ubuntu-16.04_gcc-9.3.tar
+$ rm arm-performance-libraries_20.2_Ubuntu-16.04_gcc-9.3.tar
+$ sudo ./arm-performance-libraries_20.2_Ubuntu-16.04.sh
+\end{lstlisting}
+
+Copy the \verb|Make.picluster| configuration file.
+
+\lstset{style=type}
+\begin{lstlisting}
+$ cd ~/picluster/hpl/hpl-2.3
+$ cp Make.picluster Make.picluster-armpl
+\end{lstlisting}
+
+Make the following changes to \verb|Make.picluster-armpl|.
+
+\lstset{style=listing}
+\begin{lstlisting}[caption=Make.picluster-armpl, numbers=none]
+LAdir        = /opt/arm/armpl_20.2_gcc-9.3
+LAinc        =
+LAlib        = -L$(LAdir)/lib -larmpl -lgfortran -lamath -lm
+\end{lstlisting}
+
+Build HPL.
+
+\lstset{style=type}
+\begin{lstlisting}
+$ make arch=picluster-armpl
+\end{lstlisting}
+
+
+%
+% THE END
+%
+\end{document}
