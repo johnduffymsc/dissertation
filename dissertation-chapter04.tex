@@ -1,9 +1,11 @@
 
-This chapter describes the components of the Aerin Cluster, and includes some advice and lessons learned. Detailed build instructions are included in Part II Chapter 7. 
+This chapter describes the components of the Aerin Cluster. Detailed build usage instructions included in the \verb|picluster| repository wiki. 
 
 Photo...
 
 The Aerin Cluster consists of the following hardware and software components.
+
+
 %
 % SECTION
 %
@@ -29,9 +31,9 @@ The 9 x Raspberry Pi 4 used in the cluster are the 4GB RAM version. Recently, an
 
 The compute nodes of the cluster are \verb|node1| to \verb|node8|. These are used to run the benchmarks.  
 
-Some benchmarks require a substantial amount of time to run, so it is helpful to have a dedicated build node for compiling software, developing scripts, etc, while the benchmarks run on compute nodes. This build node is \verb|node9|.
+Some benchmarks require a substantial amount of time to run, so it is helpful to have a dedicated build node for compiling software, developing scripts, etc, while benchmarks run on compute nodes. This build node is \verb|node9|.
 
-It is convenient to have one of the compute nodes designated the ``master'' node (this is a convenience and not a requirement). This is \verb|node1|. If any software needs to compiled locally to the compute nodes, and not on the build node, then the ``master'' node is used to do this. This node is also used to mirror the GitHub repository and to run the various Pi Cluster Tools. 
+It is convenient to have one of the compute nodes designated the ``master'' compute node, this is \verb|node1|. If any software needs to be compiled locally to the compute nodes, and not on the build node, then the ``master'' node is used to do this. This node is also used to mirror the GitHub repository and to run the various Pi Cluster Tools. 
 
 
 %
@@ -169,27 +171,9 @@ The HPL, HPCC and HPCG benchmark software was all compiled locally from source. 
 %
 \subsection{BLAS Library Management}
 
-On the Aerin Cluster we have two different BLAS libraries installed, OpenBLAS and BLIS, both in serial and OpenMP versions. It is obviously critical to have the same BLAS library configured as the ``the BLAS library in use'' on each node at the same time.
+Two different BLAS libraries are installed on the Aerin Cluster, OpenBLAS and BLIS, both in serial and OpenMP versions. For benchmark consistency it is essential to ensure the same BLAS library in use on each node at any one time. The Debian/Ubuntu \emph{alternatives} mechanism is used to set the BLAS library in use from a selection of \emph{alternatives}. Each \emph{alternative} is a \emph{symbolic link} in the file system which points to the appropriate shared library, the \verb|libblas.so.3| library installed with each BLAS package. The \emph{alternatives} mechanism is a command line interface to update the symbolic links.
 
-Debian/Ubuntu have a very clever mechanism for setting a particular version of a library to be the ``the BLAS library in use''. The is called the ``alternatives'' mechanism, and is not just used for BLAS libraries, there are lots of software packages with ``alternatives''.
-
-Each ``alternative'' has a name, in the case of the BLAS libraries it is called \verb|libblas.so.3|. What is really clever is that you can build software, such as HPL, to link against \verb|libblas.so.3|, and then change then change what this ``alternative'' points to without having to rebuild the software.
-
-For example, to set the serial version of OpenBLAS to ``the BLAS library in use'' we update the ``alternative'' with the following command:
-
-\lstset{style=type}
-\begin{lstlisting}
-$ sudo update-alternatives --set libblas.so.3-aarch64-linux-gnu /usr/lib/aarch64-linux-gnu/openblas-serial/libblas.so.3
-\end{lstlisting}
-
-Alternatively, there is an interactive version of the command which allows you to select a BLAS library from a list of options:
-
-\lstset{style=type}
-\begin{lstlisting}
-$ sudo update-alternatives --config libblas.so.3-aarch64-linux-gnu
-\end{lstlisting}
-
-The ``alternatives'' mechanism is very clever, but when you need to set the BLAS library on 8 nodes quite frequently this is a lot of typing and also error prone. So to make life easier I wrote two BLAS library management wrapper scripts described in the section below. 
+Using the \emph{alternatives} mechanism command line interface on 8 nodes is error prone. So, two \verb|bash| script wrapper tools were written and included in Pi Cluster Tools, discussed in the next section.
 
 
 %
@@ -197,9 +181,7 @@ The ``alternatives'' mechanism is very clever, but when you need to set the BLAS
 %
 \subsection{Pi Cluster Tools}
 
-Even a cluster of only 8 nodes requires quite a bit of effort, and typing, to keep the system up to date and to ensure the same BLAS library is running on each node. Logging in to each node individually to do this is a chore, and more importantly it is very error prone.
-
-To get around this problem, a number of \verb|bash| scripts were written as Pi Cluster Tools. Each script loops over a list of node names and uses \verb|ssh| to run a command remotely on each node in turn.
+Using \verb|ssh| to manually log into each node and perform command line administration tasks is error prone. To get around this problem, a number of \verb|bash| wrapper scripts were written as Pi Cluster Tools. Each script loops over a list of node names and uses \verb|ssh| to run a remote command on each node in turn.
 
 The following scripts are included as Pi Cluster Tools.
 
@@ -212,72 +194,4 @@ The following scripts are included as Pi Cluster Tools.
 \item libblas-set
 \end{itemize}
 
-Listings of the scripts are included in Part II Chapter 17.
-
-To run a particular tool, for example \verb|upgrade|, type the following command which will upgrade all of the nodes sequentially.
-
-\lstset{style=type}
-\begin{lstlisting}
-$ ~/picluster/tools/upgrade
-\end{lstlisting}
-
-The \verb|do| command ``does'' the same command on each node. Note the required quotation marks.
-
-\lstset{style=type}
-\begin{lstlisting}
-$ ~/picluster/tools/do "mkdir -p ~/picluster/hpl/hpl-2.3/bin/picluster"
-\end{lstlisting}
-
-
-Probably the most useful of the Pi Cluster Tools are the two BLAS library tools.
-
-\verb|libblas-query| queries the ``the BLAS library in use'' on each node. This is extremely useful for ensuring the same library is in use on each node.
-
-For example.
-
-\lstset{style=type}
-\begin{lstlisting}
-$ ~/picluster/tools/libblas-query
-\end{lstlisting}
-
-\lstset{style=term}
-\begin{lstlisting}
-node8... /usr/lib/aarch64-linux-gnu/blis-openmp/libblas.so.3
-node7... /usr/lib/aarch64-linux-gnu/blis-openmp/libblas.so.3
-node6... /usr/lib/aarch64-linux-gnu/blis-openmp/libblas.so.3
-node5... /usr/lib/aarch64-linux-gnu/blis-openmp/libblas.so.3
-node4... /usr/lib/aarch64-linux-gnu/blis-openmp/libblas.so.3
-node3... /usr/lib/aarch64-linux-gnu/blis-openmp/libblas.so.3
-node2... /usr/lib/aarch64-linux-gnu/blis-openmp/libblas.so.3
-node1... /usr/lib/aarch64-linux-gnu/blis-openmp/libblas.so.3
-\end{lstlisting}
-
-
-\verb|libblas-set| takes a single argument, openblas-serial, openblas-openmp, blis-serial, or blis-openmp, and then uses the ``alternatives'' mechanism to set the ``BLAS library in use'' on each node.
-
-For example.
-
-\lstset{style=type}
-\begin{lstlisting}
-$ ~/picluster/tools/libblas-set openblas-serial
-\end{lstlisting}
-
-\lstset{style=term}
-\begin{lstlisting}
-node8... done
-node7... done 
-node6... done 
-node5... done 
-node4... done 
-node3... done 
-node2... done 
-node1... done 
-\end{lstlisting}
-
-\lstset{style=hack}
-\begin{lstlisting}
-Pi Cluster Tools are not production quality.
-\end{lstlisting}
-
-
-
+Script listings are sample usage are included in the \verb|picluster| repository wiki.
