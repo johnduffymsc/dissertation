@@ -116,54 +116,34 @@ Data (program instructions, program data, or page addresses) in a cache are a co
 
 A cache may be \emph{fully-associative} or \emph{set-associative}. In a \emph{fully-associative} cache every memory address can be stored in all cache entries, i.e. a cache entry can point to any memory address. A \emph{set-associative} cache restricts memory addresses to a set of entries in the cache, i.e. certain cache entries can only point to certain memory addresses. The use of a \emph{fully-associative cache} versus a \emph{set-associative} cache is a compromise between a high probability of a cache hit but slower lookup, the \emph{fully-associative cache}, and a lower probability of a \emph{cache hit} but faster lookup, the \emph{set-associative cache}.      
 
-The BCM2711 Arm Cortex-A72 contains the following L1 caches, each with 64 byte cache lines:
+The BCM2711 contains the following caches, each with 64 byte cache lines:
 \begin{itemize}
-\item 48KB 3-way set-associative instruction cache
-\item 32KB 2-way set-associative data cache
+\item 48 KB 3-way set-associative L1 instruction cache per core
+\item 32 KB 2-way set-associative L1 data cache per core
+\item 1 MB 16-way set-associative shared L2 unified cache
 \end{itemize}
 
-The BCM2711 Arm Cortex-A72 contains the following L2 caches, each with 64 byte cache lines:
-\begin{itemize}
-\item 1MB 16-way set-associative unified cache
-\end{itemize}
-
-The MMU for the BCM2711 Arm Cortex-A72 contains the following caches:
+The BCM2711 MMU contains the following caches:
 \begin{itemize}
 \item 48-entry fully-associative L1 instruction TLB
 \item 32-entry fully-associative L1 data TLB
 \item 4-way set-associative 1024-entry L2 TLB in each processor
 \end{itemize}
 
-The appropriate layout of data in memory, in either \emph{row-major} or \emph{column-major} ordering, and subsequent program access pattern via the \emph{data cache}, has a major impact on program performance. If the data layout matches the access pattern, then each \emph{cache refresh} will fill a \emph{cache line} with the data required in sequential order, and \emph{cache refreshes} will only be required for new data once the entire \emph{cache line} has been used. If the data layout does not match the access pattern, then data will be moved in and out of the data cache without being used, and this will result in an unnecessarily high number of expensive \emph{cache misses}. 
+The appropriate layout of data in memory, in either \emph{row-major} or \emph{column-major} ordering, and subsequent program access pattern, via the \emph{data cache}, has a major impact on program performance. If the data layout matches the access pattern, then each \emph{cache refresh} will fill a \emph{cache line} with the data required and also the data likely to be required next in sequential order. A \emph{cache refresh} will only be required once the entire \emph{cache line} has been used. If the data layout does not match the access pattern, then data will be moved in and out of the \emph{data cache} without being used, and this will result in an unnecessarily high number of expensive \emph{cache misses}. 
 
 
  
 %
 % Arm Architecture
 %
-\section{ARM Architecture }
+\section{ARM Architecture}
 
-Fugatku...
+Ever since the introduction of the ARMv8-A architecture in 2011, Arm processors have become an increasingly popular choice for High Performance Computing (HPC) due to improvements in the ARMv8 instruction set specifically targeting HPC combined with low power requirements. The 415 Petaflops Fugaku supercomputer, based on the Fujitsu AX64 Arm-based processor, topped the June 2020 Top500 List and also the November 2019 Green500 List.
 
-Numer of Arm-based in Top/Green 500...
+Arm processors are based upon RISC (Reduced Instruction Set Computer) principles with a simple Load/Store architecture. Data is loaded from main memory into processor registers, computations are performed using fixed-length instructions, and the results are then stored back in main memory. This compares with CISC (Complicated Instruction Set Computer) architectures with complicated memory addressing and computation modes with variable length instructions. The simplicity of design, which directly translates to a low transistor count, results in high performance combined with low power requirements.
 
-48 core workstation...
-
-RISC paper...
-
-RISC/CISC
-
-Load/Store architecture
-
-Simplicity of design...
-
-Transistor count...
-
-Electrical power...
-
-armv7...
-
-armv8... 64-bit
+The ARMv8-A in introduced the first Arm 64-bit architecture.
 
 armv8.1...
 
