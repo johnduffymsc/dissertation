@@ -95,76 +95,9 @@ The final aim of this project was to investigate where the Aerin cluster might f
 %
 % SECTION
 %
-\section{Typography}
-
-This has been a very hands-on computing project with lots of Linux command line use. To enable a reader to replicate the cluster build and results, the Linux commands, output and file listings are included in the dissertation text, and colour coded as follows to aid readability.
-
-This is a computer name:
-
-\verb|node1|
-
-This is a command to type:
-
-\lstset{style=type}
-\begin{lstlisting}[]
-$ cat /proc/softirqs
-\end{lstlisting}
-
-
-This is the command output:
-
-\lstset{style=term}
-\begin{lstlisting}
-                    CPU0       CPU1       CPU2       CPU3       
-          HI:          1          0          0          1
-       TIMER:    3835342    3454143    3431155    3431023
-      NET_TX:      36635          0          0          0
-      NET_RX:     509189        146        105        121
-       BLOCK:      95326       4367       4311       4256
-    IRQ_POLL:          0          0          0          0
-     TASKLET:       4900          3          4         25
-       SCHED:     444569     267214     218701     189120
-     HRTIMER:         67          0          0          0
-         RCU:     604466     281455     260784     277699
-\end{lstlisting}
-
-This is a long command to type.
-
-\lstset{style=type}
-\begin{lstlisting}[]
-$ mpirun --bind-to socket -host node1:1,node2:1,node3:1 -np 3 -x OMP_NUM_THREADS=4 xhpl
-\end{lstlisting}
-
-In the command above, it is possible to reduce typing by putting the host names and corresponding processor slots information in a \verb|hostfile|, but this illustrates the typography.
-
-% TODO: Change to Ubuntu /etc/hosts...
-This is a file listing, note the line numbering commencing at 1:
-
-\lstset{style=listing}
-\lstinputlisting[caption=/etc/hosts]{/etc/hosts}
-
-This is a partial file listing, note the lack of line numbering:
-
-\lstset{style=listing}
-\lstinputlisting[caption=/etc/hosts, numbers=none]{/etc/hosts}
-
-And this is something to take note of:
-
-\lstset{style=hack}
-\begin{lstlisting}
-This is a "gotcha", or
-This differs from a similar build procedure, or
-This is a "hack" to be fixed permanently later, or
-Something similar
-\end{lstlisting}
-
-
-%
-% SECTION
-%
 \section{Project GitHub Repositories}
 
-The project code and benchmark results are hosted in the following GitHub repository.
+The project code and benchmark results are hosted in the following GitHub repository. Detailed instructions for building the Aerin Cluster and running the benchmarks are included in the wiki of this repository.
 
 \begin{verbatim}
 https://github.com/johnduffymsc/picluster

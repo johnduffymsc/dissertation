@@ -97,42 +97,6 @@ Using values of block size NB from 32 to 256, in increments of 8, and using form
 \caption{\label{tab:table-name}1 Core NB and N Combinations using 80\% of 4 GB Memory.}
 \end{table}
 
-The HPL input file HPL.dat is populated with these NB and N combinations as follows, in this example using an NB of 32 and an N of 18528: 
-
-\lstset{style=listing}
-\begin{lstlisting}[numbers=none]
-1            # of problems sizes (N)
-18528        Ns
-1            # of NBs
-32           NBs
-\end{lstlisting}
-
-For this baseline a single \verb|xhpl| process is run on both the pure OpenMPI and Hybrid OpenMPI/OpenMP topologies. In both of these cases HPL.dat is populated with processor grid parameters P and Q as follows:
-
-\lstset{style=listing}
-\begin{lstlisting}[numbers=none]
-1            # of process grids (P x Q)
-1            Ps
-1            Qs
-\end{lstlisting}
-
-This baseline is run on a pure OpenMPI topology with the following command:
-
-\lstset{style=type}
-\begin{lstlisting}[]
-$ mpirun --bind-to core -host node1:1 -np 1 xhpl
-\end{lstlisting}
-
-Explain bind to core...
-
-This baseline is run on a hybrid OpenMPI/OpenMP topology with the following command:
-
-\lstset{style=type}
-\begin{lstlisting}[]
-$ mpirun --bind-to socket -host node1:1 -np 1 -x OMP_NUM_THREADS=1 xhpl
-\end{lstlisting}
-
-Explain bind to socket...
 
 \begin{figure}
 	\begin{subfigure}{1.0\textwidth}
@@ -194,37 +158,6 @@ As per the single core benchmark, the HPL problem size is restricted to 80\% of 
 \caption{\label{tab:table-name}1 Node NB and N Combinations using 80\% of 4 GB Memory.}
 \end{table}
 
-For the pure OpenMPI topology, 4 \verb|xhpl| processes are run, one on each core. In this case HPL.dat is populated with processor grid parameters P and Q as follows:
-
-\lstset{style=listing}
-\begin{lstlisting}[numbers=none]
-1            # of process grids (P x Q)
-1            Ps
-4            Qs
-\end{lstlisting}
-
-And the pure OpenMPI topology baseline is run with the following command:
-
-\lstset{style=type}
-\begin{lstlisting}[]
-$ mpirun --bind-to core -host node1:4 -np 4 xhpl
-\end{lstlisting}
-
-For the hybrid OpenMPI/OpenMP topology, a single \verb|xhpl| process is run on the node. In this case the HPL.dat P and Q processor grid parameters are populated as follows:
-
-\lstset{style=listing}
-\begin{lstlisting}[numbers=none]
-1            # of process grids (P x Q)
-1            Ps
-1            Qs
-\end{lstlisting}
-
-With 4 cores available to the multi-threaded BLAS library, the hybrid OpenMPI/OpenMP topology baseline is run with the following command:
-
-\lstset{style=type}
-\begin{lstlisting}[]
-$ mpirun --bind-to socket -host node1:1 -np 1 -x OMP_NUM_THREADS=4 xhpl
-\end{lstlisting}
 
 The results are plotted in Figure ??
 
@@ -286,37 +219,6 @@ For this baseline the HPL problem size is restricted to 80\% of 2 nodes combined
 \caption{\label{tab:table-name}2 Node NB and N Combinations using 80\% of 8 GB Memory.}
 \end{table}
 
-For the pure OpenMPI topology, 8 \verb|xhpl| processes are run, one on each core of each of the 2 nodes. Now it is possible to have 2 processor grid shapes, 1 x 8 and 2 x 4. In this case HPL.dat is populated with processor grid parameters P and Q as follows:
-
-\lstset{style=listing}
-\begin{lstlisting}[numbers=none]
-2            # of process grids (P x Q)
-1 2          Ps
-8 4          Qs
-\end{lstlisting}
-
-The pure OpenMPI topology baseline is run with the following command:
-
-\lstset{style=type}
-\begin{lstlisting}[]
-$ mpirun --bind-to core -host node1:4,node2:4 -np 8 xhpl
-\end{lstlisting}
-
-For the hybrid OpenMPI/OpenMP topology, a single \verb|xhpl| process is run on each node. This results in single processor grid shape of 1 x 2, and the HPL.dat P and Q processor grid parameters are populated as follows:
-
-\lstset{style=listing}
-\begin{lstlisting}[numbers=none]
-1            # of process grids (P x Q)
-1            Ps
-2            Qs
-\end{lstlisting}
-
-With the BLAS library utilising the 4 cores on each node, the hybrid OpenMPI/OpenMP topology baseline is run with the following command:
-
-\lstset{style=type}
-\begin{lstlisting}[]
-$ mpirun --bind-to socket -host node1:1,node2:1 -np 2 -x OMP_NUM_THREADS=4 xhpl
-\end{lstlisting}
 
 The results are plotted in Figure ??
 
@@ -369,50 +271,6 @@ This cluster baseline uses the optimum values of NB from the 2 Node Baseline. Fo
  		\hline
 	\end{tabular}
 \end{center}
-
-These NB and N combinations are used to populate HPL.dat, as per the example below for the 3 node OpenBLAS Serial case.
-
-\lstset{style=listing}
-\begin{lstlisting}[numbers=none]
-1            # of problems sizes (N)
-32000        Ns
-1            # of NBs
-000          NBs
-\end{lstlisting}
-
-For the 3 node pure OpenMPI baseline, the following HPL.dat processor grid shapes are used: 
-
-\lstset{style=listing}
-\begin{lstlisting}[numbers=none]
-3            # of process grids (P x Q)
-1 2 3        Ps
-12 6 4       Qs
-\end{lstlisting}
-
-And the 3 node pure OpenMPI baseline is run with the following command:
-
-\lstset{style=type}
-\begin{lstlisting}[]
-$ mpirun --bind-to core -host node1:4,node2:4,node3:4 -np 12 xhpl
-\end{lstlisting}
-
-For the 3 node hybrid OpenMPI/OpenMP baseline, the following HPL.dat processor grid shapes are used: 
-
-\lstset{style=listing}
-\begin{lstlisting}[numbers=none]
-1            # of process grids (P x Q)
-1            Ps
-3            Qs
-\end{lstlisting}
-
-And the 3 node hybrid OpenMPI/OpenMP baseline is run with the following command:
-
-\lstset{style=type}
-\begin{lstlisting}[]
-$ mpirun --bind-to socket -host node1:1,node2:1,node3:1 -np 3 -x OMP_NUM_THREADS=4 xhpl
-\end{lstlisting}
-
-For the 4, 5, 6, 7 and 8 node pure OpenMPI and hybrid OpenMPI/OpenMP baselines, HPL.dat is populated with the processor grid parameters P and Q in a similar manner. Likewise, the baselines are run in a similar manner.
 
 
 \begin{table}
@@ -830,7 +688,7 @@ BLIS OpenMP     & MPIRandomAccess\_LCG\_N=2147483648 \\
 %
 \section{HPCG Baseline}
 
-The June 2020 HPCG List ranks 169 computer in order of conjugate gradient performance. Ranking number 1 is the Fugaku supercomputer. And ranking 169 is the Spaceborne Computer onboard the International Space Station (ISS). The Spaceborne Computer is a 32 core system based on the Intel Xeon E5-2620 v4 8 Core CPU, clocked at 2.1GHz, with an Infiniband interconnect. The HPCG List performance reaults of these two computers are in Table ??.
+The June 2020 HPCG List ranks 169 computer in order of conjugate gradient performance. Ranking number 1 in the list is the Fugaku supercomputer. And ranking 169 is the Spaceborne Computer, which is onboard the International Space Station. The Spaceborne Computer is a 32 core system based on the Intel Xeon E5-2620 v4 8 Core CPU clocked at 2.1GHz, with an Infiniband interconnect. The HPCG List performance results of these two computers are in Table ??.
 
 \begin{table}[H]
 \begin{center}
@@ -845,12 +703,12 @@ Rank &      &       & Pflops        & Rank   & Pflops & of Peak  \\
 \hline
 \end{tabular}
 \end{center}
-\caption{\label{tab:table-name}June 2020 HPCG List.}
+\caption{\label{tab:table-name}Extract from June 2020 HPCG List.}
 \end{table}
 
+For computers to be officially ranked in the HPCG List, the HPCG benchmark must be run for in excess of 30 minutes using at least 25\% of available memory.
 
-
-The Aerin Cluster... 
+The following results were obtained for the Aerin Cluster running the HPCG benchmark for 60 minutes using 75\% of available memory and using all 8 nodes.
 
 \begin{table}[H]
 \begin{center}
@@ -871,17 +729,6 @@ Rank &      &       & Pflops        & Rank   & Pflops & of Peak  \\
 \end{center}
 \caption{\label{tab:table-name}The Aerin Cluster HPCG Benchmark.}
 \end{table}
-
-%
-% SUB SECTION
-%
-\subsection{Serial HPCG}
-
-
-%
-% SECTION
-%
-\subsection{OpenMP HPCG}
 
 
 %
@@ -1362,35 +1209,11 @@ sudo shutdown -r now
 \end{lstlisting}
 
 
-
-
 \lstset{style=type}
 \begin{lstlisting}
 Aug 11 03:35:40 node5 kernel: [19256.425779] bcmgenet fd580000.ethernet eth0: bcmgenet_xmit: tx ring 1 full when queue 2 awake
 \end{lstlisting}
 
-
-
-%
-% SUB SECTION
-%
-\subsection{reclaim memory}
-A closer look at the memory use above indicates that 65536k of memory is being used as \emph{cma-reserved}. This Contiguous Memory Allocator (CMA) memory is reserved at boot time for certain kernel drivers, in particular some video drivers. Since the Aerin Cluster is not using video, it may be possible to reclaim some of this memory to increase the amount available for the benchmark problem size.
-
-The \verb|/proc| filesystem enables access to kernel data structures at run time. Running the following command it is possible to see how the \emph{cma-reserved} memory is being utilised:
-
-\lstset{style=type}
-\begin{lstlisting}
-$ cat /proc/meminfo | grep Cma
-\end{lstlisting}
-
-\lstset{style=type}
-\begin{lstlisting}
-CmaTotal:          65536 kB
-CmaFree:           63732 kB
-\end{lstlisting}
-
-As can be seen, the majority of \emph{cma-reserved} memory is not being used. So, although this is a relatively small amount of memory on a single node, it is approximately 0.5 GB across all 8 nodes. This is worth trying to reclaim for the benchmark problem size via a rebuild of the kernel, something that is investigated later.
 
 
 

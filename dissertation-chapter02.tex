@@ -16,25 +16,42 @@ A benchmark is a standardised measure of performance. In computing terms this is
 
 To put benchmark results into context, and to extrapolate from the results where performance gains might be realised, it is necessary to have an understanding of the main components of a computer and the network connecting a cluster of computers. The following sections of this chapter describe these components and the network in more detail.
 
-Matrix-matrix multiplication plays an important role in computer benchmarking because the multiplication of large matrices tests processing, memory, and network performance. A more detailed discussion of this topic is also included in this chapter. 
-
 
 %
 % SECTION
 %
-\section{CPU Architecture}
+\section{Computer Architecture}
 
-\subsection{Threads}
+\subsection{CPU}
+The CPU (Central Processing Unit) is the hardware that executes program instructions. Program data is loaded from main memory into CPU registers, the program instructions operate on the registers, and then the results are stored back in main memory. Registers may be general purpose registers, or have a specific use, such as floating point registers for fast floating point operations. A special purpose register called the Instruction Pointer points to the next instruction to be executed. A modern CPU will typically have multiple processing cores, each with its own set of registers.
 
 \subsection{Processes}
+A \emph{process} is a running program executing on a CPU, or on a core of multi-core CPU. At any time each process has a \emph{state}. This state includes the current contents of the registers and the Instruction Pointer. A multi-core CPU can run multiple processes simultaneously. A process may be a user program, such as a benchmark, or an operating system process.
+
+The single-threaded benchmarks used in this project run as a single process, one process per CPU core.   
+
+\subsection{Threads}
+A \emph{thread}, sometimes referred to as a \emph{lightweight process}, is the minimum amount of work that can be \emph{scheduled} by a CPU. Scheduling is discussed shortly. A process may consist of multiple threads, each of which shares the address space of the process. Starting and stopping a thread is less expensive than starting and stopping a process. And because a process address space is shared between threads, data sharing between threads can be less expensive and easier than other mechanisms of inter-process communication. It is for these reasons that multi-threaded programs are used. However, multi-threaded programs can be difficult to write, and data sharing between threads must be considered carefully to avoid \emph{data races}, \emph{livelocks} and \emph{deadlocks}.
+
+The multi-threaded benchmarks used in this project use OpenMP to parallelise computation. A single process is run on each node, with the benchmark work being distributed across cores by OpenMP using threads. 
 
 \subsection{Context Switch}
 
-\subsection{Concurrency}
+A \emph{context switch} is the suspension of a running process and the starting, or resuming, of a different process. Context switching is implemented for a number of reasons; to share access to the CPU across multiple processes (\emph{concurrency}), whenever a program issues a \emph{system call} to request a service from the \emph{kernel}, whenever the \emph{kernel} receives an \emph{interrupt} from a timer or peripheral device and requires access to the CPU, and to avoid wasting processor time when waiting for slow Input/Output (IO) operations.
 
-\subsection{Parallel Computation}
+Whenever a context switch takes place, the current \emph{state} of the running process is saved to main memory, and the \emph{state} of the new process is retrieved from main memory. This takes time.
 
-\subsection{Scheduling}
+LMTIME...
+
+Linux uses a mechanism called vDSO (Virtual Dynamic Shared Object) to avoid a context switch whenever a \emph{system call} is made which does not require an elevation of system privileges. However, on the Arm64 architecture this only includes the \emph{clock\_gettime()} and \emph{gettimeofday()} system calls, so effectively all system calls involve a context switch.
+
+As discussed in Chapter 5, each packet of network data sent between cluster nodes generates a network card \emph{interrupt} on the receiving node. This \emph{interrupt} requires \emph{servicing} by the kernel, which involves a context switch from the benchmark process to a kernel process. And this takes a considerable amount of time and drastically affects benchmark performance. The Networking section of this chapter discusses measures to mitigate this performance penalty.
+
+\subsection{Concurrency and Parallelism}
+
+\emph{Concurrency} and \emph{Parallelism} are similar concepts and refer to a computer running multiple processes at the same time, or the illusion of this. A single core CPU can only run a single process at a time. However, if the context switching between processes is fast enough, then this may result in the illusion of \emph{concurrency}. This is sometimes referred to to as \emph{time-slicing} or \emph{time-sharing}. But this is not \emph{parallelism}. \emph{Parallelism} is the simultaneous running of multiple processes, which requires multiple cores or multiple computers.
+
+A benchmark will typically be running the same process in parallel on each node, which each node operating on a different portion of the benchmark data.
 
 \subsection{Interrrupts}
 
@@ -173,44 +190,17 @@ The L2 memory system requires support for inclusion between the L1 data caches a
 %
 % SECTION
 %
-\section{Matrix Multipication}
-
-
-%
-% SECTION
-%
 \section{Benchmarks}
 
-\subsection{High Performance Linpack}
-
-\subsection{HPC Challenge}
-
-\subsection{HP Conjugate Gradients}
-
-
-%
-% OLD STUFF FROM HERE TO WEED...
-% 
-
-
-%
-% SECTION
-%
-\section{Landscape}
+\subsection{Landscape}
 
 High Performance Linpack (HPL) is the industry standard HPC benchmark and has been for since 1993. It is used by the Top500 and Green500 lists to rank supercomputers in terms of raw performance and performance per Watt, respectively. However, it has been criticised for producing a single number, and not being a true measure of real-world application performance. This has led to the creation of complementary benchmarks, namely HPC Challenge (HPCC) and High Performance Conjugate Gradients (HPCG). These benchmarks measure whole system performance, including processing power, memory bandwidth, and network speed and latency, in relation to standard HPC algorithms such as FFT and CG.
 
-HPL has been the main focus of this project, mainly because it is the industry standard HPC benchmark, but also because tuning performance for HPL will also produce optimum results for HPCC (HPCC includes HPL) and HPCG.
-
-Because BLAS (Basic Linear Algebra Subroutine) library performance and cluster topology, pure OpenMPI and hybrid OpenMPI/OpenMP, have a direct impact on benchmark performance, a discussion of these topics is also included in this chapter. 
-
-
-A detailed description of each benchmark follows.
 
 %
-% SECTION
+% SUB SECTION
 %
-\section{High Performance Linpack (HPL)}
+\subsection{High Performance Linpack (HPL)}
 
 HPL did not begin life as a supercomputer benchmark. LINPACK is a software package for solving Linear Algebra problems. And in 1979 the ``LINPACK Report'' appeared as an appendix to the LINPACK User Manual. It listed the performance of 23 commonly used computers of the time when solving a matrix problem of size 100. The intention was that users could use this data to extrapolate the execution time of their matrix problems.
 
@@ -232,7 +222,7 @@ In HPL terminology, $R_{peak}$ is the theoretical maximum performance. And $R_{m
 %
 % SUB SECTION
 %
-\subsection{Determining Input Parameters}
+\subsubsection{Determining Input Parameters}
 
 The main parameters which affect benchmark results are the block size NB, the problem size N, and the processor grid dimensions P and Q.
 
@@ -267,99 +257,9 @@ If the Aerin Cluster used a high speed interconnect between nodes, such as Infin
 
 
 %
-% SUB SECTION
-%
-\subsection{Running HPL}
-
-HPL uses the input file \verb|HPL.dat| to specify the input parameters for each benchmark run.
-
-Each of these has a preceding count parameter (\verb|#|) which specifies the number of each parameter (for example, there may be more than 1 processor grid shape).
-
-The problem size N and block size NB are set as follows, in this case there being a single problem size and a single block size:
-
-\lstset{style=listing}
-\begin{lstlisting}[numbers=none, caption=HPL.dat]
-1            # of problems sizes (N)
-52360        Ns
-1            # of NBs
-88           NBs
-\end{lstlisting}
-
-The processor grid shapre parameters P and Q are set as follows, in this case there being 32 cores/slots with 3 possible grid shapes, 1 x 32, 2 x 16 and 4 x 8:
-
-\lstset{style=listing}
-\begin{lstlisting}[numbers=none, caption=HPL.dat]
-3            # of process grids (P x Q)
-1 2 4        Ps
-32 16 8      Qs
-\end{lstlisting}
-
-For each benchmark run, the above parameters are set accordingly.
-
-For this project the remaining parameters, which have a lesser effect on benchmark results, were set in accordance with the advice in \href{https://www.netlib.org/benchmark/hpl/tuning.html}{HPL Tuning}, with \verb|swapping threshold| being set to match NB, as follows:
-
-\lstset{style=listing}
-\begin{lstlisting}[numbers=none, caption=HPL.dat]
-16.0         threshold
-1            # of panel fact
-1            PFACTs (0=left, 1=Crout, 2=Right)
-2            # of recursive stopping criterium
-4 8          NBMINs (>= 1)
-1            # of panels in recursion
-2            NDIVs
-1            # of recursive panel fact.
-2            RFACTs (0=left, 1=Crout, 2=Right)
-2            # of broadcast
-1 3          BCASTs (0=1rg,1=1rM,2=2rg,3=2rM,4=Lng,5=LnM)
-2            # of lookahead depth
-0 1          DEPTHs (>=0)
-2            SWAP (0=bin-exch,1=long,2=mix)
-88           swapping threshold
-0            L1 in (0=transposed,1=no-transposed) form
-0            U  in (0=transposed,1=no-transposed) form
-1            Equilibration (0=no,1=yes)
-8            memory alignment in double (> 0)
-\end{lstlisting}
-
-HPL is run using a serial BLAS library as follows, in this case using 2 nodes with 4 cores/slots:
-
-\lstset{style=type}
-\begin{lstlisting}
-$ mpirun --bind-to core -host node1:4,node2:4 -np 8 xhpl
-\end{lstlisting}
-
-HPL is run using a multi-threaded BLAS library as follows, again, in this case using 2 nodes with 4 cores/slots:
-
-\lstset{style=type}
-\begin{lstlisting}
-$ mpirun --bind-to socket -host node1:1,node2:1 -np 2 -x OMP_NUM_THREADS=4 xhpl
-\end{lstlisting}
-
-The results generated by each benchmark run are either printed on \verb|stdout|, \verb|stderr|, or placed in a file, depending on the \verb|HPL.dat| parameter \verb|device out|.
-
-For this project, all benchmark results were placed in a file called \verb|HPL.out| by specifying the filename and setting \verb|device out| to zero, as follows:
-
-\lstset{style=listing}
-\begin{lstlisting}[numbers=none, caption=HPL.dat]
-HPL.out      output file name (if any)
-0            device out (6=stdout,7=stderr,file)
-\end{lstlisting}
-
-
-The \verb|HPL.out| file from each benchmark run was renamed to reflect the N, NB, P and Q parameters used, and also the BLAS library used. For example:
-
-\lstset{style=type}
-\begin{lstlisting}
-$ mv HPL.out HPL.out.6_node_45320_88_1_6_2_3.openblas_openmp
-\end{lstlisting}
-
-Each results file was then stored appropriately in the \verb|picluster/results| directory structure. 
-
-
-%
 % SECTION
 %
-\section{HPC Challenge (HPCC)}
+\subsection{HPC Challenge (HPCC)}
 
 HPCC is a suite of benchmarks which test different aspects of cluster performance. These benchmarks include tests for processing performance, memory bandwidth, and network bandwidth and latency. HPCC is intended to give a broader view of cluster performance than HPL alone, which should reflect real-world application performance more closely. HPCC includes HPL as one of the suite of benchmarks.
 
@@ -369,7 +269,7 @@ The HPCC suite consists of the following 7 benchmarks, where \emph{single} indic
 %
 % SUB SECTION
 %
-\subsection{HPL}
+\subsubsection{HPL}
 
 HPL is a \emph{global} benchmark which solves a dense system of linear equations.
 
@@ -377,7 +277,7 @@ HPL is a \emph{global} benchmark which solves a dense system of linear equations
 %
 % SUB SECTION
 %
-\subsection{DGEMM}
+\subsubsection{DGEMM}
 
 The DGEMM benchmark tests double precision matrix-matrix multiplication performance in both \emph{single} and \emph{star} modes.
 
@@ -385,7 +285,7 @@ The DGEMM benchmark tests double precision matrix-matrix multiplication performa
 %
 % SUB SECTION
 %
-\subsection{STREAM}
+\subsubsection{STREAM}
 
 The STREAM benchmark tests memory bandwidth, to and from memory, in both \emph{single} and \emph{star} modes.
 
@@ -393,7 +293,7 @@ The STREAM benchmark tests memory bandwidth, to and from memory, in both \emph{s
 %
 % SUB SECTION
 %
-\subsection{PTRANS}
+\subsubsection{PTRANS}
 
 PTRANS, Parallel Matrix Transpose, is a \emph{global} benchmark which tests system performance in transposing a large matrix.
 
@@ -401,7 +301,7 @@ PTRANS, Parallel Matrix Transpose, is a \emph{global} benchmark which tests syst
 %
 % SUB SECTION
 %
-\subsection{RandomAccess}
+\subsubsection{RandomAccess}
 
 The RandomAccess benchmark tests the performance of random updates to a large table in memory, in \emph{single}, \emph{star}, and \emph{global} modes.
 
@@ -409,7 +309,7 @@ The RandomAccess benchmark tests the performance of random updates to a large ta
 %
 % SUB SECTION
 %
-\subsection{FFT}
+\subsubsection{FFT}
 
 FFT tests the Fast Fourier Transform performance of a large vector, in \emph{single}, \emph{star}, and \emph{global} modes.
 
@@ -417,48 +317,15 @@ FFT tests the Fast Fourier Transform performance of a large vector, in \emph{sin
 %
 % SUB SECTION
 %
-\subsection{Network Bandwidth and Latency}
+\subsubsection{Network Bandwidth and Latency}
 
 This benchmark measures network/communications bandwidth and latency in \emph{global} mode.
 
 
 %
-% SUB SECTION
-%
-\section{Running HPCC}
-
-HPCC is run in the same manner as HPL. An input file \verb|hpccinf.txt| is created, which is of same format as \verb|HPL.dat|, but may contain additional problem sizes and block sizes for the PTRANS benchmark.
-
-HPCC is run using a serial BLAS library as follows, in this case using 2 nodes with 4 cores/slots:
-
-\lstset{style=type}
-\begin{lstlisting}
-$ mpirun --bind-to core -host node1:4,node2:4 -np 8 hpcc
-\end{lstlisting}
-
-HPCC is run using a multi-threaded BLAS library as follows, again, in this case using 2 nodes with 4 cores/slots:
-
-\lstset{style=type}
-\begin{lstlisting}
-$ mpirun --bind-to socket -host node1:1,node2:1 -np 2 -x OMP_NUM_THREADS=4 hpcc
-\end{lstlisting}
-
-The benchmark results are placed in an output file \verb|hpccoutf.txt|.  
-
-For this project each benchmark \verb|hpccoutf.txt| file was renamed to reflect the N, NB, P and Q parameters used, and also the BLAS library used. For example:
-
-\lstset{style=type}
-\begin{lstlisting}
-$ mv hpccoutf.txt hpccoutf.txt.8_node_52400_200_1_8_2_4.blis_openmp
-\end{lstlisting}
-
-Each results file was then stored appropriately in the \verb|picluster/results| directory structure. 
-
-
-%
 % SECTION
 %
-\section{High Performance Conjugate Gradients (HPCG)}
+\subsection{High Performance Conjugate Gradients (HPCG)}
 
 HPCG is intended to be complementary to HPL, and to incentivise hardware manufacturers to improve computer architectures for modern HPC workloads. 
 
@@ -469,234 +336,6 @@ Quoting the Super Computing 2019 HPCG Handout:
 \say{The PCG implementation uses a regular 27-point stencil discretixation in 3 dimensions of an elliptic partial differential equation (PDE) with zero Dirichlet boundary condition. The 3-D domain is scaled to fill a 3-D virtual process grid of all available MPI process ranks. The CG iteration includes a local and symmetric Gauss-Seidel preconditioner, which computes a forward and a back solve with a triangular matrix. All of these features combined allow HPCG to deliver a more accurate performance metric for modern HPC architectures.}
 
 
-%
-% SUB SECTION
-%
-\subsection{Running HPCG}
-
-In a similar manner to HPL and HPCC, HPCG uses an input file \verb|hpcg.dat| for benchmark run configuration.
-
-The format of \verb|hpcg.dat| with default parameter values is:
-
-\lstset{style=type}
-\begin{lstlisting}
-HPCG benchmark input file
-Sandia National Laboratories; University of Tennessee, Knoxville
-104 104 104
-60
-\end{lstlisting}
-
-Lines 1 and 2 are comments, line 3 specifies the 3 dimensions of the problem size, and line 4 specifies the run time in seconds. The problem size is per OpenMPI process. For benchmark runs to be submitted for official performance ranking the problem size memory usage must exceed 25\% of available memory and the run time must exceed 30 minutes (1800 seconds).
-
-HPCG can be built in serial and OpenMP versions. See Part II Chapter 10 for details.
-
-For the serial version each node runs 4 \verb|xhpcg| processes, one on each core. Foe the OpenMP version a single \verb|xhpcg| process is run on each node.
-
-The serial version of HPCG is run as follows, in this case on 2 nodes each with 4 cores:
-
-\lstset{style=type}
-\begin{lstlisting}
-mpirun --bind-by core -host node1:4,node2:4 -np 8 xhpcg
-\end{lstlisting}
-
-The OpenMP version of HPCG is run as follows, again, in this case on 2 nodes each with 4 cores:
-
-\lstset{style=type}
-\begin{lstlisting}
-mpirun --bind-by socket -host node1:1,node2:1 -np 2 -x OMP_NUM_THREADS=4 xhpcg
-\end{lstlisting}
-
-The output from each benchmark run is placed is an output file with a name including a timestamp, for example:
-
-\verb|HPCG-Benchmark_3.1_2020-08-30_15-00-29.txt|
-
-
-%
-% SECTION
-%
-\section{BLAS Libraries}
-
-If we use the Linux \verb|perf| command to sample and record CPU stack traces (via frame pointers) for an \verb|xhpl| process (with Process ID 6595) for 30 seconds:
-
-\lstset{style=type}
-\begin{lstlisting}
-$ sudo perf record -p 6595 -g -- sleep 30
-\end{lstlisting}
-
-And then look at the stack trace report: 
-
-\lstset{style=type}
-\begin{lstlisting}
-$ sudo perf report
-\end{lstlisting}
-
-\lstset{style=term}
-\begin{lstlisting}
-+ 100.00% 0.00% xhpl xhpl             [.] _start                                                                                        
-+ 100.00% 0.00% xhpl libc-2.31.so     [.] __libc_start_main                                                                             
-+ 100.00% 0.00% xhpl xhpl             [.] main                                                                                          
-+ 100.00% 0.00% xhpl xhpl             [.] HPL_pdtest                                                                                    
-+ 100.00% 0.00% xhpl xhpl             [.] HPL_pdgesv                                                                                    
-+ 100.00% 0.00% xhpl xhpl             [.] HPL_pdgesv0                                                                                   
-+  98.03% 0.00% xhpl xhpl             [.] HPL_pdupdateTT                                                                                
-+  97.71% 0.00% xhpl libblas.so.3     [.] 0x0000ffffaa839ff0                                                                            
-+  97.71% 0.00% xhpl libgomp.so.1.0.0 [.] GOMP_parallel                                                                                 
-+  97.70% 0.00% xhpl libblas.so.3     [.] 0x0000ffffaa839e80                                                                            
--  96.56% 0.00% xhpl xhpl             [.] HPL_dgemm                                                                                     
-    HPL_dgemm                                                                                                                                           
-    dgemm_            
-\end{lstlisting}
-
-It can be seen that 96.56\% of the time within the \verb|xhpl| process is spent in the \verb|HPL_dgemm| function, which subsequently calls the BLAS \verb|dgemm_| function (the \verb|_| appended to \verb|dgemm| function name is the Fortran function name decoration).
- 
-It is for this reason that the efficiency of the BLAS library is critical for both benchmark and real-world application performance. The efficiency of the \verb|dgemm| (\textbf{d}ouble precision \textbf{ge}neral \textbf{m}atrix \textbf{m}ultiplication) function is particularly important for the dense matrix HPL benchmark.
-
-The mathematical operation implemented by \verb|dgemm| is:
-
-\[C := \alpha \times A \times B + \beta \times C\]
-
-where $A$ is a $M \times K$ matrix, $B$ is a $K \times N$ matrix, $C$ is a $M \times N$ matrix, and $\alpha$ and $\beta$ are scalars.
-
-In the case of the HPL benchmark, $M = N = K$.
-
-Efficient BLAS libraries ``block'' matrix multiplication into smaller sub-matrix multiplications. The ``block'' sizes of these sub-matrices multiplications are carefully chosen to make optimum use of CPU registers, and L1, L2, and L3 (when available) cache sizes. These sub-matrix multiplications are referred to as \emph{kernels}, or sometimes \emph{micro-kernels}.
-
-Maximum performance is achieved when the matrix multiplication problem size in an integer multiple of the \verb|dgemm| ``block'' size. In the case of the HPL benchmark, maximum performance is achieved when the the problem size N is an integer multiple of the HPL NB block size, which in turn is an integer multiple of the BLAS ``block'' size.
-
-The above is depicted in Figure ??.
-
-\begin{figure}
-	\centering
-	\includegraphics[width=1.0\textwidth]{dgemm.pdf}
-	\caption{\texttt{dgemm} \emph{kernel} Matrix-Matrix Multiplication.}
-	\label{fig:image2}
-\end{figure}
-
-
-%
-% SECTION
-%
-\subsection{GotoBLAS}
-
-GotoBLAS is a high performance BLAS library developed by Kazushige Goto at the Texas Advanced Computing Center (TACC), a department of the University of Texas at Austin.
-
-GotoBLAS achieves high performance through the use of hand-crafted assembly language \emph{kernels}. Higher level BLAS routines are decomposed in \emph{kernels}, which stream data from the L1 and L2 CPU caches. These kernels typically reflect the size of the CPU registers, and L1 and L2 caches. For example, a CPU architecture may have a 4 x 4 \emph{dgemm kernel} and a 4 x 8 \emph{dgemm kernel} which conduct a double precision matrix-matrix multiplication on 4 x 4 and 4 x 8 matrices, respectively, and which have been sized for a specific architecture.
-
-The source code for GotoBLAS and GotoBLAS2 is still available as Open Source software, but the library is no longer in active development.
-
-
-%
-% SECTION
-%
-\subsection{OpenBLAS}
-
-OpenBLAS is an Open Source fork of the original GotoBLAS2 library, and is in active development by volunteers led by Zhang Xianyi at the Lab of Parallel Software and Computational Science, Institute of Software, Chinese Academy of Sciences (ISCAS).
-
-OpenBLAS is used by many of the Top500 supercomputers, including the Fugaku supercomputer which tops the June 2020 TOP500 List.
-
-For the Arm64 architecture, OpenBLAS implements the following \verb|dgemm| \emph{kernels}, where \verb|.S| indicates an assembly language file:
-
-\begin{itemize}
-  \item dgemm\_kernel\_4x4.S
-  \item dgemm\_kernel\_4x8.S
-  \item dgemm\_kernel\_8x4.S 
-\end{itemize}
-
-
-%
-% SECTION
-%
-\subsection{BLIS}
-
-The ``BLAS-like Library Instantiation Software'' (BLIS) is a BLAS library implementation for many CPU architectures, and also a framework for implementing new BLAS libraries for new architectures. Using the BLIS framework, by solely implementing an optimised \verb|dgemm| \emph{kernel} in assembly language or compiler intrinsics, BLAS library functionality can be realised which achieves 60\% - 90\% of theoretical maximum performance.
-
-BLIS is developed by the Science of High-Performance Computing (SHPC) group of the Oden Institute for Computational Engineering and Sciences, at The University of Texas at Austin.
-
-For the Arm64 architecture, BLIS implements the following \verb|dgemm| assembly language \emph{kernel}:
-
-\begin{itemize}
-  \item gemm\_armv8a\_asm\_6x8
-\end{itemize}
-
-
-%
-% SECTION
-%
-\section{Pure OpenMPI Topology}
-
-In a pure OpenMPI topology, work is distributed across the cluster nodes, and the processor cores on each node, by OpenMPI. Processor cores are referred to as \emph{slots}. The number of nodes in the cluster, and the number of slots on each node, are specified using either the \verb|-host| or \verb|-hostfile| parameter of the \verb|mpirun| command. Each processor slot is a target for a work process. The total number of work processes to be run is specified by the \verb|-np| parameter.
-
-The \verb|-host| parameter is used to specify nodes and slots on the command line.
-
-The \verb|-hostfile| parameter is used to specify a file which contains the nodes and slots information.
-
-In the following example, the \verb|-host| parameter is used to specify 2 nodes, each with 4 slots, on which to run 8 \verb|xhpl| work processes:
-
-\lstset{style=type}
-\begin{lstlisting}
-$ mpirun --bind-to core -host node1:4,node2:4 -np 8 xhpl
-\end{lstlisting}
-
-The same number of nodes, slots and work processes is specified using the \verb|-hostfile| parameter as follows:
-
-\lstset{style=type}
-\begin{lstlisting}
-$ mpirun --bind-to core -hostfile nodes -np 8 xhpl
-\end{lstlisting}
-
-Where \verb|nodes| is a file containing the following:
-
-\lstset{style=listing}
-\begin{lstlisting}[numbers=none, caption=nodes]
-node1 slots=4
-node2 slots=4
-\end{lstlisting}
-
-The \verb|--bind-to core| parameter instructs \verb|mpirun| to not migrate a work processes from the core on which it was started. Once started on a specific core, a work process will remain \emph{bound} to that core. This is an optimisation which reduces cache refreshes when a work process is interrupted, by a kernel system call for example, and is then restarted.
-
-A pure OpenMPI distribution of \verb|xhpl| work processes on a single node with 4 cores/slots is depicted in Figure ?? (a). Each \verb|xhpl| process calls the functions of a single-threaded BLAS serial library.
-
-
-%
-% SECTION
-%
-\section{Hybrid OpenMPI/OpenMP Topology}
-In a hybrid OpenMPI/OpenMP topology, OpenMPI is used to distribute work between the nodes. Each node runs a single work process. OpenMP is then used to distribute the work of this single process between the node cores using a multi-threaded BLAS library.
-
-The \verb|-host|, \verb|-hostfile| and \verb|-np| parameters of the \verb|mpirun| command are used in a same manner as the pure OpenMPI case, noting that each node now has 1 slot on which to run a work process.
-
-The additional parameter \verb|-x| is required now required. This parameter distributes and sets the \emph{environmental variable} \verb|OMP_NUM_THREADS| on each node prior to a work process being started on each node. This variable is queried by the multi-threaded BLAS library, and the appropriate number of threads are utilized.
-
-Using 2 nodes, and 4 cores per node, as per the pure OpenMPI example, 2 \verb|xhpl| processes are run, one on each node, with the multi-threaded BLAS library utilising 4 cores, as follows:
-
-\lstset{style=type}
-\begin{lstlisting}
-$ mpirun --bind-to socket -host node1:1,node2:1 -np 2 -x OMP_NUM_THREADS=4 xhpl
-\end{lstlisting}
-
-The \verb|--bind-to socket| parameter indicates to \verb|mpirun| that the \verb|xhpl| process is not associated with a particular core, it is not to be \emph{bound} to a specific core. The OpenMP runtime will determine which core(s) are used to run the \verb|xhpl| process.
-
-Note, without the \verb|--bind-to socket| parameter only a single thread will be utilised for a multi-threaded BLAS library, even if the \verb|OMP_NUM_THREADS| environmental variable is set correctly.
-
-A hybrid OpenMPI/OpenMP distribution of work is depicted in Figure ?? (b). A single \verb|xhpl| process calls functions from a multi-threaded BLAS library which run as threads on the processor cores.
-
-\begin{figure}
-	\begin{subfigure}{1.0\textwidth}
-		\centering
-		\includegraphics[width=0.71\textwidth]{core-pure-openmpi.pdf}
-		\caption{Pure OpenMPI}
-		\label{fig:subim1}
-	\end{subfigure}
-	\par\bigskip
-	\begin{subfigure}{1.0\textwidth}
-		\centering
-		\includegraphics[width=0.71\textwidth]{core-hybrid-openmpi-openmp.pdf}
-		\caption{Hybrid OpenMPI/OpenMP}
-		\label{fig:subim2}
-	\end{subfigure}
-\caption{Single Node Toplologies.}
-\label{fig:image2}
-\end{figure}
 
 
 
