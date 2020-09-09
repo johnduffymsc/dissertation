@@ -147,7 +147,11 @@ The following sections describe methodologies for improving network efficiency, 
 
 \subsection{MTU}
 
-The Maximum Transmission Unit (MTU) is the maximum size of a network packet payload, which is the 
+The Maximum Transmission Unit (MTU) is the maximum size of a network packet payload. Data to be transmitted which is larger than the MTU is \emph{fragmented} into multiple packets. The default MTU size for Ethernet, and therefore most local area networks (LANs), is 1500 bytes. This is based upon the maximum frame size of a standard Ethernet connection which is 1518 bytes, the additional 18 bytes being the Ethernet header. Obviously, most data is much larger than 1500 bytes, so fragmenting data into 1500 byte chunks is quite normal.
+
+Smaller packet sizes improve network latency as seen by multiple connections. This is because each node receives data regularly, and large packets are not blocking the network. However, there is overhead associated with this. Multiple packets destined for the same computer require the same header information to be included with each packet. A larger packet size improves network efficiency by reducing overhead, but potentially at the cost of reduced latency.
+
+A Jumbo Frame is any Ethernet MTU greater than 1500 bytes. The is no standardised maximum Jumbo Frame size, but the norm is 9000 bytes. In Chapter 5, an investigation is conducted in to the effect on benchmark performance of increasing the Aerin Cluster network MTU from 1500 to 9000 bytes.
 
 \subsection{Interrupt Coalescing}
 
