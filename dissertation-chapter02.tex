@@ -181,7 +181,11 @@ RPS is the software equivalent of RSS as a building block for \emph{Receive Flow
 
 \subsection{Receive Flow Steering}
 
-\emph
+\emph{Receive Flow Steering} (RFS) has the potential to improve benchmark performance by improving data locality.
+
+Building upon the distribution of network interrupt servicing across multiple cores, RFS add a layer of packet destination inspection, and routes packets directly to the core requiring the packet. For example, a 4-core CPU may be running 4 HPL \verb|xhpl| processes, one on each core. Each core consumes data for its particular \verb|xhpl| process. By implementing RSS/RPS, each core may receive each packet, and may then need to pass it on to the core that requires it. RFS \emph{remembers} the destination of previous packets matching certain criteria, and then forwards subsequent packets matching the same criteria directly to the same destination core. This improves data locality.
+
+On Linux, RFS is configured through \verb|/proc| and \verb|/sys| file systems.
 
 
 %
