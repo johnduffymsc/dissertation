@@ -42,9 +42,7 @@ The multi-threaded benchmarks used in this project use OpenMP to parallelise com
 
 A \emph{context switch} is the suspension of a running process and the starting, or resuming, of a different process. Context switching is implemented for a number of reasons; to share access to the CPU across multiple processes (\emph{concurrency}), whenever a program issues a \emph{system call} to request a service from the \emph{kernel}, whenever the \emph{kernel} receives an \emph{interrupt} from a timer or peripheral device and requires access to the CPU, and to avoid wasting processor time when waiting for slow Input/Output (IO) operations.
 
-Whenever a context switch takes place, the current \emph{state} of the running process is saved to main memory, and the \emph{state} of the new process is retrieved from main memory. This takes time.
-
-LMTIME...
+Whenever a context switch takes place, the current \emph{state} of the running process is saved to main memory, and the \emph{state} of the new process is retrieved from main memory. This take time and wastes valuable clock cycles which could be used for computation. For this reason context switching should be minimised whenever possible through software design and process scheduling policies.
 
 Linux uses a mechanism called vDSO (Virtual Dynamic Shared Object) to avoid a context switch whenever a \emph{system call} is made which does not require an elevation of system privileges. However, on the Arm64 architecture this only includes the \emph{clock\_gettime()} and \emph{gettimeofday()} system calls, so effectively all system calls involve a context switch.
 
@@ -133,7 +131,33 @@ The BCM2711 MMU contains the following caches:
 The appropriate layout of data in memory, in either \emph{row-major} or \emph{column-major} ordering, and subsequent program access pattern, via the \emph{data cache}, has a major impact on program performance. If the data layout matches the access pattern, then each \emph{cache refresh} will fill a \emph{cache line} with the data required and also the data likely to be required next in sequential order. A \emph{cache refresh} will only be required once the entire \emph{cache line} has been used. If the data layout does not match the access pattern, then data will be moved in and out of the \emph{data cache} without being used, and this will result in an unnecessarily high number of expensive \emph{cache misses}. 
 
 
- 
+%
+% SECTION
+%
+\section{Networking}
+
+Most modern computer network technologies are based on the idea of \emph{packet switching}. In a \emph{packet switched} network data is split up into \emph{payload} chunks which are encapsulated with \emph{headers} into network \emph{packets}. The \emph{headers} include addressing and network protocol information. Packets from many sources may be transmitted simultaneously over the network and \emph{routed} to their destination based upon the information in the packet headers. Compared to a \emph{circuit switched} network, where network resources are dedicated to a single connection (circuit) for a period of time, \emph{packet switched} networks provide improved network efficiency, redundancy and load balancing.
+
+The speed and efficiency of the network connecting a cluster of computers has a major effect on both HPC application and benchmark performance. The most common HPC network technology is called InfiniBand. InfiniBand provides a high throughput and low latency interconnect between cluster nodes. But InfiniBand requires dedicated hardware which in not normally found in commodity computers and network switches. Ethernet is the de-facto standard for most computer networks, and Ethernet ports can usually be found on most commodity computers. The Raspberry Pi 4 used for this project has a Gigabit Ethernet port which can transmit/receive data at 1 Gigabit/second. InfiniBand and Ethernet are both \emph{packet switched} technologies.
+
+It is not only the speed at which a network transmits that affects benchmark performance. How the data is processed at the receiving node also plays a significant role, especially in a multi-core node where each core may be running a benchmark process which consumes data.
+
+The following sections describe methodologies for improving network efficiency, and network packet processing at the receiving node which improves data locality. Both of these improve benchmark performance.
+
+
+\subsection{MTU}
+
+The Maximum Transmission Unit (MTU) is the maximum size of a network packet payload, which is the 
+
+\subsection{Interrupt Coalescing}
+
+\subsection{Receive Side Scaling}
+
+\subsection{Receive Packet Steering}
+
+\subsection{Receive Flow Steering}
+
+
 %
 % Arm Architecture
 %
@@ -154,30 +178,6 @@ SVE...
 Fugaku chip...
 
 Fujitsu chip... 
-
-
-
-
-
-
-
-
-%
-% SECTION
-%
-\section{Networking}
-
-\subsection{Ethernet}
-
-\subsection{MTU}
-
-\subsection{Interrupt Coalescing}
-
-\subsection{Receive Side Scaling}
-
-\subsection{Receive Packet Steering}
-
-\subsection{Receive Flow Steering}
 
 
 %
