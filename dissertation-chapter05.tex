@@ -758,7 +758,7 @@ The kernel installed by Ubuntu 20.04 LTS 64-bit uses the Voluntary Preemption mo
 
 HPL was run using all 8 nodes with a No Forced Preemption model kernel. The results are tabulated and compared with the default kernel in Table ??.
 
-\begin{table}
+\begin{table}[H]
 \begin{center}
 \begin{tabular}{ |c|c|c|c|c|c|c| } 
 \hline
@@ -790,7 +790,7 @@ Observations and discussion...
 
 BLIS OpenMP...!
 
-\begin{table}
+\begin{table}[H]
 \begin{center}
 \begin{tabular}{ |c|c|c|c|c|c|c| } 
 \hline
@@ -799,13 +799,15 @@ BLIS OpenMP...!
 \textbf{BLAS} & \textbf{N} & \textbf{NB} & \textbf{P} & \textbf{Q} & \textbf{Voluntary}  & \textbf{No Forced}  \\
               &            &             &            &            & \textbf{Preemption} & \textbf{Preemption} \\
 \hline
-BLIS     & 52416 & 168 & 1 &  8 & 9.1180e+01 &  \\
-OpenMP   & 52416 & 168 & 2 &  4 & 1.0041e+02 &  \\
+BLIS     & 52416 & 168 & 1 &  8 & 9.1180e+01 & 9.4440e+01 \\
+OpenMP   & 52416 & 168 & 2 &  4 & 1.0041e+02 & 1.0728e+02 \\
 \hline
 \end{tabular}
 \end{center}
 \caption{\label{tab:table-name}A repeat of the previous results for BLIS OpenMP but with NB reduced to 168.}
 \end{table}
+
+SIGNIFICANCE OF THIS...
 
 
 %
