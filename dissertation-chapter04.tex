@@ -368,7 +368,7 @@ A hybrid OpenMPI/OpenMP distribution of work is depicted in Figure ?? (b). A sin
 %
 \subsection{Pi Cluster Tools}
 
-Using \verb|ssh| to manually log into each node and perform command line administration tasks is error prone. To get around this problem, a number of \verb|bash| wrapper scripts were written as Pi Cluster Tools. Each script loops over a list of node names and uses \verb|ssh| to run a remote command on each node in turn.
+Using \verb|ssh| to manually log into each node and perform command line administration tasks is prone to error. To get around this problem, a number of \verb|bash| wrapper scripts were written as Pi Cluster Tools. Each script loops over a list of node names and uses \verb|ssh| to run a remote command on each node in turn.
 
 The following scripts are included as Pi Cluster Tools.
 
@@ -379,6 +379,7 @@ The following scripts are included as Pi Cluster Tools.
 \item do
 \item libblas-query
 \item libblas-set
+\item interrupt-coalescing
 \end{itemize}
 
 Script listings are sample usage are included in the \verb|picluster| repository wiki.
