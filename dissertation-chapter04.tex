@@ -1,9 +1,9 @@
 
-This chapter describes the components of the Aerin Cluster. Detailed build usage instructions included in the \verb|picluster| repository wiki. 
+This chapter describes the hardware and software components of the Aerin Cluster. A description of the BLAS (Basic Linear Algebra Subroutines) Libraries installed on the cluster is also included, together with a description of the pure OpenMPI and hybrid OpenMPI/OpenMP topologies. Finally, a description of Pi Cluster Tools, a suite of scripts which make command line management of the cluster easier, is also included. 
+
+Detailed build instructions for the Aerin Cluster, and the implementation details of Pi Cluster Tools, and included in the \verb|picluster| repository wiki. 
 
 Photo...
-
-The Aerin Cluster consists of the following hardware and software components.
 
 
 %
@@ -163,7 +163,7 @@ The package names for the OpenBLAS and BLIS libraries are somewhat cryptic and c
 %
 \subsection{Benchmark Software}
 
-The HPL, HPCC and HPCG benchmark software was all compiled locally from source. The instructions for how to do this are in Part II Chapter 7.
+The HPL, HPCC and HPCG benchmark software was all compiled locally from source. The instructions for how to do this are in the project repository wiki.
 
 
 %
@@ -287,9 +287,37 @@ Using the \emph{alternatives} mechanism command line interface on 8 nodes is err
 %
 % SECTION
 %
-\section{Pure OpenMPI Topology}
+\section{Cluster Topologies}
 
-In a pure OpenMPI topology, work is distributed across the cluster nodes, and the processor cores on each node, by OpenMPI. Processor cores are referred to as \emph{slots}. The number of nodes in the cluster, and the number of slots on each node, are specified using either the \verb|-host| or \verb|-hostfile| parameter of the \verb|mpirun| command. Each processor slot is a target for a work process. The total number of work processes to be run is specified by the \verb|-np| parameter.
+A pure OpenMPI distribution of \verb|xhpl| work processes on a single node with 4 cores/slots is depicted in Figure ?? (a). Each \verb|xhpl| process calls the functions of a single-threaded BLAS serial library.
+
+A hybrid OpenMPI/OpenMP distribution of work is depicted in Figure ?? (b). A single \verb|xhpl| process calls functions from a multi-threaded BLAS library which run as threads on the processor cores.
+
+\begin{figure}
+	\begin{subfigure}{1.0\textwidth}
+		\centering
+		\includegraphics[width=0.71\textwidth]{core-pure-openmpi.pdf}
+		\caption{Pure OpenMPI}
+		\label{fig:subim1}
+	\end{subfigure}
+	\par\bigskip
+	\begin{subfigure}{1.0\textwidth}
+		\centering
+		\includegraphics[width=0.71\textwidth]{core-hybrid-openmpi-openmp.pdf}
+		\caption{Hybrid OpenMPI/OpenMP}
+		\label{fig:subim2}
+	\end{subfigure}
+\caption{Single Node Toplologies.}
+\label{fig:image2}
+\end{figure}
+
+
+%
+% SUB SECTION
+%
+\subsection{Pure OpenMPI}
+
+In a pure OpenMPI topology, work is distributed across the cluster nodes, and the processor cores on each node, by OpenMPI. Processor cores are referred to as \emph{slots}. The number of nodes in the cluster, and the number of slots on each node, are specified using either the \verb|-host| or \verb|-hostfile| parameter of the \verb|mpirun| command. Each processor slot is a target for a work process.
 
 The \verb|-host| parameter is used to specify nodes and slots on the command line.
 
@@ -319,14 +347,13 @@ node2 slots=4
 
 The \verb|--bind-to core| parameter instructs \verb|mpirun| to not migrate a work processes from the core on which it was started. Once started on a specific core, a work process will remain \emph{bound} to that core. This is an optimisation which reduces cache refreshes when a work process is interrupted, by a kernel system call for example, and is then restarted.
 
-A pure OpenMPI distribution of \verb|xhpl| work processes on a single node with 4 cores/slots is depicted in Figure ?? (a). Each \verb|xhpl| process calls the functions of a single-threaded BLAS serial library.
 
 
 %
-% SECTION
+% SUB SECTION
 %
-\section{Hybrid OpenMPI/OpenMP Topology}
-In a hybrid OpenMPI/OpenMP topology, OpenMPI is used to distribute work between the nodes. Each node runs a single work process. OpenMP is then used to distribute the work of this single process between the node cores using a multi-threaded BLAS library.
+\subsection{Hybrid OpenMPI/OpenMP}
+In a hybrid OpenMPI/OpenMP topology, OpenMPI is used to distribute work between the nodes of the cluster, and each node runs a single work process. OpenMP is then used to distribute the work of this single process between the cores of the node.
 
 The \verb|-host|, \verb|-hostfile| and \verb|-np| parameters of the \verb|mpirun| command are used in a same manner as the pure OpenMPI case, noting that each node now has 1 slot on which to run a work process.
 
@@ -343,34 +370,15 @@ The \verb|--bind-to socket| parameter indicates to \verb|mpirun| that the \verb|
 
 Note, without the \verb|--bind-to socket| parameter only a single thread will be utilised for a multi-threaded BLAS library, even if the \verb|OMP_NUM_THREADS| environmental variable is set correctly.
 
-A hybrid OpenMPI/OpenMP distribution of work is depicted in Figure ?? (b). A single \verb|xhpl| process calls functions from a multi-threaded BLAS library which run as threads on the processor cores.
-
-\begin{figure}
-	\begin{subfigure}{1.0\textwidth}
-		\centering
-		\includegraphics[width=0.71\textwidth]{core-pure-openmpi.pdf}
-		\caption{Pure OpenMPI}
-		\label{fig:subim1}
-	\end{subfigure}
-	\par\bigskip
-	\begin{subfigure}{1.0\textwidth}
-		\centering
-		\includegraphics[width=0.71\textwidth]{core-hybrid-openmpi-openmp.pdf}
-		\caption{Hybrid OpenMPI/OpenMP}
-		\label{fig:subim2}
-	\end{subfigure}
-\caption{Single Node Toplologies.}
-\label{fig:image2}
-\end{figure}
 
 %
-% SUB SECTION
+% SECTION
 %
-\subsection{Pi Cluster Tools}
+\section{Pi Cluster Tools}
 
 Using \verb|ssh| to manually log into each node and perform command line administration tasks is prone to error. To get around this problem, a number of \verb|bash| wrapper scripts were written as Pi Cluster Tools. Each script loops over a list of node names and uses \verb|ssh| to run a remote command on each node in turn.
 
-The following scripts are included as Pi Cluster Tools.
+The following scripts are included in Pi Cluster Tools.
 
 \begin{itemize}
 \item upgrade
@@ -379,7 +387,10 @@ The following scripts are included as Pi Cluster Tools.
 \item do
 \item libblas-query
 \item libblas-set
+\item linpack-profiler
 \item interrupt-coalescing
+\item receive-packet-steering
+\item receive-flow-steering
 \end{itemize}
 
 Script listings are sample usage are included in the \verb|picluster| repository wiki.

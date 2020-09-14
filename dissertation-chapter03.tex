@@ -6,7 +6,7 @@ This chapter initially discusses the \emph{matrix-matrix multiplication} operati
 %
 \section{Matrix-Matrix Multiplication}
 
-The \emph{matrix-matrix multiplication} operation is of fundamental importance in HPC applications and benchmarks. As indicated in Figure 3.1, when running HPL on all 8 nodes of the Aerin Cluster, 87.26\% of the run time is spent in the \verb|HPL_dgemm| function which calls the BLAS \verb|dgemm_| function. The function name \verb|dgemm| is derived from \emph{\textbf{d}ouble precision \textbf{ge}neral \textbf{m}atrix \textbf{m}ultiplication}. Running on single node, without any networking overhead, this increases to 96+\%.
+The \emph{matrix-matrix multiplication} operation is of fundamental importance in HPC applications and benchmarks. As indicated in Figure 3.1, when running HPL on all 8 nodes of the Aerin Cluster, 87.26\% of the run time is spent in the \verb|HPL_dgemm| function which calls the BLAS \verb|dgemm| function. The \verb|dgemm| function name is derived from \emph{\textbf{d}ouble precision \textbf{ge}neral \textbf{m}atrix \textbf{m}ultiplication}. Running on single node, without any networking overhead, this increases to 96+\%.
 
 \begin{figure}[h]
 	\centering	
@@ -14,13 +14,24 @@ The \emph{matrix-matrix multiplication} operation is of fundamental importance i
 	\caption{Output of \texttt{sudo perf report} generated from recording the events of an \texttt{xhpl} process using \texttt{sudo perf record -p 9020 -g -- sleep 30}, where \texttt{9020} is the \texttt{xhpl} process identifier.}
 \end{figure}
 
-The naive computational complexity of $\mathbf{AB}$, where $\mathbf{A}$, $\mathbf{B}$ $\in \mathbf{R}^{n \times n}$, is $\mathcal{O}(n^3)$. Each \emph{row-column} dot product is $\mathcal{O}(n)$, requiring $n$ multiplications and $n - 1$ additions. There are $n$ of these dot products per row of $A$, and $A$ has $n$ rows. With $\mathbf{A} \in \mathbf{R}^{m \times k}$ and $\mathbf{B} \in \mathbf{R}^{k \times n}$, the complexity is $\mathcal{O}(mkn).$ 
+The naive computational complexity of $\mathbf{C} = \mathbf{AB}$, where $\mathbf{A}$, $\mathbf{B}$ and $\mathbf{C}$ $\in \mathbf{R}^{n \times n}$, is $\mathcal{O}(n^3)$. Each \emph{row-column} dot product is $\mathcal{O}(n)$, requiring $n$ multiplications and $n - 1$ additions. There are $n$ of these dot products per row of $\mathbf{A}$ and each column of $\mathbf{B}$, and $\mathbf{A}$ has $n$ rows. In the more general case of $\mathbf{A} \in \mathbf{R}^{m \times k}$ and $\mathbf{B} \in \mathbf{R}^{k \times n}$, the complexity is $\mathcal{O}(mkn).$ 
 
-In 1969, Volker Strassen proved the computational complexity can be reduced to $\mathcal{O}(N^{\log _{2}7+o(1)})\approx \mathcal{O}(N^{2.8074})$. And in 1990, Don Coppersmith and Shmuel Winograd further reduced the complexity to $\mathcal{O}(n^{2.375477})$. The most recent bound on complexity was by François Le Gallf in 2014, which reduced the complexity to $\mathcal {O}(n^{2.3728639})$.
+In 1969, Volker Strassen proved the computational complexity can be reduced to $\mathcal{O}(N^{\log _{2}7+o(1)})\approx \mathcal{O}(N^{2.8074})$. This is achieved by subdividing each matrix into sub-matrices of dimension $2 \times 2$. By doing do, and introducing intermediate matrices, it is possible to reduce the number of multiplications required from 8 to 7 for each sub-matrix multiplication. This is called the \emph{Strassen Algorithm}.
 
-However, these reductions in mathematical complexity also add computational implementation complexity. The benefits may not outweigh the computational overhead unless the matrices are very large. For this reason the naive algorithm is often the implementation of choice.    
+In 1990, Don Coppersmith and Shmuel Winograd further reduced the complexity to $\mathcal{O}(n^{2.375477})$. The \emph{Coppersmith-Winograd Algorithm} was further improved by Andrew Stothers and Virginia Vassilevska Williams, and most recently in 2014 by François Le Gallf, which reduced the complexity to $\mathcal {O}(n^{2.3728639})$.
 
-The $\mathcal{O}(n^3)$ complexity of \emph{matrix-matrix multiplication} plays a central role in HPC benchmarks because, compared to other matrix operations, it has the highest $\frac{\text{computation}}{\text{memory movement}}$ ratio. This stresses and tests data movement from main memory, through the L1/L2/L3 caches, to the processor registers for computational operations. In a computer cluster it also stresses and tests network connectivity.
+However, the reductions in complexity beyond the \emph{Strassen Algorithm} also add implementation complexity. The benefits may not outweigh the computational overhead unless the matrices are very large. For this reason the naive and \emph{Strassen Algorithm} are usually implemented in practice.    
+
+The $\mathcal{O}(n^3)$ complexity of \emph{matrix-matrix multiplication} plays a central role in HPC benchmarks because, compared to other matrix operations, it has the highest $\frac{\text{computation}}{\text{memory movement}}$ ratio. This tests data movement from main memory, through the L1/L2/L3 caches, to the processor registers for computational operations. In a computer cluster it also tests network connectivity. It is for this reason that BLAS libraries usually indicate performance, and comparison with alternative libraries, with plots of \verb|dgemm| Gflops versus matrix size. Figure 3.2 is an example performance plot comparing OpenBLAS with Intel MKL.
+
+\begin{figure}[h]
+	\centering	
+	\includegraphics[width=0.9\textwidth]{openblas-performance.png}
+	\caption{OpenBLAS \texttt{dgemm} performance.}
+\end{figure}
+
+
+
 
 
 
