@@ -30,6 +30,8 @@ The $\mathcal{O}(n^3)$ complexity of \emph{matrix-matrix multiplication} plays a
 %
 \section{High Performance Linpack (HPL)}
 
+TODO CITE: "The LINPACK Benchmark: past, present and future", Dongarra, Luszczek \& Petitet
+
 The High Performance Linpack (HPL) benchmark measures the time taken to solve a dense system of linear of equations, and from this timing derives a Gflops performance metric. 
 
 The system of equations is of the form:
@@ -49,6 +51,8 @@ Before discussing the \emph{LU factorisation} in more detail it is worth noting 
 %
 \subsection{LU Factorisation}
 
+TODO CITE: "Numerical Linear Algebra", Trefethen \& Bau
+
 \emph{LU Factorisation} is the splitting of a matrix $\mathbf{A}$ into an upper-triangular matrix $\mathbf{U}$, and a lower-triangular matrix $\mathbf{L}$, such that:
 
 \begin{equation}
@@ -61,7 +65,7 @@ The original system of linear equations can then be restated as:
 \mathbf{L}\mathbf{U}\mathbf{x}=\mathbf{b}
 \end{equation}
 
-This can be reformulated as:
+This can be reformulated as two equations:
 
 \begin{equation}
 \mathbf{U}\mathbf{x}=\mathbf{y}
@@ -117,7 +121,7 @@ And so,
 \mathbf{A} = \mathbf{L}_1^{-1}\mathbf{L}_2^{-1}\mathbf{L}_3^{-1}\mathbf{U} = \mathbf{L}\mathbf{U}
 \end{equation}
 
-The product $\mathbf{L} = \mathbf{L}_1^{-1}\mathbf{L}_2^{-1}\mathbf{L}_3^{-1}$ is, surprisingly, easily determined because each inverse $\mathbf{L}_i^{-1}$ is equal to $\mathbf{L}_i$ with its values below the diagonal negated, and the columns of the inverses then map directly into the same locations in $\mathbf{L}$. ``Trefethen and Bau" refers to these as \emph{Stokes of Luck}, which are explained by the sparsity mature of the matrices $\mathbf{L}_i$. 
+The product $\mathbf{L} = \mathbf{L}_1^{-1}\mathbf{L}_2^{-1}\mathbf{L}_3^{-1}$ is, surprisingly, easily determined because each inverse $\mathbf{L}_i^{-1}$ is equal to $\mathbf{L}_i$ with its values below the diagonal negated, and the columns of the inverses then map directly into the same locations in $\mathbf{L}$. ``Trefethen and Bau" refers to these as \emph{Stokes of Luck}, which are explained by the sparsity nature of the matrices $\mathbf{L}_i$. 
 
 
 %
@@ -125,7 +129,62 @@ The product $\mathbf{L} = \mathbf{L}_1^{-1}\mathbf{L}_2^{-1}\mathbf{L}_3^{-1}$ i
 %
 \subsection{Row Partial Pivoting}
 
+\emph{Row partial pivoting} is the swapping of rows during the factorisation of $\mathbf{A}$ into the upper-diagonal matrix $\mathbf{U}$. At each step of the factorisation, rows are swapped such that the \emph{pivot} row has the highest numerical value at the \emph{pivot point}. The reason for doing this is twofold. Firstly, if the value of the pivot point is \emph{zero}, then the factorisation fails. And secondly, to improve numerical stability CITE: Trefethen \& Bau.
 
+For example, initially $a_{11}$ is the \emph{pivot point}. However $a_{41}$ has the highest numerical value in the \emph{pivot column}. So, $row_1$ and $row_4$ are swapped (pivoted) by the application of matrix $P_1$:
+
+\begin{equation}
+\begin{split}
+\mathbf{A} &=
+\begin{pmatrix}
+1 & 2 & 3 & 4 \\
+2 & 5 & 8 & 11 \\
+4 & 10 & 14 & 16 \\
+4 & 8 & 12 & 20 
+\end{pmatrix} \\
+\mathbf{P}_1\mathbf{A} &=
+\begin{pmatrix}
+4 & 8 & 12 & 20 \\
+2 & 5 &  8 & 11 \\
+4 & 10 & 14 & 16 \\
+1 & 2 & 3 & 4
+\end{pmatrix} \\
+\end{split}
+\end{equation}
+
+The factorisation matrix $\mathbf{L}_1$ is then applied as before:
+ 
+\begin{equation}
+\begin{split}
+\mathbf{L}_1\mathbf{P}_1\mathbf{A} =
+\begin{pmatrix}
+4 & 8 & 12 & 14 \\
+0 & 1 & 2 & 1 \\
+0 & 2 & 2 & -4 \\
+0 & 0 & 0 & -1
+\end{pmatrix} \\
+\end{split}
+\end{equation}
+
+The final factorisation is of the form:
+
+\begin{equation}
+\mathbf{L}_3\mathbf{P}_3\mathbf{L}_2\mathbf{P}_2\mathbf{L}_1\mathbf{P}_1\mathbf{A} = \mathbf{U}
+\end{equation}
+
+By what ``Trefethen and Bau'' refer to as a third \emph{Stroke of Luck}, (3.10) can be restated as:
+
+\begin{equation}
+\mathbf{P}\mathbf{A} = \mathbf{L}\mathbf{U}
+\end{equation}
+
+where
+
+\begin{equation}
+\mathbf{L} = (\mathbf{L}_3^{'}\mathbf{L}_2^{'}\mathbf{L}_1^{'})^{-1} \text{, and } \mathbf{P} = \mathbf{P}_3\mathbf{P}_2\mathbf{P}_1
+\end{equation}
+
+and where $\mathbf{L}_i^{'} = \mathbf{L}_i$ with the entries below the diagonal permuted. TODO: Expand upon.
 
 
 %
@@ -133,7 +192,7 @@ The product $\mathbf{L} = \mathbf{L}_1^{-1}\mathbf{L}_2^{-1}\mathbf{L}_3^{-1}$ i
 %
 \subsection{The HPL Algorithm}
 
-
+TODO CITE: "HPL Algorithm" document on NetLib
 
 
 
