@@ -30,8 +30,6 @@ The $\mathcal{O}(n^3)$ complexity of \emph{matrix-matrix multiplication} plays a
 %
 \section{High Performance Linpack (HPL)}
 
-TODO CITE: "The LINPACK Benchmark: past, present and future", Dongarra, Luszczek \& Petitet
-
 The High Performance Linpack (HPL) benchmark measures the time taken to solve a dense system of linear of equations, and from this timing derives a Gflops performance metric. 
 
 The system of equations is of the form:
@@ -49,9 +47,7 @@ Before discussing the \emph{LU factorisation} in more detail it is worth noting 
 %
 % SUB SECTION
 %
-\subsection{LU Factorisation with Row Partial Pivoting}
-
-TODO CITE: "Numerical Linear Algebra", Trefethen \& Bau
+\subsection{LU Factorisation}
 
 \emph{LU Factorisation} is the splitting of a matrix $\mathbf{A}$ into an upper-triangular matrix $\mathbf{U}$, and a lower-triangular matrix $\mathbf{L}$, such that:
 
@@ -70,8 +66,6 @@ This can be reformulated as:
 \begin{equation}
 \mathbf{U}\mathbf{x}=\mathbf{y}
 \end{equation}
-
-and
 
 \begin{equation}
 \mathbf{L}\mathbf{y}=\mathbf{b}
@@ -112,9 +106,25 @@ x & x & x & x \\
 0 & x & x & x \\
 0 & 0 & x & x \\
 0 & 0 & 0 & x
-\end{pmatrix}
+\end{pmatrix} \\
+\mathbf{L}_3\mathbf{L}_2\mathbf{L}_1\mathbf{A} &= \mathbf{U}
 \end{split}
 \end{equation}
+
+And so,
+
+\begin{equation}
+\mathbf{A} = \mathbf{L}_1^{-1}\mathbf{L}_2^{-1}\mathbf{L}_3^{-1}\mathbf{U} = \mathbf{L}\mathbf{U}
+\end{equation}
+
+The product $\mathbf{L} = \mathbf{L}_1^{-1}\mathbf{L}_2^{-1}\mathbf{L}_3^{-1}$ is, surprisingly, easily determined because each inverse $\mathbf{L}_i^{-1}$ is equal to $\mathbf{L}_i$ with its values below the diagonal negated, and the columns of the inverses then map directly into the same locations in $\mathbf{L}$. ``Trefethen and Bau" refers to these as \emph{Stokes of Luck}, which are explained by the sparsity mature of the matrices $\mathbf{L}_i$. 
+
+
+%
+% SUB SECTION
+%
+\subsection{Row Partial Pivoting}
+
 
 
 
