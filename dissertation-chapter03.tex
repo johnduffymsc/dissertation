@@ -32,7 +32,7 @@ The $\mathcal{O}(n^3)$ complexity of \emph{matrix-matrix multiplication} plays a
 
 TODO CITE: "The LINPACK Benchmark: past, present and future", Dongarra, Luszczek \& Petitet
 
-The High Performance Linpack (HPL) benchmark measures the time taken to solve a dense system of linear of equations, and from this timing derives a Gflops performance metric. 
+The High Performance Linpack (HPL) benchmark measures the time taken to solve a dense system of linear of equations, and from this timing derives a performance metric stated in Gflops. 
 
 The system of equations is of the form:
 
@@ -220,11 +220,28 @@ The LU factorisation is logically partitioned using the same block size $NB$ use
 %
 % SECTION
 %
-\section{HP Conjugate Gradients (HPCG)}
+\section{High Performance Conjugate Gradients (HPCG)}
 
-TODO CITE: "",
+TODO CITE: "HPCG Benchmark: a New Metric for Ranking High Performance Computing Systems", Dongarra, Heroux \& Luszczek
 
-The motivation for creating 
+Like HPL, the HPCG benchmark measures the time taken to solve a system of linear equations. And from this timing derives a performance metric stated in Gflops. The system of equations is of the form:
+
+\begin{equation}
+\mathbf{Ax} = \mathbf{b}
+\end{equation}
+
+This is where the similarity with HPL ends.
+
+The HPCG system of equations is a sparse system resulting from a discretised three dimensional partial differential equation model. The benchmark computes preconditioned conjugate gradient iterations for the sparse system.
+
+The motivation for developing HPCG is that HPL no longer accurately indicates the likely performance of computer systems running modern HPC workloads. Historically, solving dense linear systems was the mainstay of HPC computing. This workload was predominantly the \emph{matrix-matrix multiplication} of locally aligned data, which was accurately correlated with HPL benchmark results. This data access pattern, which represents a high computation to memory access ratio, is termed \emph{Type 2} by Dongarra, Heroux and Luszczek. HPCG address the need to measure the performance of \emph{distributed memory} computer systems when running a workload with a low computation to memory access pattern, which Dongarra, Heroux and Luszczek refer to as \emph{Type 1}. This is typified by the solving of sparse systems resulting from partial differential equations.
+
+HPCG 
+
+   
+
+
+
 
 
 
