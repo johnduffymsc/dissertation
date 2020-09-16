@@ -59,7 +59,7 @@ TODO CITE: "Numerical Linear Algebra", Trefethen \& Bau
 \mathbf{A}=\mathbf{L}\mathbf{U}
 \end{equation}
 
-The original system of linear equations can then be restated as:
+The original system of equations (3.1) can then be restated as:
 
 \begin{equation}
 \mathbf{L}\mathbf{U}\mathbf{x}=\mathbf{b}
@@ -121,7 +121,7 @@ And so,
 \mathbf{A} = \mathbf{L}_1^{-1}\mathbf{L}_2^{-1}\mathbf{L}_3^{-1}\mathbf{U} = \mathbf{L}\mathbf{U}
 \end{equation}
 
-The product $\mathbf{L} = \mathbf{L}_1^{-1}\mathbf{L}_2^{-1}\mathbf{L}_3^{-1}$ is, surprisingly, easily determined because each inverse $\mathbf{L}_i^{-1}$ is equal to $\mathbf{L}_i$ with its values below the diagonal negated, and the columns of the inverses then map directly into the same locations in $\mathbf{L}$. ``Trefethen and Bau" refers to these as \emph{Stokes of Luck}, which are explained by the sparsity nature of the matrices $\mathbf{L}_i$. 
+The product $\mathbf{L} = \mathbf{L}_1^{-1}\mathbf{L}_2^{-1}\mathbf{L}_3^{-1}$ is, surprisingly, easily determined because each inverse $\mathbf{L}_i^{-1}$ is equal to $\mathbf{L}_i$ with its values below the diagonal negated, and the columns of the inverses then map directly into the same locations in $\mathbf{L}$. ``Trefethen and Bau" refers to these as two \emph{Stokes of Luck}, which are explained by the sparsity nature of the matrices $\mathbf{L}_i$. 
 
 
 %
@@ -172,7 +172,7 @@ The final factorisation is of the form:
 \mathbf{L}_3\mathbf{P}_3\mathbf{L}_2\mathbf{P}_2\mathbf{L}_1\mathbf{P}_1\mathbf{A} = \mathbf{U}
 \end{equation}
 
-By what ``Trefethen and Bau'' refer to as a third \emph{Stroke of Luck}, (3.10) can be restated as:
+By what ``Trefethen and Bau'' refer to as a third \emph{Stroke of Luck}, (3.10) can be restated, and easily determined, as:
 
 \begin{equation}
 \mathbf{P}\mathbf{A} = \mathbf{L}\mathbf{U}
@@ -184,7 +184,7 @@ where
 \mathbf{L} = (\mathbf{L}_3^{'}\mathbf{L}_2^{'}\mathbf{L}_1^{'})^{-1} \text{, and } \mathbf{P} = \mathbf{P}_3\mathbf{P}_2\mathbf{P}_1
 \end{equation}
 
-and where $\mathbf{L}_i^{'} = \mathbf{L}_i$ with the entries below the diagonal permuted. TODO: Expand upon.
+and where $\mathbf{L}_i^{'} = \mathbf{L}_i$ with the entries below the diagonal permuted. TODO: Expand upon?
 
 
 %
@@ -192,14 +192,39 @@ and where $\mathbf{L}_i^{'} = \mathbf{L}_i$ with the entries below the diagonal 
 %
 \subsection{The HPL Algorithm}
 
-TODO CITE: "HPL Algorithm" document on NetLib
+TODO CITE: "The LINPACK Benchmark: past, present and future", Dongarra, Luszczek \& Petitet
 
+TODO CITE: "HPL Algorithm", NetLib
+
+As previously stated, HPL solves a system of equations of the form:
+
+\begin{equation}
+\mathbf{Ax} = \mathbf{b},\text{ where }\mathbf{A} \in \mathbf{R}^{n\times n}\text{ and }\mathbf{x}, \mathbf{b} \in \mathbf{R}^n
+\end{equation} 
+
+The system is solved by distributing the data over a two dimensional grid of processors, $P \times Q$, on a cluster of \emph{distributed memory} computers. HPL requires an implementation of the Message Passing Interface (MPI) for the data distribution. The Aerin Cluster uses the OpenMPI implementation. In a pure MPI topology, each grid element represents a processor core of a CPU. In a hybrid OpenMPI/OpenMP topology, each grid element represents a cluster node, and OpenMP distributes data between the cores of the node.   
+
+HPL partitions the data into \emph{blocks} of dimension $NB \times NB$, where $NB$ is referred to as the \emph{block size}. The data blocks are distributed cyclically between the elements of the processor grid for load balancing and scalability. 
+
+For optimum performance the problem dimension $n$ should be selected to utilise all available memory, and be integer multiple of the block size $NB$. Equation (3.14) can be used to determine the problem dimension N for a given block size $NB$ and a required total memory usage.
+
+\begin{equation}
+N = \left[\left(memory\_percent \sqrt{\frac{memory\_in\_gb \times 1024^3}{8}}\right) \div NB\right] \times NB
+\end{equation}
+
+The division by 8 in the inner parenthesis is the size in bytes of a double precision floating point number.
+
+The LU factorisation is logically partitioned using the same block size $NB$ used for data distribution.
 
 
 %
 % SECTION
 %
 \section{HP Conjugate Gradients (HPCG)}
+
+TODO CITE: "",
+
+The motivation for creating 
 
 
 
