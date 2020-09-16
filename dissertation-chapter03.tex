@@ -1,4 +1,6 @@
-This chapter initially decribes the \emph{matrix-matrix multiplication} operation, before describing the mathematical background to the High Performance Linpack (HPL) and HP Conjugate Gradients (HPCG) benchmarks.
+This chapter initially describes the \emph{matrix-matrix multiplication} operation, before describing the mathematical background to the High Performance Linpack (HPL) and High Performance Conjugate Gradients (HPCG) benchmarks.
+
+The HPC Challenge (HPCC) benchmark suite is not described because the suite includes HPL and DGEMM which are already covered in this chapter.
 
 
 %
@@ -232,17 +234,65 @@ Like HPL, the HPCG benchmark measures the time taken to solve a system of linear
 
 This is where the similarity with HPL ends.
 
-The HPCG system of equations is a sparse system resulting from a discretised three dimensional partial differential equation model. The benchmark computes preconditioned conjugate gradient iterations for the sparse system.
+The HPCG system of equations is a sparse system resulting from a discretised three dimensional partial differential equation model. The benchmark computes \emph{preconditioned Conjugate Gradient} iterations for the sparse system.
 
-The motivation for developing HPCG is that HPL no longer accurately indicates the likely performance of computer systems running modern HPC workloads. Historically, solving dense linear systems was the mainstay of HPC computing. This workload was predominantly the \emph{matrix-matrix multiplication} of locally aligned data, which was accurately correlated with HPL benchmark results. This data access pattern, which represents a high computation to memory access ratio, is termed \emph{Type 2} by Dongarra, Heroux and Luszczek. HPCG address the need to measure the performance of \emph{distributed memory} computer systems when running a workload with a low computation to memory access pattern, which Dongarra, Heroux and Luszczek refer to as \emph{Type 1}. This is typified by the solving of sparse systems resulting from partial differential equations.
+The motivation for developing HPCG is that HPL no longer accurately indicates the likely performance of computer systems running modern HPC workloads. Historically, solving dense linear systems was the mainstay of HPC computing. This workload was predominantly the \emph{matrix-matrix multiplication} of locally aligned data, which was closely correlated with HPL benchmark results. This data access pattern, which represents a high computation to memory access ratio, is termed \emph{Type 2} by Dongarra, Heroux and Luszczek. HPCG address the need to measure the performance of \emph{distributed memory} computer systems when running a workload with a low computation to memory access pattern, which Dongarra, Heroux and Luszczek refer to as \emph{Type 1}. This is typified by the solving of sparse systems resulting from partial differential equations.
 
 HPCG uses the Conjugate Gradient method with a symmetric Gauss-Seidel preconditioner to solve the Poisson differential equation on a three dimensional grid discretised with a 27-point stencil [CITE Paper].
 
 
 %
-% SECTION
+% SUB SECTION
 %
 \subsection{The Conjugate Gradient Method}
+
+TODO CITE: "An Introduction to the Conjugate Gradient Method Without the Agonizing Pain", Shewchuk
+
+The Conjugate Gradient Method is a method for solving a system of equations with a \emph{symmetric positive-definite} matrix. When implemented as an iterative scheme, it solves a $n \times n$ system in at most $n$ iterations. The method will be described through a discussion of \emph{Quadratic Forms}, the \emph{Steepest Descent Method} and the \emph{Method of Conjugate Directions}. This broadly follows the description of the method by Jonathan Shewchuck.
+ 
+
+%
+% SUB SECTION
+%
+\subsection{Quadratic Forms and the Relationship to $\mathbf{A}\mathbf{x}=\mathbf{b}$}
+
+A \emph{quadratic form} is a quadratic function of a vector $\mathbf{x}$, whose return value is a scalar. It is of the form:
+
+\begin{equation}
+f(\mathbf{x}) = \frac{1}{2}\mathbf{x}^{\mathbf{T}}\mathbf{A}\mathbf{x} - \mathbf{x}^{\mathbf{T}}\mathbf{b} + c
+\end{equation}
+
+where $\mathbf{A}$ is a matrix, $\mathbf{b}$ is a vector and $c$ is a scalar.
+
+Consider the derivatives of (3.16):
+
+\begin{equation}
+\begin{split}
+\nabla f(\mathbf{x}) &= \mathbf{A}\mathbf{x} - \mathbf{b} \\
+\nabla^2 f(\mathbf{x}) &= \mathbf{A}
+\end{split}
+\end{equation}
+
+Equation (3.16) is minimised when $\nabla f(\mathbf{x}) = 0$, i.e. $\mathbf{A}\mathbf{x} = \mathbf{b}$, and $\mathbf{A}$ is symmetric positive-definite.
+
+So, finding the minimum of the quadratic form by an iterative method is equivalent to finding the solution of $\mathbf{A}\mathbf{x} = \mathbf{b}$ by a direct method. And, if a sparse system occupies all of the computer system memory, it will not be possible to solve the system by a direct method.
+
+
+%
+% SUB SECTION
+%
+\subsection{Steepest Descent Method}
+
+
+%
+% SUB SECTION
+%
+\subsection{Method of Conjugate Directions}
+
+
+
+
+
 
 
 
