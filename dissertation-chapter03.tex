@@ -269,13 +269,23 @@ So, finding the minimum of the quadratic form by an iterative method is equivale
 %
 % SUB SECTION
 %
-\subsection{Steepest Descent Method}
+\subsection{The Steepest Descent Method}
+
+The \emph{Steepest Descent Method} is an iterative method for determining the minimum $\mathbf{x}$ of a \emph{quadratic form}. The name of the method is derived from the fact that at each iteration, the next step is taken in the direction of steepest descent.
+
+From (3.17) it can be seen that the direction of steepest descent is:
+
+\begin{equation}
+-\nabla f(\mathbf{x_i}) = \mathbf{b} - \mathbf{A}\mathbf{x_i}
+\end{equation}
+
+The step length $\alpha$ is chosen such that the directional derivative along the direction of steepest descent is \emph{zero}. 
 
 
 %
 % SUB SECTION
 %
-\subsection{Method of Conjugate Directions}
+\subsection{The Conjugate Directions Method}
 
 
 
