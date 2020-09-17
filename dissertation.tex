@@ -15,6 +15,11 @@
 \usepackage{hyperref}
 \usepackage{dirtytalk}
 
+\usepackage[english]{babel}
+\usepackage[backend=biber]{biblatex}
+\addbibresource{references.bib}
+
+
 %\usepackage[a4paper, total={5.5in, 9in}]{geometry}
 
 %\definecolor{termcolor}{RGB}{1.0, 0.97, 0.86}
@@ -151,5 +156,11 @@ I want to thank...
 %
 \chapter{Summary}
 \input{dissertation-chapter06}
+
+
+%
+% BIBLIOGRAPHY
+%
+\printbibliography[heading=bibintoc, title={References}]
 
 \end{document}
