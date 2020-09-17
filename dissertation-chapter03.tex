@@ -219,8 +219,8 @@ The LU factorisation is logically partitioned using the same block size $NB$ use
 Like HPL, the HPCG benchmark, developed by Dongarra, Heroux and Luszczek \cite{hpcg-benchmark}, measures the time taken to solve a system of linear equations. And from this timing derives a performance metric stated in Gflops. The system of equations is of the form:
 
 \begin{equation}
-\mathbf{Ax} = \mathbf{b}
-\end{equation}
+\mathbf{Ax} = \mathbf{b},\text{ where }\mathbf{A} \in \mathbf{R}^{n\times n}\text{ and }\mathbf{x}, \mathbf{b} \in \mathbf{R}^n
+\end{equation} 
 
 This is where the similarity with HPL ends.
 
