@@ -740,6 +740,123 @@ Rank &      &       & Pflops        & Rank   & Pflops & of Peak  \\
 %
 % SUB SECTION
 %
+\subsection{Interrupt Coalescing}
+
+As discussed in Chapter 2, each packet received by a network interface generates a hardware interrupt. This results in a context switch to the kernel to process the packet. \emph{Interrupt coalescing} delays the raising of a hardware interrupt until a specified number of packets have been received, or a specified period of time has elapsed, thereby reducing the number of context switches. This potentially improves throughput and benchmark performance.
+
+The Pi Cluster Tools \verb|interrupt-coalescing| tool enables \emph{Adaptive RX} interrupt coalescing. In \emph{Adaptive RX} interrupt coalescing the kernel actively manages the number of packets received, and the time elapsed, before raising a hardware interrupt on the network interface receive queue.
+
+The results of running the \verb|linpack-profiler| tool with \emph{Adaptive RX} interrupt coalescing enabled are plotted in Figure ??.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.9\textwidth]{profile_interrupt_coalescing.pdf}
+	\caption{Pi Cluster Tools \texttt{linpack-profiler} $R_{max}$ with \emph{Adaptive RX} interrupt coalescing enabled.}
+	\label{fig:subim1}
+\end{figure}
+
+Observations and discussion...
+
+Using the HPL parameters which achieved optimum performance running the \texttt{linpack-profiler} tool, the HPL benchmark results using 80\% of available memory are presented in Table ??. 
+
+\begin{table}[H]
+\begin{center}
+\begin{tabular}{ |c|c|c|c|c|c|c| } 
+\hline
+\multicolumn{5}{|c}{} & \multicolumn{2}{|c|}{$\mathbf{R_{max}}$ \textbf{(Gflops)}} \\
+\hline
+\textbf{BLAS} & \textbf{N} & \textbf{NB} & \textbf{P} & \textbf{Q} & \textbf{Baseline}  & \textbf{Adaptive RX}  \\
+              &            &             &            &            &                    & \textbf{Coalescing} \\
+\hline
+OpenBLAS Serial &  &  &  &  &  &  \\
+\hline
+OpenBLAS OpenMP &  &  &  &  &  &  \\
+\hline
+BLIS Serial     &  &  &  &  &  &  \\
+\hline
+BLIS OpenMP     &  &  &  &  &  &  \\
+\hline
+\end{tabular}
+\end{center}
+\caption{\label{tab:table-name}Comparison of Baseline HPL $R_{max}$ and that achieved with \emph{Adaptive RX} interrupt coalescing enabled, using all 8 cluster nodes and 80\% of total memory.}
+\end{table}
+
+Observations and discussion...
+
+
+
+%\begin{table}
+%\begin{center}
+%\begin{tabular}{ |c|c|c|c|c|c|c| } 
+%\hline
+%\multicolumn{5}{|c}{} & \multicolumn{2}{|c|}{$\mathbf{R_{max}}$ (Gflops)} \\
+%\hline
+%\textbf{BLAS} & \textbf{N} & \textbf{NB} & \textbf{P} & \textbf{Q} & \textbf{No Interrupt} & \textbf{RX %Interrupt} \\
+%              &            &             &            &            & \textbf{Coalescing}  &\textbf{Coalescing} \\
+%
+%\hline
+%OpenBLAS & 52320 & 120 & 1 & 32 & 8.6787e+01 & \\
+%Serial   & 52320 & 120 & 2 & 16 & 9.5517e+01 & \\
+%         & 52320 & 120 & 4 &  8 & 9.5525e+01 & \\
+%\hline
+%OpenBLAS & 52360 &  88 & 1 &  8 & 8.8626e+01 & \\
+%OpenMP   & 52360 &  88 & 2 &  4 & 9.6630e+01 & \\
+%\hline
+%BLIS     & 52416 & 168 & 1 & 32 & 9.1148e+01 & \\
+%Serial   & 52416 & 168 & 2 & 16 & 1.0341e+02 & \\
+%         & 52416 & 168 & 4 &  8 & 1.0190e+02 & \\
+%\hline
+%BLIS     & 52400 & 200 & 1 &  8 & 9.1180e+01 & \\
+%OpenMP   & 52400 & 200 & 2 &  4 & 1.0041e+02 & \\
+%\hline
+%\end{tabular}
+%\end{center}
+%\caption{\label{tab:table-name}Comparison of HPL $R_{max}$ with Adaptive RX interrupt coalescing enabled and the default no interrupt coalescing.}
+%\end{table}
+
+
+%
+% SUB SECTION
+%
+\subsection{Receive Packet Steering and Receive Flow Steering}
+
+HPL was run using all 8 nodes with Receive Packet Steering (RPS) and Receive Flow Steering (RFS) enabled. The results are tabulated and compared with the default RPS and RFS disabled in Table ??.
+
+\begin{table}[H]
+\begin{center}
+\begin{tabular}{ |c|c|c|c|c|c|c| } 
+\hline
+\multicolumn{5}{|c}{} & \multicolumn{2}{|c|}{$\mathbf{R_{max}}$} \\
+\hline
+\textbf{BLAS} & \textbf{N} & \textbf{NB} & \textbf{P} & \textbf{Q} & \textbf{RPS \& RFS} & \textbf{RPS \& RFS} \\
+              &            &             &            &            & \textbf{Disabled}   & \textbf{Enabled} \\
+\hline
+OpenBLAS & 52320 & 120 & 1 & 32 & 8.6787e+01 & \\
+Serial   & 52320 & 120 & 2 & 16 & 9.5517e+01 & \\
+         & 52320 & 120 & 4 &  8 & 9.5525e+01 & \\
+\hline
+OpenBLAS & 52360 &  88 & 1 &  8 & 8.8626e+01 & \\
+OpenMP   & 52360 &  88 & 2 &  4 & 9.6630e+01 & \\
+\hline
+BLIS     & 52416 & 168 & 1 & 32 & 9.1148e+01 & \\
+Serial   & 52416 & 168 & 2 & 16 & 1.0341e+02 & \\
+         & 52416 & 168 & 4 &  8 & 1.0190e+02 & \\
+\hline
+BLIS     & 52400 & 200 & 1 &  8 & 9.1180e+01 & \\
+OpenMP   & 52400 & 200 & 2 &  4 & 1.0041e+02 & \\
+\hline
+\end{tabular}
+\end{center}
+\caption{\label{tab:table-name}Comparison of HPL $R_{max}$ with Receive Packet Steering (RPS) and Receive Flow Steering (RFS) enabled and the default RPS and RFS disabled.}
+\end{table}
+
+Observations and discussion...
+
+
+
+%
+% SUB SECTION
+%
 \subsection{Kernel Preemption Model}
 
 The Linux kernel has 3 Preemption Models, as discussed in Chapter 2:
@@ -760,7 +877,7 @@ The Pi Cluster Tools \verb|linpack-profiler| tool was run with a \emph{No Forced
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[width=0.9\textwidth]{profile_nopreempt_8_node_20_percent_memory.pdf}
+	\includegraphics[width=0.9\textwidth]{profile_nopreempt.pdf}
 	\caption{Pi Cluster Tools \texttt{linpack-profiler} $R_{max}$ with a \emph{No Forced Preemption} kernel.}
 	\label{fig:subim1}
 \end{figure}
@@ -787,118 +904,6 @@ BLIS OpenMP     & 52320 & 160 & 2 &  4 &  &  \\
 \end{tabular}
 \end{center}
 \caption{\label{tab:table-name}Comparison of the Baseline HPL $R_{max}$ with a \emph{No Forced Preemption} kernel.}
-\end{table}
-
-Observations and discussion...
-
-
-
-%
-% SUB SECTION
-%
-\subsection{Interrupt Coalecsing}
-
-As discussed in Chapter 2, each packet received by a network interface generates a hardware interrupt. This results in a context switch to the kernel to process the packet. \emph{Interrupt Coalescing} delays the raising of a hardware interrupt until a number of packets have been received, therefore reducing the number of context switches. This potentially improves throughput and benchmark performance. 
-
-The \verb|linpack-profiler| tool was run with \emph{Interrupt Coalescing} enabled using the \verb|interrupt-coalescing| tool. Both tools are part of Pi Cluster Tools. The results are plotted in Figure ??.
-
-\begin{figure}[h]
-	\centering
-	\includegraphics[width=0.9\textwidth]{profile_nopreempt_8_node_20_percent_memory.pdf}
-	\caption{Pi Cluster Tools \texttt{linpack-profiler} $R_{max}$ with \emph{Interrupt Coalescing} enabled.}
-	\label{fig:subim1}
-\end{figure}
-
-Using the parameters which achieved optimum performance when running the \texttt{linpack-profiler} tool, the HPL benchmark results using 80\% of available memory are presented in Table ??. 
-
-\begin{table}[H]
-\begin{center}
-\begin{tabular}{ |c|c|c|c|c|c|c| } 
-\hline
-\multicolumn{5}{|c}{} & \multicolumn{2}{|c|}{$\mathbf{R_{max}}$ \textbf{(Gflops)}} \\
-\hline
-\textbf{BLAS} & \textbf{N} & \textbf{NB} & \textbf{P} & \textbf{Q} & \textbf{Baseline}  & \textbf{No Forced}  \\
-              &            &             &            &            &                    & \textbf{Preemption} \\
-\hline
-OpenBLAS Serial &  &  &  &  &  &  \\
-\hline
-OpenBLAS OpenMP &  &  &  &  &  &  \\
-\hline
-BLIS Serial     &  &  &  &  &  &  \\
-\hline
-BLIS OpenMP     &  &  &  &  &  &  \\
-\hline
-\end{tabular}
-\end{center}
-\caption{\label{tab:table-name}Comparison of the Baseline HPL $R_{max}$ with \emph{Interrupt Coalescing} enabled.}
-\end{table}
-
-Observations and discussion...
-
-
-
-\begin{table}
-\begin{center}
-\begin{tabular}{ |c|c|c|c|c|c|c| } 
-\hline
-\multicolumn{5}{|c}{} & \multicolumn{2}{|c|}{$\mathbf{R_{max}}$ (Gflops)} \\
-\hline
-\textbf{BLAS} & \textbf{N} & \textbf{NB} & \textbf{P} & \textbf{Q} & \textbf{No Interrupt} & \textbf{RX Interrupt} \\
-              &            &             &            &            & \textbf{Coalescing}   & \textbf{Coalescing} \\
-\hline
-OpenBLAS & 52320 & 120 & 1 & 32 & 8.6787e+01 & \\
-Serial   & 52320 & 120 & 2 & 16 & 9.5517e+01 & \\
-         & 52320 & 120 & 4 &  8 & 9.5525e+01 & \\
-\hline
-OpenBLAS & 52360 &  88 & 1 &  8 & 8.8626e+01 & \\
-OpenMP   & 52360 &  88 & 2 &  4 & 9.6630e+01 & \\
-\hline
-BLIS     & 52416 & 168 & 1 & 32 & 9.1148e+01 & \\
-Serial   & 52416 & 168 & 2 & 16 & 1.0341e+02 & \\
-         & 52416 & 168 & 4 &  8 & 1.0190e+02 & \\
-\hline
-BLIS     & 52400 & 200 & 1 &  8 & 9.1180e+01 & \\
-OpenMP   & 52400 & 200 & 2 &  4 & 1.0041e+02 & \\
-\hline
-\end{tabular}
-\end{center}
-\caption{\label{tab:table-name}Comparison of HPL $R_{max}$ with Adaptive RX interrupt coalescing enabled and the default no interrupt coalescing.}
-\end{table}
-
-
-%
-% SUB SECTION
-%
-\subsection{Receive Packet Steering and Receive Flow Steering}
-
-HPL was run using all 8 nodes with Receive Packet Steering (RPS) and Receive Flow Steering (RFS) enabled. The results are tabulated and compared with the default RPS and RFS disabled in Table ??.
-
-\begin{table}
-\begin{center}
-\begin{tabular}{ |c|c|c|c|c|c|c| } 
-\hline
-\multicolumn{5}{|c}{} & \multicolumn{2}{|c|}{$\mathbf{R_{max}}$} \\
-\hline
-\textbf{BLAS} & \textbf{N} & \textbf{NB} & \textbf{P} & \textbf{Q} & \textbf{RPS \& RFS} & \textbf{RPS \& RFS} \\
-              &            &             &            &            & \textbf{Disabled}   & \textbf{Enabled} \\
-\hline
-OpenBLAS & 52320 & 120 & 1 & 32 & 8.6787e+01 & \\
-Serial   & 52320 & 120 & 2 & 16 & 9.5517e+01 & \\
-         & 52320 & 120 & 4 &  8 & 9.5525e+01 & \\
-\hline
-OpenBLAS & 52360 &  88 & 1 &  8 & 8.8626e+01 & \\
-OpenMP   & 52360 &  88 & 2 &  4 & 9.6630e+01 & \\
-\hline
-BLIS     & 52416 & 168 & 1 & 32 & 9.1148e+01 & \\
-Serial   & 52416 & 168 & 2 & 16 & 1.0341e+02 & \\
-         & 52416 & 168 & 4 &  8 & 1.0190e+02 & \\
-\hline
-BLIS     & 52400 & 200 & 1 &  8 & 9.1180e+01 & \\
-OpenMP   & 52400 & 200 & 2 &  4 & 1.0041e+02 & \\
-\hline
-\end{tabular}
-\end{center}
-\caption{\label{tab:table-name}Comparison of HPL $R_{max}$ with Receive Packet Steering (RPS) and Receive Flow Steering (RFS) enabled and the default RPS and RFS disabled.}
 \end{table}
 
 Observations and discussion...
@@ -1058,112 +1063,6 @@ iperf network speed...
 Requires a network switch capable of Jumbo frames...
 
 
-\lstset{style=type}
-\begin{lstlisting}
-$ ip link show eth0
-\end{lstlisting}
-
-
-\lstset{style=type}
-\begin{lstlisting}
-2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000
-    link/ether dc:a6:32:60:7b:cd brd ff:ff:ff:ff:ff:ff
-\end{lstlisting}
-
-
-
-\lstset{style=type}
-\begin{lstlisting}
-$ ping -c 1 -s 1500 -M do node2
-\end{lstlisting}
-
-\lstset{style=type}
-\begin{lstlisting}
-PING node2 (192.168.0.2) 1500(1528) bytes of data.
-ping: local error: message too long, mtu=1500
-\end{lstlisting}
-
-
-\lstset{style=type}
-\begin{lstlisting}
-$ ping -c 1 -s 1472 -M do node2
-\end{lstlisting}
-
-
-\lstset{style=type}
-\begin{lstlisting}
-PING node2 (192.168.0.2) 1472(1500) bytes of data.
-1480 bytes from node2 (192.168.0.2): icmp_seq=1 ttl=64 time=0.392 ms
-\end{lstlisting}
-
-
-Trying to set the MTU to 9000 bytes...
-
-\lstset{style=type}
-\begin{lstlisting}
-$ sudo ip link set eth0 mtu 9000 
-\end{lstlisting}
-
-... results with...
-
-\lstset{style=type}
-\begin{lstlisting}
-Error: mtu greater than device maximum.
-\end{lstlisting}
-
-In fact, attempting to set the MTU to anything greater than 1500 bytes...
-
-\lstset{style=type}
-\begin{lstlisting}
-$ sudo ip link set eth0 mtu 1501 
-\end{lstlisting}
-
-... results with...
-
-\lstset{style=type}
-\begin{lstlisting}
-Error: mtu greater than device maximum.
-\end{lstlisting}
-
-
-Need to build a kernel with Jumbo frame support...
-
-See Appendix ?...
-
-\lstset{style=type}
-\begin{lstlisting}
-$ ip link show eth0
-\end{lstlisting}
-
-\lstset{style=type}
-\begin{lstlisting}
-2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9000 qdisc mq state UP mode DEFAULT group default qlen 1000
-    link/ether dc:a6:32:60:7b:cd brd ff:ff:ff:ff:ff:ff
-\end{lstlisting}
-
-\lstset{style=type}
-\begin{lstlisting}
-$ ping -c 1 -s 9000 -M do node2
-\end{lstlisting}
-
-\lstset{style=type}
-\begin{lstlisting}
-PING node2 (192.168.0.2) 9000(9028) bytes of data.
-ping: local error: message too long, mtu=9000
-\end{lstlisting}
-
-\lstset{style=type}
-\begin{lstlisting}
-$ ping -c 1 -s 8972 -M do node2
-\end{lstlisting}
-
-\lstset{style=type}
-\begin{lstlisting}
-PING node2 (192.168.0.2) 8972(9000) bytes of data.
-8980 bytes from node2 (192.168.0.2): icmp_seq=1 ttl=64 time=0.847 ms
-\end{lstlisting}
-
-
 On \verb|node2| create the \verb|Iperf| server...
 
 \lstset{style=type}
@@ -1196,44 +1095,6 @@ TCP window size:  682 KByte (default)
 	\caption{Network Node to Node Bandwidth vs MTU.}
 \end{figure}
 
-
-\subsection{Kernel TCP Parameters Tuning}
-
-REFERENCE...
-
-https://www.open-mpi.org/faq/?category=tcp
-
-\lstset{style=listing}
-\begin{lstlisting}[caption=/etc/sysctl.d/picluster.conf]
-net.core.rmem_max = 16777216
-net.core.wmem_max = 16777216
-net.ipv4.tcp_rmem = 4096 87380 16777216
-net.ipv4.tcp_wmem = 4096 65536 16777216
-net.core.netdev_max_backlog = 30000
-net.core.rmem_default = 16777216
-net.core.wmem_default = 16777216
-net.ipv4.tcp_mem= 16777216 16777216 16777216
-net.ipv4.route.flush = 1
-\end{lstlisting}
-
-
-\lstset{style=type}
-\begin{lstlisting}
-sudo sysctl --system
-\end{lstlisting}
-
-or
-
-\lstset{style=type}
-\begin{lstlisting}
-sudo shutdown -r now
-\end{lstlisting}
-
-
-\lstset{style=type}
-\begin{lstlisting}
-Aug 11 03:35:40 node5 kernel: [19256.425779] bcmgenet fd580000.ethernet eth0: bcmgenet_xmit: tx ring 1 full when queue 2 awake
-\end{lstlisting}
 
 
 

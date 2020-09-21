@@ -18,7 +18,7 @@ The \emph{matrix-matrix multiplication} operation is of fundamental importance i
 
 The naive computational complexity of $\mathbf{C} = \mathbf{AB}$, where $\mathbf{A}$, $\mathbf{B}$ and $\mathbf{C}$ $\in \mathbf{R}^{n \times n}$, is $\mathcal{O}(n^3)$. Each \emph{row-column} dot product is $\mathcal{O}(n)$, requiring $n$ multiplications and $n - 1$ additions. There are $n$ of these dot products per row of $\mathbf{A}$ and each column of $\mathbf{B}$, and $\mathbf{A}$ has $n$ rows. In the more general case of $\mathbf{A} \in \mathbf{R}^{m \times k}$ and $\mathbf{B} \in \mathbf{R}^{k \times n}$, the complexity is $\mathcal{O}(mkn).$ 
 
-In 1969, Volker Strassen \cite{strassen} proved the computational complexity can be reduced to $\mathcal{O}(N^{\log _{2}7+o(1)})\approx \mathcal{O}(N^{2.8074})$. This is achieved by subdividing each matrix into sub-matrices of dimension $2 \times 2$. By doing do, and introducing intermediate matrices, it is possible to reduce the number of multiplications required from 8 to 7 for each sub-matrix multiplication. This is called the \emph{Strassen Algorithm}.
+In 1969, Volker Strassen \cite{strassen} proved the computational complexity can be reduced to $\mathcal{O}(N^{\log _{2}7+o(1)})\approx \mathcal{O}(N^{2.8074})$. This is achieved by subdividing each matrix into sub-matrices of dimension $2 \times 2$. By doing so, and introducing intermediate matrices, it is possible to reduce the number of multiplications required from 8 to 7 for each sub-matrix multiplication. This is called the \emph{Strassen Algorithm}.
 
 In 1990, Don Coppersmith and Shmuel Winograd \cite{coppersmith-winograd} further reduced the complexity to $\mathcal{O}(n^{2.375477})$. The \emph{Coppersmith-Winograd Algorithm} was further improved by Virginia Vassilevska Williams \cite{williams} in 2012, and most recently in 2014 by François Le Gallf \cite{le-gall}, which reduced the complexity to $\mathcal {O}(n^{2.3728639})$.
 
@@ -206,7 +206,7 @@ For optimum performance the problem dimension $n$ should be selected to utilise 
 N = \left[\left(memory\_percent \sqrt{\frac{memory\_in\_gb \times 1024^3}{8}}\right) \div NB\right] \times NB
 \end{equation}
 
-The division by 8 in the inner parenthesis is the size in bytes of a double precision floating point number.
+The division by 8 in the square root is the size in bytes of a double precision floating point number.
 
 The LU factorisation is logically partitioned using the same block size $NB$ used for data distribution.
 
@@ -216,7 +216,7 @@ The LU factorisation is logically partitioned using the same block size $NB$ use
 %
 \section{High Performance Conjugate Gradients (HPCG)}
 
-Like HPL, the HPCG benchmark, developed by Dongarra, Heroux and Luszczek \cite{hpcg-benchmark}, measures the time taken to solve a system of linear equations. And from this timing derives a performance metric stated in Gflops. The system of equations is of the form:
+Like HPL, the HPCG benchmark, developed by Dongarra, Heroux and Luszczek \cite{hpcg-benchmark}, measures the time taken to solve a system of linear equations. And from this timing derives a performance metric stated in Gflops. The system of equations is also of the form:
 
 \begin{equation}
 \mathbf{Ax} = \mathbf{b},\text{ where }\mathbf{A} \in \mathbf{R}^{n\times n}\text{ and }\mathbf{x}, \mathbf{b} \in \mathbf{R}^n
@@ -230,14 +230,9 @@ The motivation for developing HPCG is that HPL no longer accurately indicates th
 
 HPCG uses the Conjugate Gradient method with a symmetric Gauss-Seidel preconditioner to solve the Poisson differential equation on a three dimensional grid discretised with a 27-point stencil \cite{hpcg-benchmark}.
 
-
-%
-% SUB SECTION
-%
-\subsection{The Conjugate Gradient Method}
-
 The Conjugate Gradient Method is a method for solving a system of equations with a \emph{symmetric positive-definite} matrix. When implemented as an iterative scheme, it solves a $n \times n$ system in at most $n$ iterations. The method will be introduced through a discussion of \emph{Quadratic Forms}, the \emph{Steepest Descent Method} and the \emph{Method of Conjugate Directions}. This broadly follows the description of the method by Shewchuck \cite{cg-without-pain}.
- 
+
+And finally... discuss the blocking/implementation of HPCG... and why CG is used. 
 
 %
 % SUB SECTION
@@ -269,26 +264,47 @@ So, finding the minimum of the quadratic form by an iterative method is equivale
 %
 % SUB SECTION
 %
-\subsection{The Steepest Descent Method}
+\subsection{Steepest Descent}
 
-The \emph{Steepest Descent Method} is an iterative method for determining the minimum $\mathbf{x}$ of a \emph{quadratic form}. The name of the method is derived from the fact that at each iteration, the next step is taken in the direction of steepest descent.
+The \emph{Steepest Descent} method is an iterative method for determining the minimum $\mathbf{x}$ of an \emph{objective function}. The name of the method is derived from the fact that at each iteration, the next step is taken in the direction of steepest descent.
 
-From (3.17) it can be seen that the direction of steepest descent is:
+For example, starting at an arbitrary point $\mathbf{x}_0$, the first iteration generates the first approximation $\mathbf{x}_1$ of the exact (unknown) solution $\mathbf{x}$ as:
 
 \begin{equation}
--\nabla f(\mathbf{x_i}) = \mathbf{b} - \mathbf{A}\mathbf{x_i}
+\mathbf{x}_1=\mathbf{x}_0 + \alpha_0 \mathbf{r}_0
 \end{equation}
 
-The step length $\alpha$ is chosen such that the directional derivative along the direction of steepest descent is \emph{zero}. 
+where $\mathbf{r}_0$ is the step direction and $\alpha_0$ is the step length.
+
+From (3.17) it can be seen that at each iteration the direction of steepest descent is:
+
+\begin{equation}
+\mathbf{r}_i = -\nabla f(\mathbf{x_i}) = \mathbf{b} - \mathbf{A}\mathbf{x_i}
+\end{equation}
+
+The step direction $\mathbf{r}_i$ is also termed the \emph{residual} and measures the difference between $\mathbf{b}$ the current value of $\mathbf{A}\mathbf{x}_i$.
+
+The step length $\alpha_i$ is chosen such that the directional derivative along the direction of steepest descent is \emph{zero}. This occurs when $\nabla f(\mathbf{x_{i+1}})^\mathbf{T}\mathbf{r_i} = 0$, i.e. when they are orthogonal. The result of this is that \emph{steepest descent} potentially takes many steps in the same direction as the iteration progresses towards the exact solution. This leads on to the \emph{conjugate directions} method which attempts to address this.
 
 
 %
 % SUB SECTION
 %
-\subsection{The Conjugate Directions Method}
+\subsection{Conjugate Directions}
 
 
 
+%
+% SUB SECTION
+%
+\subsection{Conjugate Gradients}
+
+
+
+%
+% SUB SECTION
+%
+\subsection{Why use Conjugate }
 
 
 
