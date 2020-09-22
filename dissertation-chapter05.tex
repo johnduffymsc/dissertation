@@ -5,9 +5,9 @@
 
 The Raspberry Pi 4 Model B is based on the Broadcom BCM2711 System on a Chip (SoC). The BCM2711 includes four Arm Cortex-A72 cores clocked at 1.5 GHz.
 
-Each core of the Arm Cortex-A72 implements the 64-bit Armv8-A Instruction Set Architecture (ISA). This instruction set includes Advanced SIMD instructions which operate on a single 128-bit SIMD pipeline. This pipeline can conduct two 64-bit double precision \emph{floating point operations} per clock cycle.  
+Each core of the Arm Cortex-A72 implements the 64-bit Armv8-A ISA (Instruction Set Architecture). This instruction set includes Advanced SIMD instructions which operate on a single 128-bit SIMD pipeline. This pipeline can conduct two 64-bit double precision \emph{floating point operations} per clock cycle.  
 
-A \emph{fused multiply-add} (FMA) instruction implements a multiplication followed by an add in a single instruction. The main purpose of FMA instructions is to improve result accuracy by conducting a single rounding operation on completion of both the multiplication and the add operations. A single FMA instruction conducts two \emph{floating point operations} per clock cycle. 
+A \emph{fused multiply-add} (FMA) instruction implements a \emph{multiplication} followed by an \emph{add} in a single instruction. The main purpose of FMA instructions is to improve result accuracy by conducting a single rounding operation on completion of both the \emph{multiplication} and \emph{add} operations. A single FMA instruction conducts two \emph{floating point operations} per clock cycle. 
 
 The theoretical maximum performance of a single Aerin Cluster node, $R_{peak}$, is therefore:
 
@@ -16,7 +16,7 @@ R_{peak} &= 4 \textrm{ cores} \times 1.5 \textrm{ GHz} \times 2 \textrm{ doubles
 &= 24 \textrm{ Gflops}
 \end{align}
 
-This $R_{peak}$ of 24 Gflops is only achievable, continuously, if every instruction in a program is an FMA instruction, and the program data is appropriately aligned. This obviously cannot be the case, since a program will consist of at least some instructions to  load data from memory and store results in memory, and these are not FMA instructions. So, $R_{peak}$ is very much a theoretical maximum performance. 
+This $R_{peak}$ of 24 Gflops is only achievable, continuously, if every instruction in a program is an FMA instruction, and the program data is aligned in memory appropriately for efficient access. This obviously cannot be the case, since a program will consist of at least some instructions to  load data from memory and store results back in memory, and these are not FMA instructions. Therefore, $R_{peak}$ is very much a theoretical maximum performance. 
 
 The theoretical maximum performance of the Aerin Cluster as a whole is therefore:
 
@@ -25,7 +25,7 @@ R_{peak} &= 8 \textrm{ nodes} \times 24 \textrm{ Gflops}\\
 &= 192 \textrm{ Gflops}
 \end{align}
 
-For maximum performance, the HPL benchmark requires a problem size which utilises 100\% of memory. But because the operating system requires memory, this is never fully achievable. 
+For maximum performance, the HPL benchmark requires a problem size which utilises 100\% of memory. But, because the operating system requires memory, this is never fully achievable. 
 
 \begin{figure}[h]
 	\centering	
@@ -37,7 +37,7 @@ As can be seen in Figure 5.1, 3.6 GB of memory (3,783,868 KB) is available to ap
 
 So, for the HPL baseline benchmarks, 80\% of available memory was chosen for the problem size. This is also the amount suggested as an initial \emph{good guess} in the HPL Frequently Asked Questions \cite{hpl-faq}.
 
-The above necessarily results in the baseline performance only being able to achieve 80\% of $R_{peak}$ at best, 4.8 Gflops for a single core, 19.2 Gflops for a single node, and 153.6 Gflops for the 8 node cluster. These values are indicated on the HPL baseline performance result plots.
+The above necessarily results in the baseline performance only being able to achieve 80\% of $R_{peak}$ at best, 4.8 Gflops for a single core, 19.2 Gflops for a single node, and 153.6 Gflops for the 8 node cluster. These values are indicated on the HPL baseline performance plots.
 
 
 %
@@ -95,22 +95,20 @@ The benchmark results are plotted in Figure 5.2.
 		\caption{Hybrid OpenMPI/OpenMP}
 		\label{fig:subim2}
 	\end{subfigure}
-\caption{\textbf{1 Core $\mathbf{R_{max}}$ versus NB.}}
+\caption{\textbf{HPL 1 Core $\mathbf{R_{max}}$ versus NB.}}
 \label{fig:image2}
 \end{figure}
 
-
+Note: There is no benefit in using a hybrid OpenMPI/OpenMP topology for a single core running a single \verb|xhpl| process, as only a single thread is used. However, to ensure similar results were achieved, both a pure OpenMPI and hybrid OpenMPI/OpenMP were benchmarked.
 
 %
 % SUB SUB SECTION
 %
 \subsubsection{Observations}
 
-As expected, there is no noticeable performance difference between a pure OpenMPI and hybrid OpenMPI/OpenMP topology for a single \verb|xhpl| process running on a single core.
+As expected, there is no significant performance difference between the two topologies for both OpenBLAS and BLIS.
 
-Both topologies attain 80\% $R_{peak}$ for a single core.
-
-Discussion about OpenBLAS and BLIS internal kernel blocking...
+OpenBLAS and BLIS both attain 80\% $R_{peak}$. Without competition from additional cores for access to the L2 cache, both libraries are able to efficiently stream data from main memory, through the L1 and L2 caches, to the core registers for computation. 
 
 
 %
@@ -118,31 +116,22 @@ Discussion about OpenBLAS and BLIS internal kernel blocking...
 %
 \subsection{HPL 1 Node Baseline}
 
-The purpose of this baseline is to determine the performance of the 4 cores of a single node. In this case each core has to share access to the L2 cache, which will result in more main memory accesses. It is therefore anticipated that this will result in a performance reduction, per core, compared to the single core case.
+The purpose of this baseline is to determine the performance of the 4 cores of a single node. In this case each core shares the L2 cache with the other cores, so less L2 data will be available per core. This will result in more L2 \emph{cache misses} requiring a \emph{cache load} from main memory. It is therefore anticipated that this will result in a performance reduction, per core, compared to the single core case.
 
-As per the single core benchmark, the HPL problem size is restricted to 80\% of available memory. Again, in the case, this is 80\% of a single node's 4 GB. This results in the same table of NB and N combinations as the single core benchmark.
+As per the single core benchmark, the HPL problem size is restricted to 80\% of available memory. Again, this is 80\% of a single node's 4 GB. This results in the same NB and N combinations as the single core benchmark of Table 5.1.
 
-\begin{table}[H]
-\begin{center}
-	\begin{tabular}{ |c|c|c|c|c|c|c|c|c|c| } 
-		\hline
-		NB & N & NB & N & NB & N & NB & N & NB & N \\ 
-		\hline
-		32 & 18528 &  80 & 18480 & 128 & 18432 & 176 & 18480 & 224 & 18368 \\ 
-		40 & 18520 &  88 & 18480 & 136 & 18496 & 184 & 18400 & 232 & 18328 \\ 
- 		48 & 18528 &  96 & 18528 & 144 & 18432 & 192 & 18432 & 240 & 18480 \\
-		56 & 18536 & 104 & 18512 & 152 & 18392 & 200 & 18400 & 248 & 18352 \\ 
- 		64 & 18496 & 112 & 18480 & 160 & 18400 & 208 & 18512 & 256 & 18432 \\
-		72 & 18504 & 120 & 18480 & 168 & 18480 & 216 & 18360 &   - &     - \\ 
- 		\hline
-	\end{tabular}
-\end{center}
-\caption{\label{tab:table-name}1 Node NB and N Combinations using 80\% of 4 GB Memory.}
-\end{table}
+The benchmark results are plotted in Figure 5.3. 
 
+%
+% SUB SUB SECTION
+%
+\subsubsection{Observations}
 
-The results are plotted in Figure ??
+As anticipated, there is indeed a reduction in performance per core, 80\% $R_{peak}$ in no longer attained.
 
+Pure OpenMPI topology attains a $R_{max}$ of ?? with an NB of ??.
+
+The hybrid OpenMPI/OpenMP topology attains a $R_{max}$ of ?? with an NB of ??.
 \begin{figure}[H]
 	\begin{subfigure}{1.0\textwidth}
 		\centering
@@ -157,21 +146,11 @@ The results are plotted in Figure ??
 		\caption{Hybrid OpenMPI/OpenMP}
 		\label{fig:subim2}
 	\end{subfigure}
-\caption{1 Node $R_{max}$ vs NB using 80\% memory.}
+\caption{\textbf{HPL 1 Node $\mathbf{R_{max}}$ versus NB.}}
 \label{fig:image2}
 \end{figure}
 
 
-%
-% SUB SUB SECTION
-%
-\subsubsection{Observations}
-
-As anticipated, there is indeed a reduction in performance per core, 80\% $R_{peak}$ in no longer attained.
-
-Pure OpenMPI topology attains a $R_{max}$ of ?? with an NB of ??.
-
-The hybrid OpenMPI/OpenMP topology attains a $R_{max}$ of ?? with an NB of ??.
 
 
 %
