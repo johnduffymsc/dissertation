@@ -197,6 +197,10 @@ On Linux, RFS is configured through \verb|/proc| and \verb|/sys| file systems.
 %
 \section{ARM Architecture}
 
+In 
+
+
+
 Ever since the introduction of the ARMv8-A architecture in 2011, Arm processors have become an increasingly popular choice for High Performance Computing (HPC) due to improvements in the ARMv8 instruction set specifically targeting HPC combined with low power requirements. The 415 Petaflops Fugaku supercomputer, based on the Fujitsu AX64 Arm-based processor, topped the June 2020 Top500 List and also the November 2019 Green500 List.
 
 Arm processors are based upon RISC (Reduced Instruction Set Computer) principles with a simple Load/Store architecture. Data is loaded from main memory into processor registers, computations are performed using fixed-length instructions, and the results are then stored back in main memory. This compares with CISC (Complicated Instruction Set Computer) architectures with complicated memory addressing and computation modes with variable length instructions. The simplicity of design, which directly translates to a low transistor count, results in high performance combined with low power requirements.
@@ -217,11 +221,11 @@ Fujitsu chip...
 %
 % SECTION
 %
-\section{Benchmarks}
+\section{HPC Benchmarks}
 
 \subsection{Landscape}
 
-High Performance Linpack (HPL) is the industry standard HPC benchmark and has been for since 1993. It is used by the Top500 and Green500 lists to rank supercomputers in terms of raw performance and performance per Watt, respectively. However, it has been criticised for producing a single number, and not being a true measure of real-world application performance. This has led to the creation of complementary benchmarks, namely HPC Challenge (HPCC) and High Performance Conjugate Gradients (HPCG). These benchmarks measure whole system performance, including processing power, memory bandwidth, and network speed and latency, in relation to standard HPC algorithms such as FFT and CG.
+High Performance Linpack (HPL) is the industry standard HPC benchmark and has been for since 1993. It is used by the Top500 and Green500 lists to rank supercomputers in terms of raw performance and performance per Watt, respectively. However, it has been criticised for producing a single number, and not being a true measure of real-world application performance. This has led to the creation of complementary benchmarks, namely HPC Challenge (HPCC) and High Performance Conjugate Gradients (HPCG). These benchmarks measure whole system performance, including processing power, memory bandwidth, and network speed and latency, using standard HPC algorithms such as FFT and CG.
 
 
 %
