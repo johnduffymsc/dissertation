@@ -33,11 +33,11 @@ For maximum performance, the HPL benchmark requires a problem size which utilise
 	\caption{\textbf{Available Memory}. Output from \texttt{dmesg | grep Memory} indicates the memory usage by the Linux kernel, and the memory available to applications and benchmarks}
 \end{figure}
 
-As can be seen in Figure 5.1, 3.6 GB of memory (3,783,868 KB) is available to applications and benchmarks per node. This equates to 90\% of the total 4 GB (4,194,304 KB) per node. Any transient use of more than 90\% of memory will result in memory pages being swapped to permanent storage, which will negatively impact benchmark results.
+As can be seen in Figure 5.1, 3.6 GB of memory (3,783,868 KB) is available to applications and benchmarks per node. This equates to 90\% of the total 4 GB (4,194,304 KB) per node. Any transient use of more than 90\% of memory will result in memory pages being swapped to permanent storage, which will negatively impact benchmark performance.
 
-So, for the HPL baseline benchmarks, 80\% of available memory was chosen for the problem size. This is also the amount suggested as an initial \emph{good guess} in the HPL Frequently Asked Questions \cite{hpl-faq}.
+Therefore, for the HPL baseline benchmarks, 80\% of available memory was chosen for the problem size. This is also the amount suggested as an initial \emph{good guess} in the HPL Frequently Asked Questions \cite{hpl-faq}.
 
-The above necessarily results in the baseline performance only being able to achieve 80\% of $R_{peak}$ at best, 4.8 Gflops for a single core, 19.2 Gflops for a single node, and 153.6 Gflops for the 8 node cluster. These values are indicated on the HPL baseline performance plots.
+The above necessarily results in the baseline performance only being able to achieve 80\% of $R_{peak}$, at best. This is 4.8 Gflops for a single core, 19.2 Gflops for a single node, and 153.6 Gflops for the 8 node cluster. These values are indicated on the HPL baseline performance plots.
 
 
 %
@@ -57,7 +57,7 @@ Baseline performance was investigated for the single core, single node, two node
 %
 \subsection{HPL 1 Core Baseline}
 
-The purpose of this investigation was to determine the performance of a single core running a single \verb|xhpl| process, with the single core having exclusive access to the shared L2 cache. 
+The purpose of this investigation is to determine the performance of a single core running a single \verb|xhpl| process, with the single core having exclusive access to the shared L2 cache. 
 
 As discussed in the previous section, the HPL problem size is restricted to 80\% of available memory. In the case, 80\% of a single node's 4 GB. Using values of block size NB from 32 to 256, as suggested by HPL Frequently Asked Questions \cite{hpl-faq}, and using equation ?? to ensure the problem size N is an integer multiple of NB, results in Table 5.1 of NB and N combinations.
 
@@ -116,7 +116,7 @@ OpenBLAS and BLIS both attain 80\% $R_{peak}$. Without competition from addition
 %
 \subsection{HPL 1 Node Baseline}
 
-The purpose of this baseline is to determine the performance of the 4 cores of a single node. In this case each core shares the L2 cache with the other cores, so less L2 data will be available per core. This will result in more L2 \emph{cache misses} requiring a \emph{cache load} from main memory. It is therefore anticipated that this will result in a performance reduction, per core, compared to the single core case.
+The purpose of this investigation is to determine the performance of the 4 cores of a single node. In this case each core shares the L2 cache with the other cores, so less L2 data will be available per core. This should result in more L2 \emph{cache misses} requiring a \emph{cache load} from main memory. It is therefore anticipated that this will result in a performance reduction, per core, compared to the single core case.
 
 As per the single core benchmark, the HPL problem size is restricted to 80\% of available memory. Again, this is 80\% of a single node's 4 GB. This results in the same NB and N combinations as the single core benchmark of Table 5.1.
 
@@ -132,6 +132,7 @@ As anticipated, there is indeed a reduction in performance per core, 80\% $R_{pe
 Pure OpenMPI topology attains a $R_{max}$ of ?? with an NB of ??.
 
 The hybrid OpenMPI/OpenMP topology attains a $R_{max}$ of ?? with an NB of ??.
+
 \begin{figure}[H]
 	\begin{subfigure}{1.0\textwidth}
 		\centering
@@ -149,8 +150,6 @@ The hybrid OpenMPI/OpenMP topology attains a $R_{max}$ of ?? with an NB of ??.
 \caption{\textbf{HPL 1 Node $\mathbf{R_{max}}$ versus NB.}}
 \label{fig:image2}
 \end{figure}
-
-
 
 
 %
@@ -197,7 +196,7 @@ The results are plotted in Figure ??
 		\caption{Hybrid OpenMPI/OpenMP}
 		\label{fig:subim2}
 	\end{subfigure}
-\caption{2 Node $R_{max}$ vs NB using 80\% memory.}
+\caption{\textbf{HPL 2 Node $\mathbf{R_{max}}$ versus NB.}}
 \label{fig:image2}
 \end{figure}
 
