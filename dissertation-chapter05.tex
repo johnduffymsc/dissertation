@@ -76,7 +76,7 @@ As discussed in the previous section, the HPL problem size is restricted to 80\%
  		\hline
 	\end{tabular}
 \end{center}
-\caption{\label{tab:table-name}\textbf{1 Core NB and N Combinations.} Block size NB and problem size N combinations for NB between 32 and 256 using 80\% of 4 GB of Memory.}
+\caption{\label{tab:table-name}\textbf{1 Core NB and N Combinations.} Block size NB and problem size N combinations for NB between 32 and 256 using 80\% of 4 GB of memory.}
 \end{table}
 
 The benchmark results are plotted in Figure 5.2.
@@ -157,15 +157,15 @@ The hybrid OpenMPI/OpenMP topology attains a $R_{max}$ of ?? with an NB of ??.
 %
 \subsection{HPL 2 Node Baseline}
 
-The purpose of this baseline is to determine the performance of 2 nodes. Now, each core not only has to share access to the L2 cache, but the cache may be refreshed with data less frequently due to network delays and competition between the nodes for access to network. It is therefore anticipated that this will result in a performance reduction, per node, compared to the single node case.
+The purpose of this baseline is to determine the performance of 2 nodes. Now, each core not only has to share access to the L2 cache, but the cache will be loaded with data less frequently due to network delays and competition between the nodes for access to network. It is therefore anticipated that this will result in a performance reduction, per node, compared to the single node case.
 
-For this baseline the HPL problem size is restricted to 80\% of 2 nodes combined memory, 80\% of 8 GB. This results in NB and N combinations as tabulated below:
+For this baseline the HPL problem size is restricted to 80\% of 2 nodes combined memory, 80\% of 8 GB. This results in the NB and N combinations in Table 5.2.
 
 \begin{table}[H]
 \begin{center}
 	\begin{tabular}{ |c|c|c|c|c|c|c|c|c|c| } 
 		\hline
-		NB & N & NB & N & NB & N & NB & N & NB & N \\ 
+		\textbf{NB} & \textbf{N} & \textbf{NB} & \textbf{N} & \textbf{NB} & \textbf{N} & \textbf{NB} & \textbf{N} & \textbf{NB} & \textbf{N} \\ 
 		\hline
 		32 & 26208 &  80 & 26160 & 128 & 26112 & 176 & 26048 & 224 & 26208 \\ 
 		40 & 26200 &  88 & 26136 & 136 & 26112 & 184 & 26128 & 232 & 25984 \\ 
@@ -176,11 +176,10 @@ For this baseline the HPL problem size is restricted to 80\% of 2 nodes combined
  		\hline
 	\end{tabular}
 \end{center}
-\caption{\label{tab:table-name}2 Node NB and N Combinations using 80\% of 8 GB Memory.}
+\caption{\label{tab:table-name}\textbf{2 Node NB and N Combinations.}  Block size NB and problem size N combinations for NB between 32 and 256 using 80\% of 8 GB of memory}
 \end{table}
 
-
-The results are plotted in Figure ??
+The results are plotted in Figure 5.4
 
 \begin{figure}[H]
 	\begin{subfigure}{1.0\textwidth}
@@ -200,8 +199,6 @@ The results are plotted in Figure ??
 \label{fig:image2}
 \end{figure}
 
-
-
 %
 % SUB SUB SECTION
 %
@@ -213,33 +210,17 @@ The results are plotted in Figure ??
 %
 % SUB SECTION
 %
-\subsection{HPL Cluster Baseline}
+\subsection{HPL Whole Cluster Baseline}
 
-This cluster baseline uses the optimum values of NB from the 2 Node Baseline. For each of the 4 BLAS library combinations, OpenBLAS serial, OpenBLAS OpenMP, BLIS serial, and BLIS OpenMP, with the corresponding value of N for 80\% of memory for the particular node count is used, as tabulated below.
+This whole cluster baseline uses the optimum values of NB from the 2 node baseline.
 
-\begin{center}
-	\begin{tabular}{ |c|c|c|c|c|c|c|c| } 
-		\hline
-		\multicolumn{2}{|c|}{} & \multicolumn{6}{c|}{Nodes} \\
-		\hline
-		BLAS & NB & 3 & 4 & 5 & 6 & 7 & 8 \\ 
-		\hline
-		OpenBLAS Serial & 000 & 32000 & 36000 & 41000 & 45000 & 48000 & 52000 \\ 
-		OpenBLAS OpenMP & 000 & 32000 & 36000 & 41000 & 45000 & 48000 & 52000 \\ 
- 		BLIS Serial     & 000 & 32000 & 36000 & 41000 & 45000 & 48000 & 52000 \\
-		BLIS OpenMP     & 000 & 32000 & 36000 & 41000 & 45000 & 48000 & 52000 \\ 
- 		\hline
-	\end{tabular}
-\end{center}
-
-
-\begin{table}
+\begin{table}[H]
 \begin{center}
 \begin{tabular}{ |l|c|c|c|c|c|c| } 
 \hline
-                & Nodes & N & NB & P & Q & $R_{max}$ (Gflops) \\ 
+                & \textbf{Nodes} & \textbf{N} & \textbf{NB} & \textbf{P} & \textbf{Q} & \textbf{$\mathbf{R_{max}}$} \textbf{(Gflops)} \\ 
 \hline
-OpenBLAS Serial & 3 & 32040 & 120 & 1 & 12 & 3.3720e+01 \\ 
+\textbf{OpenBLAS Serial} & 3 & 32040 & 120 & 1 & 12 & 3.3720e+01 \\ 
                 & 3 & 32040 & 120 & 2 &  6 & 3.1946e+01 \\
                 & 3 & 32040 & 120 & 3 &  4 & 3.3844e+01 \\
                 \cline{2-7} 
@@ -262,7 +243,7 @@ OpenBLAS Serial & 3 & 32040 & 120 & 1 & 12 & 3.3720e+01 \\
                 & 8 & 52320 & 120 & 2 & 16 & 9.5517e+01 \\ 
                 & 8 & 52320 & 120 & 4 &  8 & 9.5525e+01 \\ 
 \hline
-OpenBLAS OpenMP & 3 & 32032 & 88 & 1 & 3 & 3.7842e+01 \\ 
+\textbf{OpenBLAS OpenMP} & 3 & 32032 & 88 & 1 & 3 & 3.7842e+01 \\ 
                 \cline{2-7} 
                 & 4 & 37048 & 88 & 1 & 4 & 4.8657e+01 \\ 
                 \cline{2-7} 
@@ -278,7 +259,7 @@ OpenBLAS OpenMP & 3 & 32032 & 88 & 1 & 3 & 3.7842e+01 \\
 \hline
 \end{tabular}
 \end{center}
-\caption{\label{tab:table-name}HPL Cluster Baseline using OpenBLAS.}
+\caption{\label{tab:table-name}\textbf{HPL Whole Cluster Baseline using OpenBLAS.}}
 \end{table}
 
 
@@ -287,9 +268,9 @@ OpenBLAS OpenMP & 3 & 32032 & 88 & 1 & 3 & 3.7842e+01 \\
 \begin{center}
 \begin{tabular}{ |l|c|c|c|c|c|c| } 
 \hline
-                & Nodes & N & NB & P & Q & $R_{max}$ (Gflops) \\ 
+                & \textbf{Nodes} & \textbf{N} & \textbf{NB} & \textbf{P} & \textbf{Q} & \textbf{$\mathbf{R_{max}}$ (Gflops)} \\ 
 \hline
-BLIS Serial     & 3 & 32088 & 168 & 1 & 12 & 3.9005e+01 \\ 
+\textbf{BLIS Serial}     & 3 & 32088 & 168 & 1 & 12 & 3.9005e+01 \\ 
                 & 3 & 32088 & 168 & 2 &  6 & 3.9050e+01 \\ 
                 & 3 & 32088 & 168 & 3 &  4 & 3.8958e+01 \\ 
                 \cline{2-7} 
@@ -312,7 +293,7 @@ BLIS Serial     & 3 & 32088 & 168 & 1 & 12 & 3.9005e+01 \\
                 & 8 & 52416 & 168 & 2 & 16 & 1.0341e+02 \\ 
                 & 8 & 52416 & 168 & 4 &  8 & 1.0190e+02 \\ 
 \hline
-BLIS OpenMP     & 3 & 32000 & 200 & 1 & 3 & 3.5132e+01 \\ 
+\textbf{BLIS OpenMP}     & 3 & 32000 & 200 & 1 & 3 & 3.5132e+01 \\ 
                 \cline{2-7} 
                 & 4 & 37000 & 200 & 1 & 4 & 4.6953e+01 \\ 
                 \cline{2-7} 
@@ -328,7 +309,7 @@ BLIS OpenMP     & 3 & 32000 & 200 & 1 & 3 & 3.5132e+01 \\
 \hline
 \end{tabular}
 \end{center}
-\caption{\label{tab:table-name}HPL Cluster Baseline using BLIS.}
+\caption{\label{tab:table-name}\textbf{HPL Whole Cluster Baseline using BLIS.}}
 \end{table}
 
 
@@ -349,7 +330,7 @@ The baseline results are presented in Figure ??.
 		\caption{Hybrid OpenMPI/OpenMP}
 		\label{fig:subim2}
 	\end{subfigure}
-\caption{$R_{max}$ vs Nodes using 80\% memory.}
+\caption{\textbf{HPL $\mathbf{R_{max}}$ versus Node Count.}}
 \label{fig:image2}
 \end{figure}
 
@@ -384,7 +365,7 @@ Suggests... improve network efficiency?
 %
 \section{HPCC Baseline}
 
-The HPCC baseline benchmarks were run using all 8 nodes of the Aerin Cluster. The results for each benchmark are presented below.
+The HPCC benchmark suite was run using all 8 nodes of the Aerin Cluster to obtain a whole cluster baseline. The results for each benchmark are presented below.
 
 
 %
@@ -392,30 +373,7 @@ The HPCC baseline benchmarks were run using all 8 nodes of the Aerin Cluster. Th
 %
 \subsection{HPL}
 
-\begin{table}[H]
-\begin{center}
-\begin{tabular}{ |l|c|c|c|c|c|c| } 
-\hline
-                & Nodes & N & NB & P & Q & $R_{max}$ (Gflops) \\ 
-\hline
-OpenBLAS Serial & 8 & 52320 & 120 & 1 & 32 & \\ 
-                & 8 & 52320 & 120 & 2 & 16 & \\ 
-                & 8 & 52320 & 120 & 4 & 8  & \\ 
-\hline
-OpenBLAS OpenMP & 8 & 52360 &  88 & 1 & 8  & 8.685e+01 \\ 
-                & 8 & 52360 &  88 & 2 & 4  & 9.497e+01 \\ 
-\hline
-BLIS Serial     & 8 & 52416 & 168 & 1 & 32 & 8.866e+01 \\ 
-                & 8 & 52416 & 168 & 2 & 16 & 1.014e+02 \\ 
-                & 8 & 52416 & 168 & 4 & 8  & 1.005e+02 \\ 
-\hline
-BLIS OpenMP     & 8 & 52400 & 200 & 1 & 8  & 8.163e+01 \\ 
-                & 8 & 52400 & 200 & 2 & 4  & 8.841e+01 \\ 
-\hline
-\end{tabular}
-\end{center}
-\caption{\label{tab:table-name}HPCC HPL.}
-\end{table}
+HPL is included in HPCC. The performance results when running HPL as part of HPCC were similar to those when running HPL as a standalone benchmark.
 
 
 %
@@ -427,32 +385,36 @@ BLIS OpenMP     & 8 & 52400 & 200 & 1 & 8  & 8.163e+01 \\
 \begin{center}
 \begin{tabular}{ |l|l| } 
 \hline
-                & Results \\ 
+                & \textbf{Results} \\ 
 \hline
-OpenBLAS Serial & DGEMM\_N=5339 \\
+\textbf{OpenBLAS Serial} & DGEMM\_N=5339 \\
                 & StarDGEMM\_Gflops=3.59743 \\
                 & SingleDGEMM\_Gflops=4.91086 \\
 \hline
-OpenBLAS OpenMP & DGEMM\_N=10687 \\
+\textbf{OpenBLAS OpenMP} & DGEMM\_N=10687 \\
                 & StarDGEMM\_Gflops=14.4261 \\
                 & SingleDGEMM\_Gflops=14.426 \\
 \hline
-BLIS Serial     & DGEMM\_N=5349 \\
+\textbf{BLIS Serial}     & DGEMM\_N=5349 \\
                 & StarDGEMM\_Gflops=3.02439 \\
                 & SingleDGEMM\_Gflops=4.95418 \\
 \hline
-BLIS OpenMP     & DGEMM\_N=10695 \\
+\textbf{BLIS OpenMP}     & DGEMM\_N=10695 \\
                 & StarDGEMM\_Gflops=16.3355 \\
                 & SingleDGEMM\_Gflops=15.2042 \\
 \hline
 \end{tabular}
 \end{center}
-\caption{\label{tab:table-name}HPCC DGEMM.}
+\caption{\label{tab:table-name}\textbf{HPCC DGEMM.}}
 \end{table}
 
-Table ?? requires some interpretation. For the single-threaded serial versions of the OpenBLAS and BLIS libraries, the cluster consists of 32 processing cores, so the \verb|SingleDGEMM_Gflops| are per core. For the multi-threaded OpenMP versions of the libraries, the cluster consists of 8 processing nodes, so the \verb|SingleDGEMM_Gflops| are per node.
+Table 5.5 requires some interpretation.
 
-The results are consistent with the HPL benchmarks, which spend 96\%+ of the benchmark time in the BLAS \verb|dgemm| subroutine. 
+For the single-threaded serial versions of the OpenBLAS and BLIS libraries the cluster consists of 32 processing cores. The \verb|SingleDGEMM_Gflops| results are per core.
+
+For the multi-threaded OpenMP versions of the libraries, the cluster consists of 8 processing nodes. The \verb|SingleDGEMM_Gflops| results are per node.
+
+The results are consistent with the HPL benchmarks, which spends approximately 87\% of the benchmark run time in the BLAS \verb|dgemm| subroutine. 
 
 
 %
