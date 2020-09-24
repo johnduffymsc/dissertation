@@ -204,7 +204,7 @@ The results are plotted in Figure 5.4
 %
 \subsubsection{Observations}
 
-
+...
 
 
 %
@@ -500,7 +500,9 @@ For bandwidth measurement, the STREAM benchmark counts both the memory read and 
 
 For three out of the 4 BLAS library combinations, the observed \emph{Copy} vector operation bandwidth is approximately 5.4 GB/s.
 
-The Raspberry Pi 4 Model B is equipped with LPDDR4–3200 SDRAM (Low-Power Double Data Rate Static DRAM), with a maximum data transfer rate of 3200 MB/s (3.2 GB/s). The observed benchmark \emph{Copy} performance of 5.4 GB, when factored by 0.5 to yield 2.7 GB/s, is 80\% of the maximum data transfer rate. This suggests that the Raspberry Pi 4 Model B is making good use of the available memory bandwidth. 
+The Raspberry Pi 4 Model B is equipped with LPDDR4–3200 SDRAM (Low-Power Double Data Rate Static DRAM), with a maximum data transfer rate of 3200 MB/s (3.2 GB/s).
+
+The observed benchmark \emph{Copy} performance of 5.4 GB/s, when factored by 0.5 is 2.7 GB/s. This is 80\% of the maximum data transfer rate. This suggests that the Raspberry Pi 4 Model B is making good use of the available memory bandwidth. 
 
 
 
@@ -509,11 +511,17 @@ The Raspberry Pi 4 Model B is equipped with LPDDR4–3200 SDRAM (Low-Power Doubl
 %
 \subsection{PTRANS}
 
-\begin{table}[H]
+PTRANS is a \emph{global} benchmark which implements the transpose of a large matrix in memory using the cluster nodes operating in parallel. The main purpose of this benchmark is to test inter-node communication performance.
+
+The value of NB was selected to be optimum value from the 2 Node Baseline, with the corresponding value of N equating to 40\% of total memory. Since this not a computation benchmark, 40\% memory usage is sufficient to test inter-node communication without excessive run time. 
+
+
+
+\begin{table}[]
 \begin{center}
 \begin{tabular}{ |l|l| } 
 \hline
-                & Results \\
+\textbf{BLAS Library} & \textbf{Results} \\
 \hline
 OpenBLAS Serial & PTRANS\_GBs=0.465891 \\
                 & PTRANS\_n=26160 \\ 
@@ -541,8 +549,17 @@ BLIS OpenMP     & PTRANS\_GBs=0.637484 \\
 \hline
 \end{tabular}
 \end{center}
-\caption{\label{tab:table-name}HPCC PTRANS.}
+\caption{\label{tab:table-name}\textbf{HPCC PTRANS.}}
 \end{table}
+
+
+\subsubsection{Observations}
+
+Both the OpenBLAS and BLIS serial benchmark runs produce similar results. Similarly, both OpenMP benchmark runs produce similar results. This is to be expected, since this benchmark is not testing BLAS library performance. The difference between the serial and OpenMP performance is related to the topology of the cluster, either a pure OpenMPI or hybrid OpenMPI/OpenMP topology.
+
+With an average pure OpenMPI result of 0.475 GB/s, and a hybrid OpenMPI/OpenMP result of 0.627 GB/s, the inter-node communication performance is 32\% faster using the hybrid OpenMPI/OpenMP topology.
+
+This result is to be expected, since the node count is 32 in the pure OpenMPI topology, but only 8 in the hybrid OpenMPI/OpenMP topology. Even though the amount of matrix data to be transposed remains the same, the inter-node communication is reduced. The inter-node messages may be larger, but there are fewer messages with less node addressing overhead, making the cluster network more efficient. 
 
 
 %
@@ -550,11 +567,13 @@ BLIS OpenMP     & PTRANS\_GBs=0.637484 \\
 %
 \subsection{Random Access}
 
-\begin{table}[H]
+The Random Access benchmark tests the integer update performance of a large array in memory. Random numbers generated from a normal distribution and the Linear Congruential Generator algorithm are used. The unit of the results is GUPs (\emph{GigaUpdates per Second}).
+
+\begin{table}[]
 \begin{center}
 \begin{tabular}{ |l|l| } 
 \hline
-                & Results \\ 
+\textbf{BLAS Library} & \textbf{Results} \\ 
 \hline
 OpenBLAS Serial & MPIRandomAccess\_LCG\_N=2147483648 \\
                 & MPIRandomAccess\_LCG\_GUPs=0.000642364 \\
@@ -614,8 +633,23 @@ BLIS OpenMP     & MPIRandomAccess\_LCG\_N=2147483648 \\
 \hline
 \end{tabular}
 \end{center}
-\caption{\label{tab:table-name}HPCC Random Access.}
+\caption{\label{tab:table-name}\textbf{HPCC Random Access.}}
 \end{table}
+
+
+\subsubsection{Observations}
+
+For the \emph{global} benchmarks, the array size $N = 2,147,483,648$ represents 25\% of the cluster's total 32 GB of memory.
+
+For the \emph{single} pure OpenMPI benchmarks, the array size $N = 67,108,864$ represents 25\% of 1 GB of memory. Each of the 4 cores of each node is allocated 1 GB of the total 4 GB of memory, and the array is selected to be 25\% of this.
+
+And, for the \emph{single} hybrid OpenMPI/OpenMP benchmarks, the array size $N = 268,435,456$ represents 25\% of a single nodes's 4 GB of memory.
+
+The above array sizes are determined by the benchmark and not selected by the user.
+
+As expected, because this benchmark is not a test of computational performance, the pure OpenMPI topology performance is almost identical for both BLAS libraries. Similarly, the hybrid OpenMPI/OpenMP topology performance is almost identical for both BLAS libraries.
+
+ 
 
 
 %
