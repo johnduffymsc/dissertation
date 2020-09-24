@@ -218,9 +218,9 @@ This whole cluster baseline uses the optimum values of NB from the 2 node baseli
 \begin{center}
 \begin{tabular}{ |l|c|c|c|c|c|c| } 
 \hline
-                & \textbf{Nodes} & \textbf{N} & \textbf{NB} & \textbf{P} & \textbf{Q} & \textbf{$\mathbf{R_{max}}$} \textbf{(Gflops)} \\ 
+\textbf{BLAS Library} & \textbf{Nodes} & \textbf{N} & \textbf{NB} & \textbf{P} & \textbf{Q} & \textbf{$\mathbf{R_{max}}$} \textbf{(Gflops)} \\ 
 \hline
-\textbf{OpenBLAS Serial} & 3 & 32040 & 120 & 1 & 12 & 3.3720e+01 \\ 
+OpenBLAS Serial & 3 & 32040 & 120 & 1 & 12 & 3.3720e+01 \\ 
                 & 3 & 32040 & 120 & 2 &  6 & 3.1946e+01 \\
                 & 3 & 32040 & 120 & 3 &  4 & 3.3844e+01 \\
                 \cline{2-7} 
@@ -243,7 +243,7 @@ This whole cluster baseline uses the optimum values of NB from the 2 node baseli
                 & 8 & 52320 & 120 & 2 & 16 & 9.5517e+01 \\ 
                 & 8 & 52320 & 120 & 4 &  8 & 9.5525e+01 \\ 
 \hline
-\textbf{OpenBLAS OpenMP} & 3 & 32032 & 88 & 1 & 3 & 3.7842e+01 \\ 
+OpenBLAS OpenMP & 3 & 32032 & 88 & 1 & 3 & 3.7842e+01 \\ 
                 \cline{2-7} 
                 & 4 & 37048 & 88 & 1 & 4 & 4.8657e+01 \\ 
                 \cline{2-7} 
@@ -259,7 +259,7 @@ This whole cluster baseline uses the optimum values of NB from the 2 node baseli
 \hline
 \end{tabular}
 \end{center}
-\caption{\label{tab:table-name}\textbf{HPL Whole Cluster Baseline using OpenBLAS.}}
+\caption{\label{tab:table-name}\textbf{HPL Whole Cluster OpenBLAS Baseline.}}
 \end{table}
 
 
@@ -268,9 +268,9 @@ This whole cluster baseline uses the optimum values of NB from the 2 node baseli
 \begin{center}
 \begin{tabular}{ |l|c|c|c|c|c|c| } 
 \hline
-                & \textbf{Nodes} & \textbf{N} & \textbf{NB} & \textbf{P} & \textbf{Q} & \textbf{$\mathbf{R_{max}}$ (Gflops)} \\ 
+\textbf{BLAS Library} & \textbf{Nodes} & \textbf{N} & \textbf{NB} & \textbf{P} & \textbf{Q} & \textbf{$\mathbf{R_{max}}$ (Gflops)} \\ 
 \hline
-\textbf{BLIS Serial}     & 3 & 32088 & 168 & 1 & 12 & 3.9005e+01 \\ 
+BLIS Serial     & 3 & 32088 & 168 & 1 & 12 & 3.9005e+01 \\ 
                 & 3 & 32088 & 168 & 2 &  6 & 3.9050e+01 \\ 
                 & 3 & 32088 & 168 & 3 &  4 & 3.8958e+01 \\ 
                 \cline{2-7} 
@@ -293,7 +293,7 @@ This whole cluster baseline uses the optimum values of NB from the 2 node baseli
                 & 8 & 52416 & 168 & 2 & 16 & 1.0341e+02 \\ 
                 & 8 & 52416 & 168 & 4 &  8 & 1.0190e+02 \\ 
 \hline
-\textbf{BLIS OpenMP}     & 3 & 32000 & 200 & 1 & 3 & 3.5132e+01 \\ 
+BLIS OpenMP     & 3 & 32000 & 200 & 1 & 3 & 3.5132e+01 \\ 
                 \cline{2-7} 
                 & 4 & 37000 & 200 & 1 & 4 & 4.6953e+01 \\ 
                 \cline{2-7} 
@@ -309,12 +309,12 @@ This whole cluster baseline uses the optimum values of NB from the 2 node baseli
 \hline
 \end{tabular}
 \end{center}
-\caption{\label{tab:table-name}\textbf{HPL Whole Cluster Baseline using BLIS.}}
+\caption{\label{tab:table-name}\textbf{HPL Whole Cluster BLIS Baseline.}}
 \end{table}
 
 
 
-The baseline results are presented in Figure ??.
+The high value of $R_{max}$ for each node count is plotting in Figure 5.5.
 
 \begin{figure}[H]
 	\begin{subfigure}{1.0\textwidth}
@@ -365,7 +365,11 @@ Suggests... improve network efficiency?
 %
 \section{HPCC Baseline}
 
-The HPCC benchmark suite was run using all 8 nodes of the Aerin Cluster to obtain a whole cluster baseline. The results for each benchmark are presented below.
+The HPCC benchmark suite was run using all 8 nodes of the Aerin Cluster to obtain a whole cluster baseline.
+
+Recall from Chapter 2, \emph{single} indicates the benchmark is run on a single randomly selected node, \emph{star} indicates the benchmark in run independently on all nodes, and \emph{global} indicates the benchmark is run using all nodes in a coordinated manner.
+
+The results for each benchmark are presented below.
 
 
 %
@@ -385,21 +389,21 @@ HPL is included in HPCC. The performance results when running HPL as part of HPC
 \begin{center}
 \begin{tabular}{ |l|l| } 
 \hline
-                & \textbf{Results} \\ 
+\textbf{BLAS Library} & \textbf{Results} \\ 
 \hline
-\textbf{OpenBLAS Serial} & DGEMM\_N=5339 \\
+OpenBLAS Serial & DGEMM\_N=5339 \\
                 & StarDGEMM\_Gflops=3.59743 \\
                 & SingleDGEMM\_Gflops=4.91086 \\
 \hline
-\textbf{OpenBLAS OpenMP} & DGEMM\_N=10687 \\
+OpenBLAS OpenMP & DGEMM\_N=10687 \\
                 & StarDGEMM\_Gflops=14.4261 \\
                 & SingleDGEMM\_Gflops=14.426 \\
 \hline
-\textbf{BLIS Serial}     & DGEMM\_N=5349 \\
+BLIS Serial     & DGEMM\_N=5349 \\
                 & StarDGEMM\_Gflops=3.02439 \\
                 & SingleDGEMM\_Gflops=4.95418 \\
 \hline
-\textbf{BLIS OpenMP}     & DGEMM\_N=10695 \\
+BLIS OpenMP     & DGEMM\_N=10695 \\
                 & StarDGEMM\_Gflops=16.3355 \\
                 & SingleDGEMM\_Gflops=15.2042 \\
 \hline
@@ -408,13 +412,17 @@ HPL is included in HPCC. The performance results when running HPL as part of HPC
 \caption{\label{tab:table-name}\textbf{HPCC DGEMM.}}
 \end{table}
 
-Table 5.5 requires some interpretation.
+The DGEMM benchmark measures the performance of double precision real \emph{matrix-matrix multiplication}. The benchmark results are presented in Table 5.5.
 
 For the single-threaded serial versions of the OpenBLAS and BLIS libraries the cluster consists of 32 processing cores. The \verb|SingleDGEMM_Gflops| results are per core.
 
 For the multi-threaded OpenMP versions of the libraries, the cluster consists of 8 processing nodes. The \verb|SingleDGEMM_Gflops| results are per node.
 
+\subsubsection{Observations}
+
 The results are consistent with the HPL benchmarks, which spends approximately 87\% of the benchmark run time in the BLAS \verb|dgemm| subroutine. 
+
+Of note  is the \emph{jitter} between the \emph{single} and \emph{star} results, particularly the OpenBLAS Serial and BLIS Serial results. This is explained by the fact that a \emph{single} randomly selected core running the benchmark has exclusive access to the L2 cache. The \emph{single} result is consistent with 1 Core Baseline results. In the \emph{star} case, all cores on each node are running the benchmark and have to share access to the L2 cache. The \emph{star} result is consistent with the 1 Node Baseline results.
 
 
 %
@@ -422,11 +430,17 @@ The results are consistent with the HPL benchmarks, which spends approximately 8
 %
 \subsection{STREAM}
 
-\begin{table}[H]
+The STREAM benchmark measures sustained memory bandwidth by performing four vector operations, \emph{Copy}, \emph{Scale}, \emph{Sum} and \emph{Triad}, on vectors which are at least 4 times the size of the L2 cache. This ensures the benchmark is measuring main memory access performance.
+
+For the purposes of measuring pure memory bandwidth the \emph{Copy} operation is the most appropriate. This measures the copying of a vector from one memory location to another, without any computation on the vector data.   
+
+The STREAM benchmark results are presented in table 5.6.
+
+\begin{table}[]
 \begin{center}
 \begin{tabular}{ |l|l| } 
 \hline
-                & Results \\ 
+\textbf{BLAS Library} & \textbf{Results} \\ 
 \hline
 OpenBLAS Serial & STREAM\_VectorSize=28514400 \\
                 & STREAM\_Threads=1 \\
@@ -474,8 +488,20 @@ BLIS OpenMP     & STREAM\_VectorSize=114406666 \\
 \hline
 \end{tabular}
 \end{center}
-\caption{\label{tab:table-name}HPCC STREAM.}
+\caption{\label{tab:table-name}\textbf{HPCC STREAM.}}
 \end{table}
+
+
+\subsubsection{Observations}
+
+As noted previously, the \emph{single} OpenBLAS Serial and BLIS Serial benchmarks relate to single core. And as indicated in the results, the maximum observed single core memory bandwidth is approximately 5.4 MB/s. The \emph{star} serial results of approximately 0.94 GB/s need to be factored by the node count to measure the whole node main memory bandwidth, which is then the same order of magnitude but reduced due to L2 cache collisions. 
+
+For bandwidth measurement, the STREAM benchmark counts both the memory read and the memory write as a memory movement. This differs from most memory bandwidth benchmarks in which the read and write from one memory location to another count as a single memory movement. Therefore, for the \emph{Copy} operation, the benchmark results needs to be factored by 0.5 to align with other benchmarks and memory specifications.
+
+For three out of the 4 BLAS library combinations, the observed \emph{Copy} vector operation bandwidth is approximately 5.4 GB/s.
+
+The Raspberry Pi 4 Model B is equipped with LPDDR4–3200 SDRAM (Low-Power Double Data Rate Static DRAM), with a maximum data transfer rate of 3200 MB/s (3.2 GB/s). The observed benchmark \emph{Copy} performance of 5.4 GB, when factored by 0.5 to yield 2.7 GB/s, is 80\% of the maximum data transfer rate. This suggests that the Raspberry Pi 4 Model B is making good use of the available memory bandwidth. 
+
 
 
 %
