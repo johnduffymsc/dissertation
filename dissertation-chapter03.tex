@@ -20,12 +20,13 @@ The computational complexity of $\mathbf{C} = \mathbf{AB}$, where $\mathbf{A}$, 
 
 In 1969, Volker Strassen \cite{strassen} proved the computational complexity can be reduced to $\mathcal{O}(N^{\log _{2}7+o(1)})\approx \mathcal{O}(N^{2.8074})$. This is achieved by subdividing each matrix into sub-matrices of dimension $2 \times 2$. By doing so, and introducing intermediate matrices, it is possible to reduce the number of multiplications required from 8 to 7 for each sub-matrix multiplication. This is called the \emph{Strassen Algorithm}.
 
-In 1990, Don Coppersmith and Shmuel Winograd \cite{coppersmith-winograd} further reduced the complexity to $\mathcal{O}(n^{2.375477})$. The \emph{Coppersmith-Winograd Algorithm} was further improved by Virginia Vassilevska Williams \cite{williams} in 2012, and most recently in 2014 by François Le Gallf \cite{le-gall}, which reduced the complexity to $\mathcal {O}(n^{2.3728639})$.
+In 1990, Don Coppersmith and Shmuel Winograd \cite{coppersmith-winograd} further reduced the complexity to $\mathcal{O}(n^{2.375477})$. The \emph{Coppersmith-Winograd Algorithm} was further improved by Virginia Vassilevska Williams \cite{williams} in 2012, and most recently in 2014 by François Le Gall \cite{le-gall}, which reduced the complexity to $\mathcal {O}(n^{2.3728639})$.
 
 However, the reductions in computational complexity beyond the naive algorithm also add implementation complexity, and potential numerical instability. The \emph{Strassen Algorithm}, for example, introduces \emph{subtraction} operations which are a source of rounding errors. And the benefits may not outweigh the implementation complexity unless the matrices are very large. For this reason the naive algorithm is usually implemented in practice.    
 
 The $\mathcal{O}(n^3)$ complexity of \emph{matrix-matrix multiplication} plays a central role in HPC benchmarks because, compared to other matrix operations, it has the highest $\frac{\text{computation}}{\text{memory movement}}$ ratio. This tests data movement from main memory, through the L1/L2/L3 caches, to the processor registers for computational operations. In a computer cluster it also tests network connectivity. It is for this reason that BLAS libraries usually indicate performance, and comparison with alternative libraries, with plots of \verb|dgemm| Gflops versus matrix size.
 
+\emph{Matrix-matrix multiplication} is a BLAS (Basic Linear Algebra Subroutines) Level 3 operation. BLAS libraries such as GotoBLAS (no longer under active development), and it's derivatives OpenBLAS and BLIS, achieve high performance \emph{matrix-matrix multiplication} through effective use of the L1/L2/L3 caches. The inherent looping over \emph{dot product} operations is carefully structured so that data is retained in the caches for maximum reuse.     
 
 %
 % SECTION
@@ -79,8 +80,30 @@ Because $\mathbf{L}$ is in lower-triangular form, (3.5) is is easily solved usin
 %
 % SUB SECTION
 %
-\subsection{LU Factorisation Blocking}
+\subsection{Block LU Factorisation}
 
+A \emph{block algorithm} is an algorithm which operates on \emph{blocks} of data instead of scalar values \cite{blocklu}. In the case of \emph{block LU factorisation}, a matrix $\mathbf{A} \in \mathbf{R}^{n \times n}$ is partitioned into \emph{blocks} $\mathbf{A}_{ij} \in \mathbf{R}^{nb \times nb}$ and factorised into $\mathbf{L}_{ij}, \mathbf{U}_{ij} \in \mathbf{R}^{nb \times nb}$. 
+
+
+\begin{align}
+\mathbf{A} &= \begin{pmatrix}
+A_{11} & A_{12} & A_{13} \\
+A_{21} & A_{22} & A_{23} \\
+A_{31} & A_{32} & A_{33} 
+\end{pmatrix}\\
+&= \begin{pmatrix}
+L_{11} & 0      & 0 \\
+L_{21} & L_{22} & 0 \\
+L_{31} & L_{32} & L_{33} 
+\end{pmatrix}
+\begin{pmatrix}
+U_{11} & U_{12} & U_{13} \\
+0      & U_{22} & U_{23} \\
+0      & 0      & U_{33} 
+\end{pmatrix}
+\end{align}
+
+Dense matrices are easily partitioned into \emph{blocks}, and the subsequent LU decomposition, which uses optimised BLAS Level 3 \emph{matrix-matrix multiplication}, can be distributed across multiple processes using MPI for parallel processing.
 
 
 %
@@ -94,19 +117,24 @@ As previously stated, HPL solves a system of equations of the form:
 \mathbf{Ax} = \mathbf{b},\text{ where }\mathbf{A} \in \mathbf{R}^{n\times n}\text{ and }\mathbf{x}, \mathbf{b} \in \mathbf{R}^n
 \end{equation} 
 
-The system is solved by distributing the data over a two dimensional grid of processors, $P \times Q$, on a cluster of \emph{distributed memory} computers \cite{linpack-ppf}. HPL requires an implementation of the Message Passing Interface (MPI) for the data distribution. The Aerin Cluster uses the OpenMPI implementation. In a pure MPI topology, each grid element represents a processor core of a CPU. In a hybrid OpenMPI/OpenMP topology, each grid element represents a cluster node, and OpenMP distributes data between the cores of the node.   
+The HPL algorithm \cite{hpl-algorithm} perform LU factorisation of $\mathbf{A}$ with partial row pivoting. The $\mathbf{L}\mathbf{y}=\mathbf{b}$ forward substitution is conducted during the factorisation process. The $\mathbf{U}\mathbf{x}=\mathbf{y}$ backward subsitution is the final step. 
 
-HPL partitions the data into \emph{blocks} of dimension $NB \times NB$, where $NB$ is referred to as the \emph{block size}. The data blocks are distributed cyclically between the elements of the processor grid for load balancing and scalability. 
+The matrix $\mathbf{A}$ is partitioned into \emph{blocks} of dimension $nb \times nb$, where $nb$ is the \emph{block size}.
 
-For optimum performance the problem dimension $n$ should be selected to utilise all available memory, and be integer multiple of the block size $NB$. Equation (3.14) can be used to determine the problem dimension N for a given block size $NB$ and a required total memory usage.
+For optimum performance the problem dimension $n$ should be selected to utilise all available memory, and be an integer multiple of $nb$. Equation (3.9) can be used to determine the problem dimension $n$ for a block size $nb$ and a required total memory usage.
 
 \begin{equation}
-N = \left[\left(memory\_percent \sqrt{\frac{memory\_in\_gb \times 1024^3}{8}}\right) \div NB\right] \times NB
+n = \left[\left(memory\_percent \sqrt{\frac{memory\_in\_gb \times 1024^3}{8}}\right) \div nb\right] \times nb
 \end{equation}
 
 The division by 8 in the square root is the size in bytes of a double precision floating point number.
 
-The LU factorisation is logically partitioned using the same block size $NB$ used for data distribution.
+The system is solved by distributing the \emph{blocks} over a two dimensional $P \times Q$ grid of processors on a cluster of \emph{distributed memory} computers \cite{linpack-ppf}. MPI is used for \emph{block} distribution.
+
+In a pure MPI topology, each $P \times Q$ grid element represents a processor core. In a hybrid OpenMPI/OpenMP topology, each grid element represents a cluster node, and OpenMP is used to distributes data between the cores.   
+
+
+The LU factorisation progresses in columns of processes, of width $nb$.
 
 
 %
@@ -121,6 +149,24 @@ Like HPL, the HPCG benchmark, developed by Dongarra, Heroux and Luszczek \cite{h
 \end{equation} 
 
 This is where the similarity with HPL ends.
+
+\begin{figure}[]
+	\begin{subfigure}{1.0\textwidth}
+		\centering
+		\includegraphics[width=0.6\textwidth]{sparse-matrix-cvxbqp1.png}
+		\caption{\textbf{Sparse Matrix.} Sparse matrix \texttt{cvxbqp1} generated from a convex... quadratic programming proble.}
+		\label{fig:subim1}
+	\end{subfigure}
+	\par\bigskip
+	\begin{subfigure}{1.0\textwidth}
+		\centering
+		\includegraphics[width=0.6\textwidth]{sparse-matrix-cvxbqp1-graph.png}
+		\caption{\textbf{Graph of Sparse Matrix cvxbqp1.}}
+		\label{fig:subim2}
+	\end{subfigure}
+\caption{\textbf{Sparse Matrix Collection...}}
+\label{fig:image2}
+\end{figure}
 
 The HPCG system of equations is a sparse system resulting from a discretised three dimensional partial differential equation model. The benchmark computes \emph{preconditioned Conjugate Gradient} iterations for the sparse system.
 

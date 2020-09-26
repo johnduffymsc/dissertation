@@ -1,3 +1,7 @@
+%
+% Chapter 1
+%
+
 @online{fujitsu-fugaku,
   author = {Fujitsu},
   title = {Fugaku Specification},
@@ -20,6 +24,10 @@
   year = 2020,
   url = {https://www.top500.org/lists/green500/list/2020/06/},
 }
+
+%
+% Chapter 2
+%
 
 @article{turing,
     author = {Turing, A. M.},
@@ -57,14 +65,70 @@
   url = {https://www.kernel.org/doc/Documentation/networking/scaling.txt},
 }
 
+%
+% Chapter 3
+%
 
+@article{strassen,
+	Author = {Strassen, Volker},
+	Da = {1969/08/01},
+	Date-Added = {2020-09-17 20:11:58 +0100},
+	Date-Modified = {2020-09-17 20:11:58 +0100},
+	Doi = {10.1007/BF02165411},
+	Id = {Strassen1969},
+	Isbn = {0945-3245},
+	Journal = {Numerische Mathematik},
+	Number = {4},
+	Pages = {354--356},
+	Title = {Gaussian elimination is not optimal},
+	Ty = {JOUR},
+	Url = {https://doi.org/10.1007/BF02165411},
+	Volume = {13},
+	Year = {1969},
+	Bdsk-Url-1 = {https://doi.org/10.1007/BF02165411}
+}
 
+@article{coppersmith-winograd,
+	Author = {Don Coppersmith and Shmuel Winograd},
+	Doi = {https://doi.org/10.1016/S0747-7171(08)80013-2},
+	Issn = {0747-7171},
+	Journal = {Journal of Symbolic Computation},
+	Note = {Computational algebraic complexity editorial},
+	Number = {3},
+	Pages = {251 - 280},
+	Title = {Matrix multiplication via arithmetic progressions},
+	Url = {http://www.sciencedirect.com/science/article/pii/S0747717108800132},
+	Volume = {9},
+	Year = {1990},
+	Bdsk-Url-1 = {http://www.sciencedirect.com/science/article/pii/S0747717108800132},
+	Bdsk-Url-2 = {https://doi.org/10.1016/S0747-7171(08)80013-2}
+}
+
+@inproceedings{williams,
+author = {Williams, Virginia Vassilevska}, title = {Multiplying Matrices Faster than Coppersmith-Winograd}, year = {2012}, isbn = {9781450312455}, publisher = {Association for Computing Machinery}, address = {New York, NY, USA}, url = {https://doi.org/10.1145/2213977.2214056}, doi = {10.1145/2213977.2214056}, booktitle = {Proceedings of the Forty-Fourth Annual ACM Symposium on Theory of Computing}, pages = {887–898}, numpages = {12}, keywords = {matrix multiplication}, location = {New York, New York, USA}, series = {STOC '12} }
+
+@inproceedings{le-gall, author = {Le Gall, Fran\c{c}ois}, title = {Powers of Tensors and Fast Matrix Multiplication}, year = {2014}, isbn = {9781450325011}, publisher = {Association for Computing Machinery}, address = {New York, NY, USA}, url = {https://doi.org/10.1145/2608628.2608664}, doi = {10.1145/2608628.2608664}, booktitle = {Proceedings of the 39th International Symposium on Symbolic and Algebraic Computation}, pages = {296–303}, numpages = {8}, keywords = {matrix multiplication, algebraic complexity theory}, location = {Kobe, Japan}, series = {ISSAC '14} }
 
 @article{linpack-ppf,
 	Author = "Jack Dongarra and Piotr Luszczek and Antoine Petitet",
 	Title = "The LINPACK Benchmark: past, present and future",
 	Year = "2003"
 }
+
+@misc{blocklu,
+    author = {James W. Demmel and Nicholas J. Higham and Robert S. Schreiber},
+    title = {Block LU factorization},
+    year = {1995}
+}
+
+@online{hpl-algorithm,
+  author = {Petitet and Whaley and Dongarra and Cleary},
+  title = {HPL Algorithm},
+  year = 2018,
+  url = {},
+}
+
+
 	
 @article{hpcg-benchmark,
 	Author = "Jack Dongarra and Michael Heroux and Piotr Luszczek",
@@ -86,49 +150,10 @@
 	Year = {1997}
 }
 
+%
+% Chapter 4
+%
 
-@article{strassen,
-	Author = {Strassen, Volker},
-	Da = {1969/08/01},
-	Date-Added = {2020-09-17 20:11:58 +0100},
-	Date-Modified = {2020-09-17 20:11:58 +0100},
-	Doi = {10.1007/BF02165411},
-	Id = {Strassen1969},
-	Isbn = {0945-3245},
-	Journal = {Numerische Mathematik},
-	Number = {4},
-	Pages = {354--356},
-	Title = {Gaussian elimination is not optimal},
-	Ty = {JOUR},
-	Url = {https://doi.org/10.1007/BF02165411},
-	Volume = {13},
-	Year = {1969},
-	Bdsk-Url-1 = {https://doi.org/10.1007/BF02165411}
-}
-
-
-@article{coppersmith-winograd,
-	Author = {Don Coppersmith and Shmuel Winograd},
-	Doi = {https://doi.org/10.1016/S0747-7171(08)80013-2},
-	Issn = {0747-7171},
-	Journal = {Journal of Symbolic Computation},
-	Note = {Computational algebraic complexity editorial},
-	Number = {3},
-	Pages = {251 - 280},
-	Title = {Matrix multiplication via arithmetic progressions},
-	Url = {http://www.sciencedirect.com/science/article/pii/S0747717108800132},
-	Volume = {9},
-	Year = {1990},
-	Bdsk-Url-1 = {http://www.sciencedirect.com/science/article/pii/S0747717108800132},
-	Bdsk-Url-2 = {https://doi.org/10.1016/S0747-7171(08)80013-2}
-}
-
-
-@inproceedings{williams,
-author = {Williams, Virginia Vassilevska}, title = {Multiplying Matrices Faster than Coppersmith-Winograd}, year = {2012}, isbn = {9781450312455}, publisher = {Association for Computing Machinery}, address = {New York, NY, USA}, url = {https://doi.org/10.1145/2213977.2214056}, doi = {10.1145/2213977.2214056}, booktitle = {Proceedings of the Forty-Fourth Annual ACM Symposium on Theory of Computing}, pages = {887–898}, numpages = {12}, keywords = {matrix multiplication}, location = {New York, New York, USA}, series = {STOC '12} }
-
-
-@inproceedings{le-gall, author = {Le Gall, Fran\c{c}ois}, title = {Powers of Tensors and Fast Matrix Multiplication}, year = {2014}, isbn = {9781450325011}, publisher = {Association for Computing Machinery}, address = {New York, NY, USA}, url = {https://doi.org/10.1145/2608628.2608664}, doi = {10.1145/2608628.2608664}, booktitle = {Proceedings of the 39th International Symposium on Symbolic and Algebraic Computation}, pages = {296–303}, numpages = {8}, keywords = {matrix multiplication, algebraic complexity theory}, location = {Kobe, Japan}, series = {ISSAC '14} }
 
 %
 % Chapter 5
