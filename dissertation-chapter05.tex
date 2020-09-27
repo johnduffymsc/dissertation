@@ -3,7 +3,7 @@
 %
 \section{Theoretical Maximum Performance}
 
-The Raspberry Pi 4 Model B is based on the Broadcom BCM2711 System on a Chip (SoC). The BCM2711 includes four Arm Cortex-A72 cores clocked at 1.5 GHz.
+The Raspberry Pi 4 Model B is based on the Broadcom BCM2711 \emph{System on a Chip} (SoC). The BCM2711 includes four Arm Cortex-A72 cores clocked at 1.5 GHz.
 
 Each core of the Arm Cortex-A72 implements the 64-bit Armv8-A ISA (Instruction Set Architecture). This instruction set includes Advanced SIMD instructions which operate on a single 128-bit SIMD pipeline. This pipeline can conduct two 64-bit double precision \emph{floating point operations} per clock cycle.  
 
@@ -29,15 +29,15 @@ For maximum performance, the HPL benchmark requires a problem size which utilise
 
 \begin{figure}[h]
 	\centering	
-	\includegraphics[width=0.9\textwidth]{screenshot-memory.png}
+	\includegraphics[width=0.95\textwidth]{screenshot-memory.png}
 	\caption{\textbf{Available Memory}. Output from \texttt{dmesg | grep Memory} indicates the memory usage by the Linux kernel, and the memory available to applications and benchmarks}
 \end{figure}
 
-As can be seen in Figure 5.1, 3.6 GB of memory (3,783,868 KB) is available to applications and benchmarks per node. This equates to 90\% of the total 4 GB (4,194,304 KB) per node. Any transient use of more than 90\% of memory will result in memory pages being swapped to permanent storage, which will negatively impact benchmark performance.
+As can be seen in Figure 5.1, 3.6 GB of memory (3,783,864 KB) is available to applications and benchmarks per node. This equates to 90\% of the total 4 GB (4,194,304 KB) per node. Any transient use of more than 90\% of memory will result in memory pages being swapped to permanent storage, which will negatively impact benchmark performance.
 
-Therefore, for the HPL baseline benchmarks, 80\% of available memory was chosen for the problem size. This is also the amount suggested as an initial \emph{good guess} in the HPL Frequently Asked Questions \cite{hpl-faq}.
+Therefore, for the HPL baseline benchmarks, 80\% of available memory was chosen for the problem size. This is also the amount suggested as an initial \emph{good guess} in HPL Frequently Asked Questions \cite{hpl-faq}.
 
-The above necessarily results in the baseline performance only being able to achieve 80\% of $R_{peak}$, at best. This is 4.8 Gflops for a single core, 19.2 Gflops for a single node, and 153.6 Gflops for the 8 node cluster. These values are indicated on the HPL baseline performance plots.
+The above necessarily results in the baseline performance only being able to achieve 80\% of $R_{peak}$, at best. This is 4.8 Gflops for a single core, 19.2 Gflops for a single node, 38.4 Gflops for two nodes, and 153.6 Gflops for the 8 node cluster. These values are indicated on the HPL baseline performance plots.
 
 
 %
@@ -59,7 +59,7 @@ Baseline performance was investigated for the single core, single node, two node
 
 The purpose of this investigation is to determine the performance of a single core running a single \verb|xhpl| process, with the single core having exclusive access to the shared L2 cache. 
 
-As discussed in the previous section, the HPL problem size is restricted to 80\% of available memory. In the case, 80\% of a single node's 4 GB. Using values of block size NB from 32 to 256, as suggested by HPL Frequently Asked Questions \cite{hpl-faq}, and using equation ?? to ensure the problem size N is an integer multiple of NB, results in Table 5.1 of NB and N combinations.
+As discussed in the previous section, the HPL problem size is restricted to 80\% of available memory. In the case, 80\% of a single node's 4 GB. Using values of block size NB from 32 to 256, as suggested by HPL Frequently Asked Questions \cite{hpl-faq}, and using equation 3.9 to ensure the problem size N is an integer multiple of NB, results in Table 5.1 of NB and N combinations.
 
 \begin{table}[H]
 \begin{center}
@@ -99,7 +99,7 @@ The benchmark results are plotted in Figure 5.2.
 \label{fig:image2}
 \end{figure}
 
-Note: There is no benefit in using a hybrid OpenMPI/OpenMP topology for a single core running a single \verb|xhpl| process, as only a single thread is used. However, to ensure similar results were achieved, both a pure OpenMPI and hybrid OpenMPI/OpenMP were benchmarked.
+Note: There is no actual benefit in using a hybrid OpenMPI/OpenMP topology for a single core running a single \verb|xhpl| process, as only a single thread is used. However, to ensure similar results were achieved, both pure OpenMPI and hybrid OpenMPI/OpenMP topologies were benchmarked.
 
 %
 % SUB SUB SECTION
@@ -108,7 +108,7 @@ Note: There is no benefit in using a hybrid OpenMPI/OpenMP topology for a single
 
 As expected, there is no significant performance difference between the two topologies for both OpenBLAS and BLIS.
 
-OpenBLAS and BLIS both attain 80\% $R_{peak}$. Without competition from additional cores for access to the L2 cache, both libraries are able to efficiently stream data from main memory, through the L1 and L2 caches, to the core registers for computation. 
+OpenBLAS and BLIS both attain 80\% $R_{peak}$. Without competition from additional cores for access to the L2 cache, both libraries are able to efficiently stream data from main memory, through the L1 and L2 caches, to the core registers. 
 
 
 %
@@ -127,11 +127,13 @@ The benchmark results are plotted in Figure 5.3.
 %
 \subsubsection{Observations}
 
-As anticipated, there is indeed a reduction in performance per core, 80\% $R_{peak}$ in no longer attained.
+As anticipated, there is indeed a reduction in performance per core. The 80\% of $R_{peak}$, 19.2 Gflops for the combined 4 cores, in no longer attained.
 
-Pure OpenMPI topology attains a $R_{max}$ of ?? with an NB of ??.
+The pure OpenMPI topology attains an $R_{max}$ of 15.219 Gflops using the BLIS library with an NB of 184.
 
-The hybrid OpenMPI/OpenMP topology attains a $R_{max}$ of ?? with an NB of ??.
+The hybrid OpenMPI/OpenMP topology attains an $R_{max}$ of 16.299 Gflops using the BLIS library with an NB of 232.
+
+The above represent 79.27\% and 84.89\% of 80\% $R_{peak}$, respectively.
 
 \begin{figure}[H]
 	\begin{subfigure}{1.0\textwidth}
@@ -179,9 +181,9 @@ For this baseline the HPL problem size is restricted to 80\% of 2 nodes combined
 \caption{\label{tab:table-name}\textbf{2 Node NB and N Combinations.}  Block size NB and problem size N combinations for NB between 32 and 256 using 80\% of 8 GB of memory}
 \end{table}
 
-The results are plotted in Figure 5.4
+The benchmark results are plotted in Figure 5.4
 
-\begin{figure}[H]
+\begin{figure}[]
 	\begin{subfigure}{1.0\textwidth}
 		\centering
 		\includegraphics[width=0.85\textwidth]{openmpi_gflops_vs_nb_2_node_80_percent_memory.pdf}
@@ -204,7 +206,15 @@ The results are plotted in Figure 5.4
 %
 \subsubsection{Observations}
 
-...
+For 2 nodes 80\% $R_{peak}$ is 38.4 Gflops.
+
+The pure OpenMPI topology attains an $R_{max}$ of 27.814 Gflops using the BLIS library with an NB of 168.
+
+The hybrid OpenMPI/OpenMP topology attains an $R_{max}$ of 30.312 Gflops using the BLIS library with an NB of 200.
+
+The above represent 72.43\% and 78.94\% of 80\% $R_{peak}$, respectively.
+
+Compared to the single node case, 2 node performance is reduced by 17.8\% for the pure OpenMPI topology, and 15.5\% for the hybrid OpenMPI/OpenMP topology, due to inter-node MPI process communication and network overhead.
 
 
 %
@@ -855,18 +865,18 @@ When running on a single node, as indicated in Figures 5.6, almost 100\% of CPU 
 \begin{figure}[]
 	\begin{subfigure}{1.0\textwidth}
 		\centering
-		\includegraphics[width=1.0\textwidth]{top-1node-serial.png}
+		\includegraphics[width=0.95\textwidth]{top-1node-serial.png}
 		\caption{Serial Benchmark.}
 		\label{fig:subim1}
 	\end{subfigure}
 	\par\bigskip
 	\begin{subfigure}{1.0\textwidth}
 		\centering
-		\includegraphics[width=1.0\textwidth]{top-1node-openmp.png}
+		\includegraphics[width=0.95\textwidth]{top-1node-openmp.png}
 		\caption{OpenMP Benchmark.}
 		\label{fig:subim2}
 	\end{subfigure}
-\caption{\textbf{Single node \texttt{top} command output.} CPU time is almost exclusively spent in \texttt{us} (user) space when running both serial and OpenMP benchmarks.}
+\caption{\textbf{Single node \texttt{top} command output.} CPU time is almost exclusively spent in \emph{user space} (\texttt{us}) when running both serial and OpenMP benchmarks. Minimal time is spent \emph{idling} (\texttt{id}) or servicing software interrupts (\texttt{si}).}
 \label{fig:image2}
 \end{figure}
 
@@ -875,18 +885,18 @@ As seen in the 2 Node and Whole Cluster baseline results, when cores/nodes are n
 \begin{figure}[]
 	\begin{subfigure}{1.0\textwidth}
 		\centering
-		\includegraphics[width=1.0\textwidth]{top-8node-serial.png}
+		\includegraphics[width=0.95\textwidth]{top-8node-serial.png}
 		\caption{Serial Benchmark.}
 		\label{fig:subim2}
 	\end{subfigure}
 	\par\bigskip
 	\begin{subfigure}{1.0\textwidth}
 		\centering
-		\includegraphics[width=1.0\textwidth]{top-8node-openmp.png}
+		\includegraphics[width=0.95\textwidth]{top-8node-openmp.png}
 		\caption{OpenMP Benchmark.}
 		\label{fig:subim2}
 	\end{subfigure}
-\caption{\textbf{8 node \texttt{top} command output.} Once networked together in a cluster, a significant proportion of each node's CPU time is spent in \texttt{sy} (kernel) space when running both serial and OpenMP benchmarks, and \texttt{id} (idling) for the OpenMP case. The images show observed worst case. Using \texttt{cat /proc/softirqs}, the \texttt{si} soft interrupt CPU usage was observed to relate to network receive activity.} 
+\caption{\textbf{8 node \texttt{top} command output.} Once networked together in a cluster, a significant proportion of each node's CPU time is spent in \emph{kernel space} (\texttt{sy}) when running both serial and OpenMP benchmarks, and \emph{idling} (\texttt{id}) in the OpenMP case. The images show observed worst case. Using \texttt{cat /proc/softirqs}, the software interrupt (\texttt{si}) CPU usage was observed to relate to network receive activity.} 
 \label{fig:image2}
 \end{figure}
 
