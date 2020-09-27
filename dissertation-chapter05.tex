@@ -721,6 +721,66 @@ The...
 %
 \subsection{Network Bandwidth and Latency}
 
+The Network Bandwidth and Latency benchmark measures the time to send MPI messages between cluster processes. Latency is measured using 8 byte messages, and bandwidth is measured using 2,000,000 byte messages.
+
+The major benchmark results are presented in table 5.10.
+
+\begin{table}[h]
+\begin{center}
+\begin{tabular}{ |c| } 
+\hline
+\textbf{OpenBLAS Serial} \\ 
+\hline
+Max Ping Pong Latency:                 0.189604 msecs \\
+Randomly Ordered Ring Latency:         0.192830 msecs \\
+Min Ping Pong Bandwidth:             107.306358 MB/s \\
+Naturally Ordered Ring Bandwidth:     61.385709 MB/s \\
+Randomly  Ordered Ring Bandwidth:     16.907255 MB/s \\
+\hline
+\textbf{OpenBLAS OpenMP} \\ 
+\hline
+Max Ping Pong Latency:                 0.099864 msecs \\
+Randomly Ordered Ring Latency:         0.075013 msecs \\
+Min Ping Pong Bandwidth:             112.574381 MB/s \\
+Naturally Ordered Ring Bandwidth:     70.511474 MB/s \\
+Randomly  Ordered Ring Bandwidth:     73.119334 MB/s \\
+\hline
+\textbf{BLIS Serial} \\ 
+\hline
+Max Ping Pong Latency:                 0.191411 msecs \\
+Randomly Ordered Ring Latency:         0.189172 msecs \\
+Min Ping Pong Bandwidth:             107.075234 MB/s \\
+Naturally Ordered Ring Bandwidth:     51.395031 MB/s \\
+Randomly  Ordered Ring Bandwidth:     16.492559 MB/s \\
+\hline
+\textbf{BLIS OpenMP} \\ 
+\hline
+Max Ping Pong Latency:                 0.101356 msecs \\
+Randomly Ordered Ring Latency:         0.070292 msecs \\
+Min Ping Pong Bandwidth:             112.788813 MB/s \\
+Naturally Ordered Ring Bandwidth:     99.948389 MB/s \\
+Randomly  Ordered Ring Bandwidth:     72.585888 MB/s \\
+\hline
+\end{tabular}
+\end{center}
+\caption{\label{tab:table-name}\textbf{HPCC Network Bandwidth and Latency.}}
+\end{table}
+
+The BLAS libraries are not used, but the results for all four library combinations are included for consistency with other benchmarks results.
+
+A clear distinction needs to be made between Gigabits and Gigabytes/Megabytes. Using the standard \emph{byte} of 8 bits, 1 Gigabits per second (1 Gb/s) is 125 Megabytes per second (125 MB/s). This is the theoretical maximum bandwidth of the Raspberry Pi 4's Gigabit Ethernet interface.
+
+
+\subsubsection{Observations}
+
+The benchmark results are specified in Megabytes per second (MB/s).
+
+The average OpenMP topology bandwidth is 112.682 MB/s, which is 90\% of the maximum theoretical bandwidth. The is consistent with the 92.2\% of \emph{node-to-node} maximum theoretical bandwidth, as measured using the Linux \verb|iperf| command in Section ??.
+
+
+
+The average serial topology bandwidth is 107.548 MB/s, which is 86\% of the maximum theoretical bandwidth. It is expected to observe a lower bandwidth with the serial topology due to the increased MPI process count compared to the the OpenMP topology. 
+
 
 
 %
