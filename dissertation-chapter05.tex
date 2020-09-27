@@ -361,8 +361,7 @@ A combination of \emph{square} and \emph{less square} processor grids produced o
 
 For 8 nodes, 80\% $R_{peak}$ is 153.6 Gflops.
 
-For 8 nodes, the highest $R_{max}$ of 103.41 Gflops was observed using the BLIS Serial library with an NB of 168, and a P x Q grid of 2 x 16. This is 67.32\% of the maximum theoretical performance using 80\% of memory.
-
+For 8 nodes, the highest $R_{max}$ of 103.41 Gflops was observed using the BLIS Serial library with an NB of 168, and a P x Q grid of 2 x 16. This is 67.32\% of the theoretical maximum performance using 80\% of memory.
 
 
 %
@@ -560,11 +559,11 @@ BLIS OpenMP     & PTRANS\_GBs=0.637484 \\
 
 \subsubsection{Observations}
 
-Both the OpenBLAS and BLIS serial benchmark runs produce similar results. Similarly, both OpenMP benchmark runs produce similar results. This is to be expected, since this benchmark is not testing BLAS library performance. The difference between the serial and OpenMP performance is related to the topology of the cluster, either a pure OpenMPI or hybrid OpenMPI/OpenMP topology.
+Both the OpenBLAS and BLIS serial benchmark runs produce similar results. Similarly, both OpenMP benchmark runs produce similar results. This is to be expected, since this benchmark is not testing BLAS library performance. The difference between the serial and OpenMP performance is related to the topology of the cluster.
 
-With an average pure OpenMPI result of 0.475 GB/s, and a hybrid OpenMPI/OpenMP result of 0.627 GB/s, the inter-node communication performance is 32\% faster using the hybrid OpenMPI/OpenMP topology.
+With an average pure OpenMPI result of 0.475 GB/s, and a hybrid OpenMPI/OpenMP result of 0.627 GB/s, the inter-node communication performance is 32\% faster using the hybrid topology.
 
-This result is to be expected, since the node count is 32 in the pure OpenMPI topology, but only 8 in the hybrid OpenMPI/OpenMP topology. Even though the amount of matrix data to be transposed remains the same, the inter-node communication is reduced. The inter-node messages may be larger, but there are fewer messages with less node addressing overhead, making the cluster network more efficient. 
+This result is to be expected, since the node count is 32 in the pure topology, but only 8 in the hybrid topology. Even though the amount of matrix data to be transposed remains the same, the inter-node communication is reduced. The inter-node messages may be larger, but there are fewer messages with less node addressing overhead, making the cluster network more efficient. 
 
 
 %
@@ -780,7 +779,7 @@ A clear distinction needs to be made between Gigabits and Gigabytes/Megabytes. U
 
 The benchmark results are specified in Megabytes per second (MB/s).
 
-The average OpenMP topology bandwidth is 112.682 MB/s, which is 90\% of the maximum theoretical bandwidth. The is consistent with 92.2\% of \emph{node-to-node} maximum theoretical bandwidth observed using the Linux \verb|iperf| command in Section ??.
+The average OpenMP topology bandwidth is 112.682 MB/s, which is 90\% of the maximum theoretical bandwidth. The is consistent with 92.2\% of \emph{node-to-node} maximum theoretical bandwidth observed using the Linux \verb|iperf| command in Section 5.54.
 
 
 
@@ -799,7 +798,7 @@ Ranking number 1 is the Fugaku supercomputer.
 
 Ranking 169 is the Spaceborne Computer. The Spaceborne Computer, onboard the International Space Station (ISS), is a 32 core system based on the Intel Xeon E5-2620 v4 8 core CPU, clocked at 2.1GHz, with an Infiniband interconnect.
 
-An extract from the list for these two computers is in Table ??.
+An extract from the list for these two computers is in Table 5.11.
 
 \begin{table}[H]
 \begin{center}
@@ -820,7 +819,7 @@ An extract from the list for these two computers is in Table ??.
 
 For computers to be officially ranked in the HPCG List, the HPCG benchmark must be run for in excess of 30 minutes, using at least 25\% of available memory.
 
-The HPCG benchmark results for the Aerin Cluster, obtained running the benchmark for 60 minutes using 75\% of available memory, are presented in Table ??.
+The HPCG benchmark results for the Aerin Cluster, obtained running the benchmark for 60 minutes using 75\% of available memory, are presented in Table 5.12.
 
 \begin{table}[H]
 \begin{center}
@@ -926,7 +925,7 @@ As discussed in Chapter 2, each packet received by a network interface generates
 
 The Pi Cluster Tools \verb|interrupt-coalescing| tool enables \emph{Adaptive RX} interrupt coalescing. In \emph{Adaptive RX} interrupt coalescing the kernel actively manages the number of packets received, and the time elapsed, before raising a hardware interrupt on the network interface receive queue.
 
-The results of running the \verb|linpack-profiler| tool with \emph{Adaptive RX} interrupt coalescing enabled are plotted in Figure ??.
+The results of running the \verb|linpack-profiler| tool with \emph{Adaptive RX} interrupt coalescing enabled are plotted in Figure 5.8.
 
 \begin{figure}[h]
 	\centering
@@ -935,7 +934,7 @@ The results of running the \verb|linpack-profiler| tool with \emph{Adaptive RX} 
 	\label{fig:subim1}
 \end{figure}
 
-Using the value of the block size NB which achieved optimum performance running the \texttt{linpack-profiler} tool, the HPL benchmark results using 80\% of available memory are presented in Table ??. 
+Using the value of the block size NB which achieved optimum performance running the \texttt{linpack-profiler} tool, the HPL benchmark results using 80\% of available memory are presented in Table 5.13. 
 
 \begin{table}[H]
 \begin{center}
@@ -969,7 +968,7 @@ Observations and discussion...
 %
 \subsection{Receive Packet Steering and Receive Flow Steering}
 
-The results of running the \verb|linpack-profiler| tool with \emph{Receive Packet Steering} and \emph{Receive Flow Steering} enabled are plotted in Figure ??.
+The results of running the \verb|linpack-profiler| tool with \emph{Receive Packet Steering} and \emph{Receive Flow Steering} enabled are plotted in Figure 5.9.
 
 \begin{figure}[h!]
 	\centering
@@ -978,7 +977,7 @@ The results of running the \verb|linpack-profiler| tool with \emph{Receive Packe
 	\label{fig:subim1}
 \end{figure}
 
-Using the value of the block size NB which achieved optimum performance running the \texttt{linpack-profiler} tool, the HPL benchmark results using 80\% of available memory are presented in Table ??. 
+Using the value of the block size NB which achieved optimum performance running the \texttt{linpack-profiler} tool, the HPL benchmark results using 80\% of available memory are presented in Table 5.14. 
 
 \begin{table}[H]
 \begin{center}
@@ -1028,7 +1027,7 @@ For scientific computing workloads the \emph{No Forced Preemption} model should 
 
 The kernel installed by Ubuntu 20.04 LTS 64-bit uses the \emph{Voluntary Preemption} model. To use the \emph{No Forced Preemption} model the kernel needs to be recompiled. Detailed instructions on how to do this are included in the \emph{Kernel Build With No Forced Preemption} \verb|picluster| repository wiki page.
 
-The Pi Cluster Tools \verb|linpack-profiler| tool was run with a \emph{No Forced Preemption} kernel. The results are plotted in Figure ??.
+The Pi Cluster Tools \verb|linpack-profiler| tool was run with a \emph{No Forced Preemption} kernel. The results are plotted in Figure 5.10.
 
 \begin{figure}[h]
 	\centering
@@ -1037,7 +1036,7 @@ The Pi Cluster Tools \verb|linpack-profiler| tool was run with a \emph{No Forced
 	\label{fig:subim1}
 \end{figure}
 
-Using the parameters which achieved optimum performance when running the \texttt{linpack-profiler} tool, the HPL benchmark results using 80\% of available memory are presented in Table ??. 
+Using the parameters which achieved optimum performance when running the \texttt{linpack-profiler} tool, the HPL benchmark results using 80\% of available memory are presented in Table 5.15. 
 
 \begin{table}[H]
 \begin{center}
