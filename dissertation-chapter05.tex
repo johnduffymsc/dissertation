@@ -941,13 +941,13 @@ Using the value of the block size NB which achieved optimum performance running 
 \textbf{BLAS} & \textbf{N} & \textbf{NB} & \textbf{P} & \textbf{Q} & \textbf{Baseline}  & \textbf{Adaptive RX}  \\
               &            &             &            &            &                    & \textbf{Coalescing} \\
 \hline
-OpenBLAS Serial & 52416 & 104 & 2 & 16 &  & 9.6078e+01 \\
+OpenBLAS Serial & 52416 & 104 & 2 & 16 & 9.5525e+01 & 9.6078e+01 \\
 \hline
-OpenBLAS OpenMP & 52416 & 72 & 2 & 4 &  & 9.3222e+01 \\
+OpenBLAS OpenMP & 52416 & 72 & 2 & 4 & 9.6630e+01 & 9.3222e+01 \\
 \hline
-BLIS Serial     & 52416 & 168 & 4 & 8 &  & 1.0205e+02 \\
+BLIS Serial     & 52416 & 168 & 4 & 8 & 1.0341e+02 & 1.0205e+02 \\
 \hline
-BLIS OpenMP     & 52416 & 144 & 2 & 4 &  & 1.0582e+02 \\
+BLIS OpenMP     & 52416 & 144 & 2 & 4 & 1.0041e+02 & 1.0582e+02 \\
 \hline
 \end{tabular}
 \end{center}
@@ -984,13 +984,13 @@ Using the value of the block size NB which achieved optimum performance running 
 \textbf{BLAS} & \textbf{N} & \textbf{NB} & \textbf{P} & \textbf{Q} & \textbf{Baseline}  & \textbf{Adaptive RX}  \\
               &            &             &            &            &                    & \textbf{Coalescing} \\
 \hline
-OpenBLAS Serial &  &  &  &  &  &  \\
+OpenBLAS Serial & 52360 & 88 & 2 & 16 & 9.5525e+01 & 9.5672e+01 \\
 \hline
-OpenBLAS OpenMP &  &  &  &  &  &  \\
+OpenBLAS OpenMP & 52416 & 72 & 2 & 4 & 9.6630e+01 & 9.2954e+01 \\
 \hline
-BLIS Serial     &  &  &  &  &  &  \\
+BLIS Serial     & 52416 & 144 & 2 & 16 & 1.0341e+02 & 1.0117e+02 \\
 \hline
-BLIS OpenMP     &  &  &  &  &  &  \\
+BLIS OpenMP     & 51416 & 144 & 2 & 4 & 1.0041e+02 & 1.0597e+02 \\
 \hline
 \end{tabular}
 \end{center}
@@ -1043,13 +1043,13 @@ Using the parameters which achieved optimum performance when running the \texttt
 \textbf{BLAS} & \textbf{N} & \textbf{NB} & \textbf{P} & \textbf{Q} & \textbf{Baseline}  & \textbf{No Forced}  \\
               &            &             &            &            &                    & \textbf{Preemption} \\
 \hline
-OpenBLAS Serial & 52416 & 112 & 2 & 16 &  & 9.5723e+01 \\
+OpenBLAS Serial & 52416 & 112 & 2 & 16 & 9.5525e+01 & 9.4729e+01 \\
 \hline
-OpenBLAS OpenMP & 52416 &  72 & 2 &  4 &  & 9.3790e+01 \\
+OpenBLAS OpenMP & 52416 &  72 & 2 &  4 & 9.6630e+01 & 9.1107e+01 \\
 \hline
-BLIS Serial     & 52320 & 120 & 2 & 16 &  & 1.0021e+02 \\
+BLIS Serial     & 52320 & 120 & 2 & 16 & 1.0341e+02 & 9.9248e+01 \\
 \hline
-BLIS OpenMP     & 52320 & 160 & 2 &  4 &  &  \\
+BLIS OpenMP     & 52320 & 160 & 2 &  4 & 1.0041e+02 & 1.0694e+02 \\
 \hline
 \end{tabular}
 \end{center}
@@ -1067,67 +1067,31 @@ Observations and discussion...
 %
 \subsection{Jumbo Frames}
 
-On node2 start the Iperf server...
+The kernel installed by Ubuntu 20.04 LTS 64-bit uses the standard MTU size of 1500 bytes. To enable Jumbo Frames requires modifications to the kernel Ethernet network driver, and a recompilation of the kernel. The network driver modifications requires a high level of kernel development expertise, and proved to be only partially successful. Detailed instructions on how to do this are included in the \emph{Kernel Build With Jumbo Frames Support} project repository wiki page.
 
-\lstset{style=type}
-\begin{lstlisting}
-$ iperf -s
-\end{lstlisting}
+Figure 5.11 indicates the bandwidth improvement with increased MTU size.
 
-On node1 start the Iperf client...
+\begin{figure}[H]
+	\centering	
+	\includegraphics[width=0.9\textwidth]{bandwidth_vs_mtu.pdf}
+	\caption{\textbf{Node to Node Bandwidth.} The node-to-node bandwidth measured using the Linux \texttt{iperf} command.}
+\end{figure}
 
-\lstset{style=type}
-\begin{lstlisting}
-$ iperf -c
-\end{lstlisting}
-
-ping tests of MTU...
-
-
-
-
-iperf network speed...
-
-
-
-
-
-\subsubsection{Jumbo Frames}
-
-Requires a network switch capable of Jumbo frames...
-
-
-On \verb|node2| create the \verb|Iperf| server...
-
-\lstset{style=type}
-\begin{lstlisting}
-$ iperf -s
-\end{lstlisting}
-
-On \verb|node1| create and run the \verb|Iperf| client...
-
-\lstset{style=type}
-\begin{lstlisting}
-$ iperf -i 1 -c node2
-\end{lstlisting}
-
-\lstset{style=type}
-\begin{lstlisting}
-------------------------------------------------------------
-Client connecting to node2, TCP port 5001
-TCP window size:  682 KByte (default)
-------------------------------------------------------------
-[  3] local 192.168.0.1 port 46216 connected with 192.168.0.2 port 5001
-[ ID] Interval       Transfer     Bandwidth
-[  3]  0.0-10.0 sec  1.15 GBytes   991 Mbits/sec
-\end{lstlisting}
-
+The kernel with Jumbo Frame support, as implemented, was able to run HPL with a flat P x Q processor grid of 1 x 32 for serial benchmarks, and 1 x 8 for OpenMP benchmarks. However, for less flat processor grids, where the previous maximum performance had been observed, the network stack on one or more nodes became corrupted and the node became uncontactable. When this occurred, messages relating to network driver queues errors were observed in kernel message log.
 
 \begin{figure}
 	\centering	
-	\includegraphics[width=1.0\textwidth]{bandwidth_vs_mtu.pdf}
-	\caption{Network Node to Node Bandwidth vs MTU.}
+	\includegraphics[width=0.9\textwidth]{gflops_vs_nodes_80_percent_memory_mtu_9000.pdf}
+	\caption{\textbf{HPL $\mathbf{R_{max}}$ verus Node Count with MTU = 9000.}}
 \end{figure}
+
+Figure 5.12 indicates the potential increased performance with an expertly implemented MTU increase to 9000 bytes. In this figure, the increased performance using a flat P x Q grid of 1 x 32 is extrapolated to a 2 x 16 grid for a serial BLIS benchmark.
+
+
+\subsubsection{Observations}
+
+As indicated in Figure 5.12, expertly implemented Jumbo Frames support may yield a performance increase to 110 Gflops, a 7\% improvement.
+
 
 
 
