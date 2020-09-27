@@ -788,47 +788,63 @@ The average serial topology bandwidth is 107.548 MB/s, which is 86\% of the maxi
 %
 \section{HPCG Baseline}
 
-The June 2020 HPCG List ranks 169 computer in order of conjugate gradient performance. Ranking number 1 in the list is the Fugaku supercomputer. And ranking 169 is the Spaceborne Computer, which is onboard the International Space Station. The Spaceborne Computer is a 32 core system based on the Intel Xeon E5-2620 v4 8 Core CPU clocked at 2.1GHz, with an Infiniband interconnect. The HPCG List performance results of these two computers are in Table ??.
+The June 2020 HPCG List ranks 169 computer in order of HPCG benchmark performance.
+
+Ranking number 1 is the Fugaku supercomputer.
+
+Ranking 169 is the Spaceborne Computer. The Spaceborne Computer, onboard the International Space Station (ISS), is a 32 core system based on the Intel Xeon E5-2620 v4 8 core CPU, clocked at 2.1GHz, with an Infiniband interconnect.
+
+An extract from the list for these two computers is in Table ??.
 
 \begin{table}[H]
 \begin{center}
 \begin{tabular}{ |c|c|c|c|c|c|c| } 
 \hline
-HPCG & Name & Cores & HPL $R_{max}$ & TOP500 & HPCG   & Fraction \\
-Rank &      &       & Pflops        & Rank   & Pflops & of Peak  \\
+\textbf{HPCG} & \textbf{Name} & \textbf{Cores} & \textbf{HPL $\mathbf{R_{max}}$} & \textbf{HPCG}   & \textbf{Fraction} \\
+\textbf{Rank} &      &       & \textbf{Pflops}        & \textbf{Pflops} & \textbf{of Peak}  \\
 \hline
-1 & Fugaku & 6,635,520 & 415.530 & 1 & 13.366 & 2.6\% \\
+1 & Fugaku & 6,635,520 & 415.530  & 13.366 & 2.6\% \\
 \hline
-169 & Spaceborne Computer & 32 & 0.001 & - & 0.000034 & 2.9\% \\
+169 & Spaceborne & 32 & 0.001  & 0.000034 & 2.9\% \\
+    & Computer   &    &        &          &       \\
 \hline
 \end{tabular}
 \end{center}
-\caption{\label{tab:table-name}Extract from June 2020 HPCG List.}
+\caption{\label{tab:table-name}\textbf{Extract from June 2020 HPCG List.}}
 \end{table}
 
-For computers to be officially ranked in the HPCG List, the HPCG benchmark must be run for in excess of 30 minutes using at least 25\% of available memory.
+For computers to be officially ranked in the HPCG List, the HPCG benchmark must be run for in excess of 30 minutes, using at least 25\% of available memory.
 
-The following results were obtained for the Aerin Cluster running the HPCG benchmark for 60 minutes using 75\% of available memory and using all 8 nodes.
+The HPCG benchmark results for the Aerin Cluster, obtained running the benchmark for 60 minutes using 75\% of available memory, are presented in Table ??.
 
 \begin{table}[H]
 \begin{center}
-\begin{tabular}{ |c|c|c|c|c|c|c| }
+\begin{tabular}{ |c|c|c|c|c|c|c| } 
 \hline
-HPCG & Name & Cores & HPL $R_{max}$ & TOP500 & HPCG   & Fraction \\
-Rank &      &       & Pflops        & Rank   & Pflops & of Peak  \\
+\textbf{HPCG} & \textbf{Name} & \textbf{Cores} & \textbf{HPL $\mathbf{R_{max}}$} & \textbf{HPCG}   & \textbf{Fraction} \\
+\textbf{Rank} &      &       & \textbf{Gflops}        & \textbf{Gflops} & \textbf{of Peak}  \\
 \hline
-- & OpenBLAS Serial & 32 & & - & & \% \\
+- & OpenBLAS & 32 & 9.5525e+01 & 3.49084 & 1.8\% \\
+  & Serial   &   &  &  &    \\
 \hline
-- & OpenBLAS OpenMP & 32 & & - & & \% \\
+- & OpenBLAS & 32 & 9.6630e+01 & 2.90942 & 1.5\% \\
+  & OpenMP   &   &  &  &    \\
 \hline
-- & BLIS Serial & 32 & & - & & \% \\
+- & BLIS     & 32 & 1.0341e+02 & 3.44246 & 1.8\% \\
+  & Serial   &   &  &  &    \\
 \hline
-- & BLIS OpenMP & 32 & & - & & \% \\
+- & BLIS     & 32 & 1.0041e+02 & 2.95205 & 1.5\% \\
+  & OpenMP   &   &  &  &    \\
 \hline
 \end{tabular}
 \end{center}
-\caption{\label{tab:table-name}The Aerin Cluster HPCG Benchmark.}
+\caption{\label{tab:table-name}\textbf{Aerin Cluster HPCG Benchmark results.}}
 \end{table}
+
+
+\subsubsection{Observations}
+
+The Aerin Cluster...
 
 
 %
