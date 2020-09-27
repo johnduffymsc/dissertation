@@ -657,6 +657,64 @@ As expected, because this benchmark is not a test of computational performance, 
 %
 \subsection{FFT}
 
+The FFT benchmark...
+
+\begin{table}[h]
+\begin{center}
+\begin{tabular}{ |l|c| } 
+\hline
+\textbf{BLAS Library} & \textbf{Results} \\ 
+\hline
+OpenBLAS Serial & Global Vector size: 268435456\\
+                & Global Gflops:      1.569 \\
+                \cline{2-2} 
+                & Star Vector size:   16777216 \\
+                & Star Min Gflops:    0.251138 \\
+                & Star Avg Gflops:    0.314311 \\ 
+                & Star Min Gflops:    0.335671 \\
+                \cline{2-2}
+                & Single Gflops:      0.494388 \\
+\hline
+OpenBLAS OpenMP & Global Vector size: 268435456 \\
+                & Global Gflops:      1.347 \\
+                \cline{2-2} 
+                & Star Vector size:   67108864 \\
+                & Star Min Gflops:    0.314714 \\
+                & Star Avg Gflops:    0.344635 \\ 
+                & Star Min Gflops:    0.375736 \\
+                \cline{2-2}
+                & Single Gflops:      0.532823 \\
+\hline
+BLIS Serial     & Global Vector size: 268435456 \\
+                & Global Gflops:      1.563 \\
+                \cline{2-2} 
+                & Star Vector size:   16777216 \\
+                & Star Min Gflops:    0.252763 \\
+                & Star Avg Gflops:    0.312753 \\ 
+                & Star Min Gflops:    0.344300 \\
+                \cline{2-2}
+                & Single Gflops:      0.515476\\
+\hline
+BLIS OpenMP     & Global Vector size: 268435456 \\
+                & Global Gflops:      1.313 \\
+                \cline{2-2} 
+                & Star Vector size:   67108864 \\
+                & Star Min Gflops:    0.315112 \\
+                & Star Avg Gflops:    0.329216 \\ 
+                & Star Min Gflops:    0.344110 \\
+                \cline{2-2}
+                & Single Gflops:      0.439117 \\
+\hline
+\end{tabular}
+\end{center}
+\caption{\label{tab:table-name}\textbf{HPCC FFT.}}
+\end{table}
+
+
+\subsubsection{Observations}
+
+The...
+
 
 %
 % SUB SECTION
