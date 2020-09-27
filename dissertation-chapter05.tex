@@ -1093,37 +1093,95 @@ Figure 5.12 indicates the potential increased performance with an expertly imple
 As indicated in Figure 5.12, expertly implemented Jumbo Frames support may yield a performance increase to 110 Gflops, a 7\% improvement.
 
 
-
-
 %
 % SECTION
 %
-\section{Power Usage}
+\section{Performance Per Watt}
 
-\begin{figure}[]
-	\begin{subfigure}{1.0\textwidth}
-		\centering
-		\includegraphics[width=0.5\textwidth]{power-netgear.jpg}
-		\caption{Network equipment only.}
-		\label{fig:subim1}
-	\end{subfigure}
-	\par\bigskip
-	\begin{subfigure}{1.0\textwidth}
-		\centering
-		\includegraphics[width=0.5\textwidth]{power-idle.jpg}
-		\caption{Aerin Cluster at idle.}
-		\label{fig:subim2}
-	\end{subfigure}
-	\par\bigskip
-	\begin{subfigure}{1.0\textwidth}
-		\centering
-		\includegraphics[width=0.5\textwidth]{power-benchmark.jpg}
-		\caption{Aerin Cluster running benchmarks.}
-		\label{fig:subim2}
-	\end{subfigure}
-\caption{\textbf{Aerin Cluster Power Usage.} Similar power usage was observed running either pure OpenMPI or hybrid OpenMPI/OpenMP benchmarks. The idle and benchmark power usage includes the network equipment.}
-\label{fig:image2}
-\end{figure}
+To determine the power usage of the Aerin Cluster a power meter was placed at the power outlet supplying the cluster. The power measured is presented in Table 5.16.
+
+\begin{table}[H]
+\begin{center}
+\begin{tabular}{ |c|c| } 
+\hline
+\textbf{Configuration} & \textbf{Power Usage} \\
+                       & \textbf{(Watts}) \\
+\hline
+Router/firewall only                   & 5 \\
+\hline
+Network switch only                    & 4 \\
+\hline
+Router/firewall \& network switch only & 9 \\
+\hline
+Aerin Cluster at idle                  & 35\\
+\hline
+Aerin Cluster running benchmarks       & 70 \\
+\hline
+\end{tabular}
+\end{center}
+\caption{\label{tab:table-name}\textbf{Aerin Cluster Power Usage.} The 70 Watt power usage is the estimated average power usage observed when running serial and OpenMP benchmarks. The two Aerin Cluster power measurements include the router/firewall and network switch.}
+\end{table}
+
+When the Aerin Cluster is relocated to UCL, and the cluster is connected to the UCL internal network, the router/firewall will be redundant. It is therefore reasonable to state that the estimated average power usage for the Aerin Cluster 65 Watts when running benchmarks.
+
+The maximum observed HPL performance is 103.41 Gflops.
+
+Therefore, the Aerin Cluster's equivalent Green500 List performance is:
+
+\begin{align}
+Gflops/Watt &= \frac{103.41}{65} \\
+            &= 1.591
+\end{align}
+
+The is equivalent to ranking 170 in the June 2020 Green500 List, as indicated in Table 5.17.
+
+\begin{table}[H]
+\begin{center}
+\begin{tabular}{ |c|c|c|c|c|c| } 
+\hline
+\textbf{Rank} & \textbf{System} & \textbf{Cores} & \textbf{$\mathbf{R_{max}}$} & \textbf{Power}   & \textbf{Efficiency} \\
+              &                 &                & \textbf{$\mathbf{TFlops}$} & \textbf{(KWatt)} & \textbf{(Gflops/Watt)} \\ 
+\hline
+169 & ISystem      & 97,920 & 1683.0 & 1,050 & 1.603 \\
+    & Sugon TC6000 &        &        &       &       \\               
+\hline
+ -  & Aerin     & 32     & 0.10341 & 0.065 & 1.591 \\
+    & Cluster   &        &        &       &       \\               
+\hline
+170 & MCSystem      & 74,400 & 1266.0 & 800 & 1.583 \\
+    & Sugon TC6000 &        &        &       &       \\               
+\hline
+\end{tabular}
+\end{center}
+\caption{\label{tab:table-name}\textbf{Extract from June 2020 Green500 List.}}
+\end{table}
+
+
+
+%\begin{figure}[]
+%	\begin{subfigure}{1.0\textwidth}
+%		\centering
+%		\includegraphics[width=0.5\textwidth]{power-netgear.jpg}
+%		\caption{Network equipment only.}
+%		\label{fig:subim1}
+%	\end{subfigure}
+%	\par\bigskip
+%	\begin{subfigure}{1.0\textwidth}
+%		\centering
+%		\includegraphics[width=0.5\textwidth]{power-idle.jpg}
+%		\caption{Aerin Cluster at idle.}
+%		\label{fig:subim2}
+%	\end{subfigure}
+%	\par\bigskip
+%	\begin{subfigure}{1.0\textwidth}
+%		\centering
+%		\includegraphics[width=0.5\textwidth]{power-benchmark.jpg}
+%		\caption{Aerin Cluster running benchmarks.}
+%		\label{fig:subim2}
+%	\end{subfigure}
+%\caption{\textbf{Aerin Cluster Power Usage.} Similar power usage was observed running either pure OpenMPI or hybrid OpenMPI/OpenMP benchmarks. The idle and benchmark power usage includes the network equipment.}
+%\label{fig:image2}
+%\end{figure}
 
 
 
