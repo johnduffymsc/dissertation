@@ -222,7 +222,12 @@ Compared to the single node case, 2 node performance is reduced by 17.8\% for th
 %
 \subsection{HPL Whole Cluster Baseline}
 
-This whole cluster baseline uses the optimum values of NB from the 2 node baseline.
+This whole cluster baseline uses the values of NB from the 2 node baseline which attained optimum performance.
+
+The benchmark results are presented in Tables 5.3 and 5.4. In these tables, for each node count, there is also a value of $R_{max}$ for each processor grid shape. This is because within each N, NB, P and Q parameter set, there are also HPL parameters which have a lesser effect on performance. $R_{max}$ is the maximum observed performance for each set of N, NB, P and Q parameters.
+
+The highest value of $R_{max}$ for each node count is then plotting in Figure 5.5.
+
 
 \begin{table}[H]
 \begin{center}
@@ -271,7 +276,6 @@ OpenBLAS OpenMP & 3 & 32032 & 88 & 1 & 3 & 3.7842e+01 \\
 \end{center}
 \caption{\label{tab:table-name}\textbf{HPL Whole Cluster OpenBLAS Baseline.}}
 \end{table}
-
 
 
 \begin{table}
@@ -323,9 +327,6 @@ BLIS OpenMP     & 3 & 32000 & 200 & 1 & 3 & 3.5132e+01 \\
 \end{table}
 
 
-
-The high value of $R_{max}$ for each node count is plotting in Figure 5.5.
-
 \begin{figure}[H]
 	\begin{subfigure}{1.0\textwidth}
 		\centering
@@ -350,23 +351,17 @@ The high value of $R_{max}$ for each node count is plotting in Figure 5.5.
 %
 \subsection{Observations}
 
-Best NB...
+Performance scales linearly with node count.
 
-PxQ discussion... 1x8 vs 2x4... ethernet comment...
+Where there are multiple P x Q processor grid combinations available, optimum performance is achieved with a P x Q grid which is not \emph{flat}. For example, 2 x 16 and 4 x 8 grids performs better than a 1 x 32 grid. This is consistent with HPL Frequency Asked Questions \cite{hpl-faq}, and is related to the computation to communication ratio of the cluster.
 
-Iperf...
+For a high performance network such as Infiniband, optimum performance is expected to be achieved with the most \emph{square} P x Q grid. In the previous example, this would be the 4 x 8 grid. Ethernet is not a high performance network, in HPC terms, and optimum performance is expected to be achieved from less \emph{square}, but not \emph{flat} processor, grid.
 
-htop...
+A combination of \emph{square} and \emph{less square} processor grids produced optimum performance for the Aerin Cluster. This is attributable to the good network performance of the Raspberry Pi 4, which can utilise almost the full 1 Gigabit of available bandwidth. 
 
-top...
+For 8 nodes, 80\% $R_{peak}$ is 153.6 Gflops.
 
-perf...
-
-cache misses...
-
-software interrupts...
-
-Suggests... improve network efficiency?
+For 8 nodes, the highest $R_{max}$ of 103.41 Gflops was observed using the BLIS Serial library with an NB of 168, and a P x Q grid of 2 x 16. This is 67.32\% of the maximum theoretical performance using 80\% of memory.
 
 
 
