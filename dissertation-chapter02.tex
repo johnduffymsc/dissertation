@@ -4,17 +4,17 @@ In his 1937 seminal paper "On Computable Numbers, with an Application to the Ent
 
 Today's computers are Turing Machines. Turing's original sequence of numbers and operations are now referred to as the data and  instructions contained within a computer program. The infinitely long tape is now referred to as a computer's memory. And the set of instructions which manipulate program data, and which also permit access to the full range of available memory (move the tape left and right), are referred to as a computer's \emph{instruction set}.
 
-High Performance Computing (HPC) is the solving of numerical problems which are beyond the capabilities of desktop and laptop computers in terms of the amount of data to be processed and the speed of computation required. For example, numerical weather forecasting (NWF) uses a grid of 3D positions to model a section of the Earth's atmosphere, and then solves partial differential equations at each of these points to produce forecasts. The processing performance and memory required to model such systems far exceeds that of even a high-end desktop. 
+High Performance Computing (HPC) is the solving of numerical problems which are beyond the capabilities of desktop and laptop computers in terms of the amount of data to be processed and the speed of computation required. For example, numerical weather forecasting (NWF) uses a grid of 3D positions to model a section of the Earth's atmosphere, and then solves partial differential equations at each of these points to produce forecasts. The processing performance and memory required far exceeds that of even a high-end desktop. 
 
-The UK Met Office uses a number of grids to model global and and UK weather. The finest UK grid being a 1.5 km spaced 622 x 810 point inner grid, with a 4 km spaced 950 x 1025 point outer grid, both with 70 vertical levels \cite{metoffice-grids}. To model the atmosphere on these grids the UK Met Office currently uses three Cray XC40 supercomputers \cite{metoffice-cray}, capable of 14 Petaflops ($10^{15}$ \emph{floating point operations per second}), and which contain 460,000 computer cores, 2 Petabytes of memory and 24 Petabytes of storage.
+The UK Met Office uses a number of grids to model global and UK weather. The finest UK grid being a 1.5 km spaced 622 x 810 point inner grid, with a 4 km spaced 950 x 1025 point outer grid, both with 70 vertical levels \cite{metoffice-grids}. To model the atmosphere on these grids the UK Met Office currently uses three Cray XC40 supercomputers \cite{metoffice-cray}, capable of 14 Petaflops ($10^{15}$ \emph{floating point operations per second}), and which contain 460,000 cores, 2 Petabytes of memory and 24 Petabytes of storage.
 
 Clearly a single Cray XC40 used for NWF is a somewhat different beast than a single imaginary Turing Machine. Some of the differences obviously relate to the imaginary nature of the Turing Machine, with its infinitely long tape, and some to what it is possible to build within the limits of today's technology. The Cray XC40's 2 Petabytes of memory is large, but not infinite. But possibly the most important differences are architectural. Each Cray XC40 is a massively parallel supercomputer, made up of a large number of individual processing nodes. Each node has a large but finite amount of processing capacity and memory. The problem data and program instructions must be divided up and distributed amongst the nodes. The nodes must be able to communicate in an efficient manner. And opportunities for \emph{parallel} and \emph{concurrent} processing should be exploited to minimise processing time. Each of these differences is a requirement to map HPC workloads onto a real-world machine. And each of these difference introduces a degree of complexity.   
 
-Since the birth of electronic computing, there has always been a need to know long it will take for a computer to perform a particular task. This may be solely related to allocating computer time efficiently, or simply just wanting to know how long a program will take to run. Or, it may be commercially related; even a moderately sized single computer can be a large investment requiring the maximum performance possible for the purchase price. And more recently, the need to know how much processing power per unit of electricity a computer can achieve has become an important metric. This need for information is addressed by using a benchmark.
+Since the birth of electronic computing, there has always been a need to know long it will take for a computer to perform a particular task. This may be solely related to allocating computer time efficiently, or simply just wanting to know how long a program will take to run. Or, it may be commercially related; even a moderately sized single computer can be a large investment requiring the maximum performance possible for the purchase price. And more recently, processing power per unit of electricity has become an important metric. This need for information is addressed by using a benchmark.
 
 A benchmark is a standardised measure of performance. In computing terms this is a piece of software which performs a known task, and which tests a particular aspect(s) of computer performance. One aspect may be raw processing performance. High Performance Linpack (HPL) is one such benchmark, which produces a single measure of \emph{floating point operations per second} (Flops) for a single, or more commonly, a cluster of computers. To address the complexity of design of modern supercomputers, as discussed above, a number of complementary benchmarks have been introduced, namely HPC Challenge (HPCC) and High Performance Conjugate Gradients (HPCG). HPC Challenge is a suite of benchmarks which measure processing performance, memory bandwidth, and network latency and bandwidth, to give a broad view of likely real-world application performance. High Performance Conjugate Gradients is intended to measure the performance of a computer system when solving large sparse linear system systems, which is typical of modern HPC workloads.
 
-To put benchmark results into context, and to extrapolate from the results where performance gains might be realised, it is necessary to have an understanding of the main components of a computer and the network connecting a cluster of computers. The following sections of this chapter describe these components and the network in more detail.
+To put benchmark results into context, and to extrapolate from benchmark results where performance gains might be realised, it is necessary to have an understanding of the main components of a computer and the network connecting a cluster of computers. The following sections of this chapter describe these components and the network in more detail.
 
 
 %
@@ -59,11 +59,11 @@ A benchmark will typically be running the same process in parallel on each node,
 
 Modern operating systems, such as Linux, are \emph{event driven}. This means that instead of continuously looping over a list of actions, the operating system performs actions when events occur. Events generate \emph{interrupts} which cause the operating system to pause the running process and \emph{service} the interrupt. Interrupts may be hardware interrupts, such as the interrupt generated by a network interface upon receipt of a data packet, or may be generated by software, \emph{software interrupts}.
 
-To maintain system responsiveness, and to ensure subsequent interrupts are not missed whilst processing the current interrupt, \emph{interrupt service routines} are kept as short as possible. Linux, and other operating systems, also use a \emph{top-half/botton-half} mechanism to service interrupts. The \emph{top-half} responds to the interrupt, but only carries out the essential minimum processing to service the interrupt, and then schedules the \emph{bottom-half}, which is less time sensitive, to conduct the remaining processing required to service the interrupt.
+To maintain system responsiveness, and to ensure subsequent interrupts are not missed whilst processing the current interrupt, \emph{interrupt service routines} are kept as short as possible. Linux, and other operating systems, use a \emph{top-half/botton-half} mechanism to service interrupts. The \emph{top-half} responds to the interrupt, but only carries out the essential minimum processing to service the interrupt, and then schedules the \emph{bottom-half}, which is less time sensitive, to conduct the remaining processing required to service the interrupt.
 
 There are a number of sources of interrupts, but the main source is the system clock. The clock of the BCM2711 ticks at a frequency of 1.5 GHz, and at predetermined counts of the clock the operating system performs predetermined actions. Other sources of interrupts may include user input from the keyboard/mouse, hard disk activity, network activity, and environmental and motion sensors.
 
-Interrupts generated by network activity, and the effects of this on benchmark performance, are discussed shortly.
+The effect of interrupts generated by network activity on benchmark performance is discussed shortly.
 
 
 \subsection{Kernel Preemption Model}
@@ -197,25 +197,12 @@ On Linux, RFS is configured through \verb|/proc| and \verb|/sys| file systems.
 %
 \section{ARM Architecture}
 
-In 
+Ever since the introduction of the ARMv8-A architecture in 2011, Arm microprocessors have become an increasingly popular choice for High Performance Computing (HPC). This is due to improvements in the ARMv8 instruction set specifically targeting HPC combined with low power requirements. The 415 Petaflops Fugaku supercomputer, based on the Fujitsu AX64 Arm-based microprocessor, topped the June 2020 TOP500 List and also the November 2019 Green500 List.
 
+Arm microprocessors are based on RISC (Reduced Instruction Set Computer) principles with a simple \emph{load/store architecture}. Data is loaded from main memory into processor registers, computations are performed using fixed-length instructions, and the results are then stored back in main memory. This compares with CISC (Complicated Instruction Set Computer) architectures with complicated memory addressing and computation modes and variable length instructions. The simplicity of design, which directly translates to a lower transistor count, results in high performance combined with low power requirements.
 
+The ARMv8-A instruction set has included \emph{Advanced SIMD} instructions since initial release. Each subsequent revision to the instruction set has seen improvements related to HPC. In 2014, ARMv8.1-A introduced enhancements to the Advanced SIMD instructions. In 2016, ARMv8.2-A introduced \emph{Scalable Vector Instructions}, permitting variable length vectors of size 128 to 2048 bits to be used. ARMv8.6-A announced in 2019 introduces General Matrix Multiply instructions, and also SIMD matrix instructions.
 
-Ever since the introduction of the ARMv8-A architecture in 2011, Arm processors have become an increasingly popular choice for High Performance Computing (HPC) due to improvements in the ARMv8 instruction set specifically targeting HPC combined with low power requirements. The 415 Petaflops Fugaku supercomputer, based on the Fujitsu AX64 Arm-based processor, topped the June 2020 Top500 List and also the November 2019 Green500 List.
-
-Arm processors are based upon RISC (Reduced Instruction Set Computer) principles with a simple Load/Store architecture. Data is loaded from main memory into processor registers, computations are performed using fixed-length instructions, and the results are then stored back in main memory. This compares with CISC (Complicated Instruction Set Computer) architectures with complicated memory addressing and computation modes with variable length instructions. The simplicity of design, which directly translates to a low transistor count, results in high performance combined with low power requirements.
-
-The ARMv8-A in introduced the first Arm 64-bit architecture.
-
-armv8.1...
-
-armv8.2...
-
-SVE...
-
-Fugaku chip...
-
-Fujitsu chip... 
 
 
 %
