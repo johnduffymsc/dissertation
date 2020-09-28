@@ -2,7 +2,12 @@ This chapter describes the hardware and software components of the Aerin Cluster
 
 Detailed build instructions for the Aerin Cluster, and the implementation details of Pi Cluster Tools, are included in the \verb|picluster| repository wiki. 
 
-Photo...
+\begin{figure}[h]
+	\centering	
+	\includegraphics[width=0.95\textwidth]{aerin.jpg}
+	\caption{\textbf{The Aerin Cluster}.}
+\end{figure}
+
 
 
 %
@@ -27,12 +32,12 @@ The Aerin Cluster consists of the following hardware components:
 %
 % SUB SECTION
 %
-\subsection{Raspberry Pi's}
+\subsection{Raspberry Pi 4 Model B}
 The 9 x Raspberry Pi 4 Model B's used in the cluster are the 4GB RAM version. Recently, an 8GB RAM version became available. This which would be the preferred version for a future cluster.
 
 The cluster compute nodes are \verb|node1| to \verb|node8|. These nodes are used to run benchmarks. Some benchmarks take a substantial amount of time to run, so it is convenient to have a dedicated build node for compiling software, etc, while benchmarks are running. This build node is \verb|node9|.
 
-It is also convenient to have one of the compute nodes designated the ``master'' compute node. This is \verb|node1|. Software which needs to be compiled locally to the compute nodes, and not on the build node, is compiled on the ``master'' node. This node is also used to mirror the GitHub project repository and to run the tools from the Pi Cluster Tools suite. 
+It is also convenient to have one of the compute nodes designated the ``master'' compute node. This is \verb|node1|. Software which needs to be compiled locally to the compute nodes, and not on the build node, is compiled on the ``master'' node. This node is also used to mirror the GitHub \verb|picluster| repository and to run the tools from the Pi Cluster Tools suite. 
 
 
 %
@@ -74,7 +79,7 @@ The router exposes a single IP address to the WAN. Access to the cluster is thro
 
 The router also acts as DHCP (Dynamic Host Configuration Protocol) server for the compute node LAN. Compute node hostnames, such as \verb|node1| etc, are configured by a boot script which determines the node hostname from the last octet of the node IP address, served by the DHCP server based on the MAC address. This ensures that each compute node is always assigned the same LAN IP address and hostname across reboots.
 
-The router/firewall is easily configured through a web-based setup. Details on how to do this are included in the project repository wiki.
+The router/firewall is easily configured through a web-based setup. Details on how to do this are included in the \verb|picluster| repository wiki.
 
 
 %
@@ -106,7 +111,7 @@ The Aerin Cluster consists of the following software components.
 % SUB SECTION
 %
 \subsection{Operating System}
-The operating system used for the Aerin Cluster is Ubuntu 20.04 LTS 64-bit Pre-Installed Server for the Raspberry Pi 4. Detailed instructions for installing the operating system are included in the project repository wiki.
+The operating system used for the Aerin Cluster is Ubuntu 20.04 LTS 64-bit Pre-Installed Server for the Raspberry Pi 4. Detailed instructions for installing the operating system are included in the \verb|picluster| repository wiki.
 
 
 %
@@ -151,70 +156,13 @@ The \verb|build-essential| package installs essential software build tools, such
 %
 \subsection{Benchmark Software}
 
-The HPL, HPCC and HPCG benchmark software is compiled locally from source. The instructions for how to do this are included in the project repository wiki.
+The HPL, HPCC and HPCG benchmark software is compiled locally from source. The instructions for how to do this are included in the \verb|picluster| repository wiki.
 
 
 %
 % SECTION
 %
 \section{BLAS Libraries}
-
-If we use the Linux \verb|perf| command to sample and record CPU stack traces (via frame pointers) for an \verb|xhpl| process (with Process ID 6595) for 30 seconds:
-
-\lstset{style=type}
-\begin{lstlisting}
-$ sudo perf record -p 6595 -g -- sleep 30
-\end{lstlisting}
-
-And then look at the stack trace report: 
-
-\lstset{style=type}
-\begin{lstlisting}
-$ sudo perf report
-\end{lstlisting}
-
-\lstset{style=term}
-\begin{lstlisting}
-+ 100.00% 0.00% xhpl xhpl             [.] _start                                                                                        
-+ 100.00% 0.00% xhpl libc-2.31.so     [.] __libc_start_main                                                                             
-+ 100.00% 0.00% xhpl xhpl             [.] main                                                                                          
-+ 100.00% 0.00% xhpl xhpl             [.] HPL_pdtest                                                                                    
-+ 100.00% 0.00% xhpl xhpl             [.] HPL_pdgesv                                                                                    
-+ 100.00% 0.00% xhpl xhpl             [.] HPL_pdgesv0                                                                                   
-+  98.03% 0.00% xhpl xhpl             [.] HPL_pdupdateTT                                                                                
-+  97.71% 0.00% xhpl libblas.so.3     [.] 0x0000ffffaa839ff0                                                                            
-+  97.71% 0.00% xhpl libgomp.so.1.0.0 [.] GOMP_parallel                                                                                 
-+  97.70% 0.00% xhpl libblas.so.3     [.] 0x0000ffffaa839e80                                                                            
--  96.56% 0.00% xhpl xhpl             [.] HPL_dgemm                                                                                     
-    HPL_dgemm                                                                                                                                           
-    dgemm_            
-\end{lstlisting}
-
-It can be seen that 96.56\% of the time within the \verb|xhpl| process is spent in the \verb|HPL_dgemm| function, which subsequently calls the BLAS \verb|dgemm_| function (the \verb|_| appended to \verb|dgemm| function name is the Fortran function name decoration).
- 
-It is for this reason that the efficiency of the BLAS library is critical for both benchmark and real-world application performance. The efficiency of the \verb|dgemm| (\textbf{d}ouble precision \textbf{ge}neral \textbf{m}atrix \textbf{m}ultiplication) function is particularly important for the dense matrix HPL benchmark.
-
-The mathematical operation implemented by \verb|dgemm| is:
-
-\[C := \alpha \times A \times B + \beta \times C\]
-
-where $A$ is a $M \times K$ matrix, $B$ is a $K \times N$ matrix, $C$ is a $M \times N$ matrix, and $\alpha$ and $\beta$ are scalars.
-
-In the case of the HPL benchmark, $M = N = K$.
-
-Efficient BLAS libraries ``block'' matrix multiplication into smaller sub-matrix multiplications. The ``block'' sizes of these sub-matrices multiplications are carefully chosen to make optimum use of CPU registers, and L1, L2, and L3 (when available) cache sizes. These sub-matrix multiplications are referred to as \emph{kernels}, or sometimes \emph{micro-kernels}.
-
-Maximum performance is achieved when the matrix multiplication problem size in an integer multiple of the \verb|dgemm| ``block'' size. In the case of the HPL benchmark, maximum performance is achieved when the the problem size N is an integer multiple of the HPL NB block size, which in turn is an integer multiple of the BLAS ``block'' size.
-
-The above is depicted in Figure ??.
-
-\begin{figure}
-	\centering
-	\includegraphics[width=1.0\textwidth]{dgemm.pdf}
-	\caption{\texttt{dgemm} \emph{kernel} Matrix-Matrix Multiplication.}
-	\label{fig:image2}
-\end{figure}
-
 
 %
 % SECTION
@@ -223,7 +171,7 @@ The above is depicted in Figure ??.
 
 GotoBLAS is a high performance BLAS library developed by Kazushige Goto at the Texas Advanced Computing Center (TACC), a department of the University of Texas at Austin.
 
-GotoBLAS achieves high performance through the use of hand-crafted assembly language \emph{kernels}. Higher level BLAS routines are decomposed in \emph{kernels}, which stream data from the L1 and L2 CPU caches. These kernels typically reflect the size of the CPU registers, and L1 and L2 caches. For example, a CPU architecture may have a 4 x 4 \emph{dgemm kernel} and a 4 x 8 \emph{dgemm kernel} which conduct a double precision matrix-matrix multiplication on 4 x 4 and 4 x 8 matrices, respectively, and which have been sized for a specific architecture.
+GotoBLAS achieves high performance through the use of hand-crafted assembly language \emph{kernels}. Higher level BLAS routines are decomposed in \emph{kernels}, which stream data from the L1/L2/L3 CPU caches. These kernels typically reflect the size of the CPU registers, and L1/L2/L3 caches. For example, a CPU architecture may have a 4 x 4 \emph{dgemm kernel} and a 4 x 8 \emph{dgemm kernel} which conduct a double precision matrix-matrix multiplication on 4 x 4 and 4 x 8 matrices, respectively, and which have been sized for a specific architecture.
 
 The source code for GotoBLAS and GotoBLAS2 is still available as Open Source software, but the library is no longer in active development.
 
@@ -265,21 +213,14 @@ For the Arm64 architecture, BLIS implements the following \verb|dgemm| assembly 
 %
 % SUB SECTION
 %
-\subsection{BLAS Library Management}
+\subsection{Aerin Cluster BLAS Libraries}
 
-Two different BLAS libraries are installed on the Aerin Cluster, OpenBLAS and BLIS, both in serial and OpenMP versions. For benchmark consistency it is essential to ensure the same BLAS library in use on each node at any one time. The Debian/Ubuntu \emph{alternatives} mechanism is used to set the BLAS library in use from a selection of \emph{alternatives}. Each \emph{alternative} is a \emph{symbolic link} in the file system which points to the appropriate shared library, the \verb|libblas.so.3| library installed with each BLAS package. The \emph{alternatives} mechanism is a command line interface to update the symbolic links.
-
-Using the \emph{alternatives} mechanism command line interface on 8 nodes is error prone. So, two \verb|bash| script wrapper tools were written and included in Pi Cluster Tools, discussed in the next section.
-
+To enable comparison between BLAS library implementations, OpenBLAS and BLIS, in both serial and OpenMP versions, are installed on the Aerin Cluster. For benchmark consistency, and repeatability, it is essential that the same BLAS library in use on each node at the same time. Two tools from the Pi Cluster Tools suite, \verb|libblas-query| and \verb|libblas-set|, simplify BLAS library management. 
 
 %
 % SECTION
 %
 \section{Cluster Topologies}
-
-A pure OpenMPI distribution of \verb|xhpl| work processes on a single node with 4 cores/slots is depicted in Figure ?? (a). Each \verb|xhpl| process calls the functions of a single-threaded BLAS serial library.
-
-A hybrid OpenMPI/OpenMP distribution of work is depicted in Figure ?? (b). A single \verb|xhpl| process calls functions from a multi-threaded BLAS library which run as threads on the processor cores.
 
 \begin{figure}
 	\begin{subfigure}{1.0\textwidth}
@@ -295,7 +236,7 @@ A hybrid OpenMPI/OpenMP distribution of work is depicted in Figure ?? (b). A sin
 		\caption{Hybrid OpenMPI/OpenMP}
 		\label{fig:subim2}
 	\end{subfigure}
-\caption{Single Node Toplologies.}
+\caption{\textbf{Single Node Toplologies.}}
 \label{fig:image2}
 \end{figure}
 
@@ -305,58 +246,20 @@ A hybrid OpenMPI/OpenMP distribution of work is depicted in Figure ?? (b). A sin
 %
 \subsection{Pure OpenMPI}
 
-In a pure OpenMPI topology, work is distributed across the cluster nodes, and the processor cores on each node, by OpenMPI. Processor cores are referred to as \emph{slots}. The number of nodes in the cluster, and the number of slots on each node, are specified using either the \verb|-host| or \verb|-hostfile| parameter of the \verb|mpirun| command. Each processor slot is a target for a work process.
+In a pure OpenMPI topology, work is distributed across the processor cores of each node by OpenMPI. Each core runs a single MPI work process. This is depicted in Figure 4.2(a).
 
-The \verb|-host| parameter is used to specify nodes and slots on the command line.
+A work process can be \emph{bound} to a specific core. This is an optimisation which reduces \emph{cache refreshes} when a work process is interrupted and is then subsequently re-scheduled.
 
-The \verb|-hostfile| parameter is used to specify a file which contains the nodes and slots information.
-
-In the following example, the \verb|-host| parameter is used to specify 2 nodes, each with 4 slots, on which to run 8 \verb|xhpl| work processes:
-
-\lstset{style=type}
-\begin{lstlisting}
-$ mpirun --bind-to core -host node1:4,node2:4 -np 8 xhpl
-\end{lstlisting}
-
-The same number of nodes, slots and work processes is specified using the \verb|-hostfile| parameter as follows:
-
-\lstset{style=type}
-\begin{lstlisting}
-$ mpirun --bind-to core -hostfile nodes -np 8 xhpl
-\end{lstlisting}
-
-Where \verb|nodes| is a file containing the following:
-
-\lstset{style=listing}
-\begin{lstlisting}[numbers=none, caption=nodes]
-node1 slots=4
-node2 slots=4
-\end{lstlisting}
-
-The \verb|--bind-to core| parameter instructs \verb|mpirun| to not migrate a work processes from the core on which it was started. Once started on a specific core, a work process will remain \emph{bound} to that core. This is an optimisation which reduces cache refreshes when a work process is interrupted, by a kernel system call for example, and is then restarted.
-
+Each core of the Aerin Cluster supports a single thread of execution. Therefore, in this topology, work processes are linked against the serial, single-threaded, versions of the BLAS libraries.
 
 
 %
 % SUB SECTION
 %
 \subsection{Hybrid OpenMPI/OpenMP}
-In a hybrid OpenMPI/OpenMP topology, OpenMPI is used to distribute work between the nodes of the cluster, and each node runs a single work process. OpenMP is then used to distribute the work of this single process between the cores of the node.
+In a hybrid OpenMPI/OpenMP topology, OpenMPI is used to distribute work between cluster nodes. Each node runs a single MPI work process. OpenMP is then used to distribute the work of this single process between node cores. This is depicted in Figure 4.2(b).
 
-The \verb|-host|, \verb|-hostfile| and \verb|-np| parameters of the \verb|mpirun| command are used in a same manner as the pure OpenMPI case, noting that each node now has 1 slot on which to run a work process.
-
-The additional parameter \verb|-x| is required now required. This parameter distributes and sets the \emph{environmental variable} \verb|OMP_NUM_THREADS| on each node prior to a work process being started on each node. This variable is queried by the multi-threaded BLAS library, and the appropriate number of threads are utilized.
-
-Using 2 nodes, and 4 cores per node, as per the pure OpenMPI example, 2 \verb|xhpl| processes are run, one on each node, with the multi-threaded BLAS library utilising 4 cores, as follows:
-
-\lstset{style=type}
-\begin{lstlisting}
-$ mpirun --bind-to socket -host node1:1,node2:1 -np 2 -x OMP_NUM_THREADS=4 xhpl
-\end{lstlisting}
-
-The \verb|--bind-to socket| parameter indicates to \verb|mpirun| that the \verb|xhpl| process is not associated with a particular core, it is not to be \emph{bound} to a specific core. The OpenMP runtime will determine which core(s) are used to run the \verb|xhpl| process.
-
-Note, without the \verb|--bind-to socket| parameter only a single thread will be utilised for a multi-threaded BLAS library, even if the \verb|OMP_NUM_THREADS| environmental variable is set correctly.
+Each node of the Aerin Cluster supports a multiple threads of execution, one on each core. Therefore, in this topology, work processes are linked against the OpenMP, multi-threaded, versions of the BLAS libraries.
 
 
 %
@@ -364,9 +267,11 @@ Note, without the \verb|--bind-to socket| parameter only a single thread will be
 %
 \section{Pi Cluster Tools}
 
-Using \verb|ssh| to manually log into each node and perform command line administration tasks is prone to error. To get around this problem, a number of \verb|bash| wrapper scripts were written as Pi Cluster Tools. Each script loops over a list of node names and uses \verb|ssh| to run a remote command on each node in turn.
+Command line administration of a cluster of computers is repetitive and prone to error. To work around this problem, and to make administration of the Aerin Cluster easier, a selection of \verb|bash| scripts were written and called \emph{Pi Cluster Tools}. Each tool loops over a list of nodes and uses \verb|ssh| to invoke a remote action on each node in turn.
 
-The following scripts are included in Pi Cluster Tools.
+The Pi Cluster Tools scripts should be invoked from \verb|node1|.
+
+Pi Cluster Tools consists of the following tools:
 
 \begin{itemize}
 \item upgrade
