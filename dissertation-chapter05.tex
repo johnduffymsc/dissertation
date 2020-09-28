@@ -661,7 +661,9 @@ However, the cluster topology does make a difference between the \emph{global} b
 %
 \subsection{FFT}
 
-The FFT benchmark results are presented in Table 5.9.
+The FFT benchmark measures the performance in computing the Discrete Fourier Transform of a large one-dimension vector.
+
+The benchmark results are presented in Table 5.9.
 
 \begin{table}[h]
 \begin{center}
@@ -717,7 +719,12 @@ BLIS OpenMP     & Global Vector size: 268435456 \\
 
 \subsubsection{Observations}
 
-The...
+The performance of the FFT benchmark is a small fraction of HPL performance. This is due to a number of factors. Double precision complex numbers occupy twice as much memory as real double precision numbers (16 bytes versus 8). The 128-bit Advanced SIMD registers are therefore only large enough to store one double precision complex number. And, the FFT algorithm involves exponential operations which are computationally expensive.
+
+The \emph{global} performance is higher for the pure OpenMPI topology than the hybrid OpenMP/OpenMPI topology. This suggest the Cooley-Turkey algorithm is more efficient with a higher number of MPI processes.
+
+The \emph{single} performance is higher than the \emph{star} performance. This is likely to be due to shared L2 cache access in the \emph{star} case.
+
 
 
 %
@@ -792,9 +799,15 @@ The average serial topology bandwidth is 107.548 MB/s, which is 86\% of the maxi
 %
 \section{HPCG Baseline}
 
-Similar to the TOP500 List, the HPCG List ranks computer systems in order of HPCG benchmark performance. The June 2020 HPCG List ranks 169 computer systems.
+In a similar manner to the TOP500 List, the HPCG List ranks computer systems in order of HPCG benchmark performance.
 
-Ranking number 1 is the Fugaku supercomputer. And, ranking 169 is the Spaceborne Computer. The Spaceborne Computer, onboard the International Space Station (ISS), is a 32 core system based on the Intel Xeon E5-2620 v4 8 core CPU, clocked at 2.1GHz, with an Infiniband interconnect.
+The June 2020 HPCG List ranks 169 computer systems.
+
+Ranking number 1 in the list is the Fugaku supercomputer with a HPCG performance of 13.366 Pflops. 
+
+Ranking 169 in the list is the Spaceborne Computer with a HPCG performance of 0.000034 Pflops.
+
+The Spaceborne Computer is onboard the International Space Station (ISS). It is a 32 core system based on the Intel Xeon E5-2620 v4 8 core CPU, clocked at 2.1GHz, with an Infiniband interconnect.
 
 An extract from the list for these two computers is in Table 5.11.
 
@@ -846,7 +859,7 @@ The HPCG benchmark results for the Aerin Cluster, obtained running the benchmark
 
 \subsubsection{Observations}
 
-The HPCG benchmark performance is approximately 20\% greater for a pure OpenMPI topology. This suggests it is more efficient to spread sparse data across a larger number of cores for processing. Since there is less opportunity for data blocking with sparse data, and less reuse of data already resident in caches, a finer grained approach to data distribution appears more efficient.  
+The HPCG benchmark performance is approximately 20\% greater for a pure OpenMPI topology. This suggests it is more efficient to spread sparse data across a larger number of MPI processes. Since there is less opportunity to \emph{block} sparse data, and less reuse of data already resident in caches, a finer grained approach to data distribution and processing appears to be more efficient.  
 
 %
 % SECTION
@@ -929,7 +942,7 @@ The results of running the \verb|linpack-profiler| tool with \emph{Adaptive RX} 
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.9\textwidth]{profile_interrupt_coalescing.pdf}
-	\caption{Pi Cluster Tools \texttt{linpack-profiler} $R_{max}$ with \emph{Adaptive RX} interrupt coalescing enabled.}
+	\caption{\textbf{Adaptive RX interrupt coalescing.}}
 	\label{fig:subim1}
 \end{figure}
 
@@ -959,7 +972,9 @@ BLIS OpenMP     & 52416 & 144 & 2 & 4 & 1.0041e+02 & 1.0582e+02 \\
 
 \subsubsection{Observations}
 
-Observations and discussion...
+Although a 5.4\% improvement in HPL performance is observed for BLIS OpenMP, this improvement is not observed for the remaining three BLAS library combinations. A 3.5\% reduction in HPL performance is observed for the OpenBLAS OpenMP. And for the serial libraries, a 0.6\% increase in HPL performance is observed for OpenBLAS, and a 1.3\% reduction for BLIS.
+
+It is therefore likely that the observed differences from baseline performance are within experimental error, and that enabling Adaptive RX interrupt coalescing has little or no effect.
 
 
 %
@@ -972,7 +987,7 @@ The results of running the \verb|linpack-profiler| tool with \emph{Receive Packe
 \begin{figure}[h!]
 	\centering
 	\includegraphics[width=0.9\textwidth]{profile_rps_rfs.pdf}
-	\caption{Pi Cluster Tools \texttt{linpack-profiler} $R_{max}$ with Receive Packet Steering and Receive Flow Sterring enabled.}
+	\caption{\textbf{Receive Packet Steering and Receive Flow Steering.}}
 	\label{fig:subim1}
 \end{figure}
 
@@ -1003,8 +1018,9 @@ BLIS OpenMP     & 51416 & 144 & 2 & 4 & 1.0041e+02 & 1.0597e+02 \\
 
 \subsubsection{Observations}
 
-Observations and discussion...
-
+Prior to enabling RPS, using the Linux command \verb|cat /proc/softriqs|, it was observed that \emph{CPU0} was the only core (on each node) to service the software interrupts generated by the receipt of network packets. After enabling RPS, using the same Linux command, it was observed that all cores now service the interrupts. RPS is therefore enabled and working. 
+  
+However, enabling RFS on top of RPS, has resulted in similar HPL benchmark results to the previous interrupt coalescing experiment. It is likely that the differences from baseline HPL performance are within experimental error.
 
 
 %
@@ -1031,7 +1047,7 @@ The Pi Cluster Tools \verb|linpack-profiler| tool was run with a \emph{No Forced
 \begin{figure}[h]
 	\centering
 	\includegraphics[width=0.9\textwidth]{profile_nopreempt.pdf}
-	\caption{Pi Cluster Tools \texttt{linpack-profiler} $R_{max}$ with a \emph{No Forced Preemption} kernel.}
+	\caption{\textbf{No Forced Preemption.}}
 	\label{fig:subim1}
 \end{figure}
 
@@ -1062,7 +1078,7 @@ BLIS OpenMP     & 52320 & 160 & 2 &  4 & 1.0041e+02 & 1.0694e+02 \\
 
 \subsubsection{Observations}
 
-Observations and discussion...
+The output from the \verb|linpack-profiler| tool, as depicted in Figure 5.10, indicates that HPL performance of all BLAS libraries improves with a No Forced Preemption kernel. And, this is observed when running HPL using 80\% of memory for the BLIS OpenMP library, which achieves 106.94 Gflops. However, a reduction in HPL performance from baseline is observed for the remaining BLAS libraries.
 
 
 %

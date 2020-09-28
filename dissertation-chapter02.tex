@@ -201,7 +201,7 @@ Ever since the introduction of the ARMv8-A architecture in 2011, Arm microproces
 
 Arm microprocessors are based on RISC (Reduced Instruction Set Computer) principles with a simple \emph{load/store architecture}. Data is loaded from main memory into processor registers, computations are performed using fixed-length instructions, and the results are then stored back in main memory. This compares with CISC (Complicated Instruction Set Computer) architectures with complicated memory addressing and computation modes and variable length instructions. The simplicity of design, which directly translates to a lower transistor count, results in high performance combined with low power requirements.
 
-The ARMv8-A instruction set has included \emph{Advanced SIMD} instructions since initial release. Each subsequent revision to the instruction set has seen improvements related to HPC. In 2014, ARMv8.1-A introduced enhancements to the Advanced SIMD instructions. In 2016, ARMv8.2-A introduced \emph{Scalable Vector Instructions}, permitting variable length vectors of size 128 to 2048 bits to be used. ARMv8.6-A announced in 2019 introduces General Matrix Multiply instructions, and also SIMD matrix instructions.
+The ARMv8-A instruction set has included \emph{Advanced SIMD} instructions since initial release. Each subsequent revision to the instruction set has seen improvements related to HPC. In 2014, ARMv8.1-A introduced enhancements to the Advanced SIMD instructions. In 2016, ARMv8.2-A introduced \emph{Scalable Vector Instructions}, permitting variable length vectors of size 128 to 2048 bits to be used. ARMv8.6-A announced in 2019 introduces General Matrix Multiply instructions, and also SIMD matrix instructions. Each of these enhancements to the instruction set is directly applicable to HPC.
 
 
 
@@ -212,7 +212,7 @@ The ARMv8-A instruction set has included \emph{Advanced SIMD} instructions since
 
 \subsection{Landscape}
 
-High Performance Linpack (HPL) is the industry standard HPC benchmark and has been for since 1993. It is used by the Top500 and Green500 lists to rank supercomputers in terms of raw performance and performance per Watt, respectively. However, it has been criticised for producing a single number, and not being a true measure of real-world application performance. This has led to the creation of complementary benchmarks, namely HPC Challenge (HPCC) and High Performance Conjugate Gradients (HPCG). These benchmarks measure whole system performance, including processing power, memory bandwidth, and network speed and latency, using standard HPC algorithms such as FFT and CG.
+High Performance Linpack (HPL) is the industry standard HPC benchmark and has been since 1993. It is used by the Top500 and Green500 lists to rank supercomputers in terms of raw performance and performance per Watt, respectively. However, it has been criticised for producing a single number, and not being a true measure of real-world application performance. This has led to the creation of complementary benchmarks, namely HPC Challenge (HPCC) and High Performance Conjugate Gradients (HPCG). These benchmarks measure whole system performance, including processing power, memory bandwidth, and network speed and latency, using HPC algorithms such as FFT and CG.
 
 
 %
@@ -220,58 +220,15 @@ High Performance Linpack (HPL) is the industry standard HPC benchmark and has be
 %
 \subsection{High Performance Linpack (HPL)}
 
-HPL did not begin life as a supercomputer benchmark. LINPACK is a software package for solving Linear Algebra problems. And in 1979 the ``LINPACK Report'' appeared as an appendix to the LINPACK User Manual. It listed the performance of 23 commonly used computers of the time when solving a matrix problem of size 100. The intention was that users could use this data to extrapolate the execution time of their matrix problems.
+HPL did not begin life as a supercomputer benchmark. LINPACK is a software package for solving Linear Algebra problems. In 1979 the ``LINPACK Report'' appeared as an appendix to the LINPACK User Manual. It listed the performance of 23 commonly used computers of the time when solving a matrix problem of size 100. The intention was that users could use this data to extrapolate the execution time of their matrix problems.
 
 As technology progressed, LINPACK evolved through LINPACK 100, LINPACK 1000 to HPLinpack, developed for use on parallel computers. High Performance Linpack (HPL) is an implementation of HPLinpack.
 
-In 1993 the Top500 List was created to rank the performance of supercomputers and HPL was used, and still is used, to measure performance and create the rankings.
+HPL solves a dense system of linear equations of the form $\mathbf{Ax} = \mathbf{b}$ using LU decomposition with partial row pivoting.
 
-HPL solves a dense system of equations of the form:
+The benchmark favours problems with a high computation to memory access ratio, which can make optimum use of Level 3 BLAS \emph{matrix-matrix} operations.
 
-\[A\mathbf{x}=\mathbf{b}\]
-
-HPL generates random data for a problem size N. It then solves the problem using LU decomposition and partial row pivoting.
-
-HPL requires an implementation of MPI (Message Passing Interface) and a BLAS (Basic Linear Algebra Subroutines) library to be installed. For this project, OpenMPI was the MPI implementation used, and OpenBLAS and BLIS were the BLAS libraries used. Both BLAS libraries were used in the single-threaded serial version and also the multi-threaded OpenMP version.
-
-In HPL terminology, $R_{peak}$ is the theoretical maximum performance. And $R_{max}$ is the maximum achieved performance, which will normally be observed using the maximum problem size $N_{max}$.
-
-
-%
-% SUB SECTION
-%
-\subsubsection{Determining Input Parameters}
-
-The main parameters which affect benchmark results are the block size NB, the problem size N, and the processor grid dimensions P and Q.
-
-The block size NB is used for two purposes. Firstly, to ``block'' the problem size matrix of dimension N x N into sub-matrices of dimension NB x NB. This is described in more detail in the Section ??. And secondly, as the message size (or multiples of) for distributing data between cluster nodes.
-
-The optimum size for NB is related to the BLAS library \verb|dgemm| \emph{kernel} block size, which is related to CPU register and L1, L2, and L3 (when available) cache sizes. But this is not easily determined as a simple multiple of the \emph{kernel} block size. Some experimentation is required to determine the optimum size for NB.
-
-\href{https://www.netlib.org/benchmark/hpl/faqs.html}{HPL Frequently Asked Questions} suggests NB should be in the range 32 to 256. A smaller size is better for data distribution latency, but may result in data not being available in sufficiently large chunks to be processed efficiently. Too high a value may result in data starvation while nodes wait for data due to network latency.
-
-For this project, HPL benchmarks were run with NB in the range 32 to 256 in order to determine the optimum size for the Aerin Cluster, and for each BLAS library in serial and OpenMP versions. 
-
-For maximum data processing efficiency, and therefore optimum benchmark performance, the problem size N should be as large as possible. This optimises the cluster processing/communications ratio. Optimum efficiency is achieved when the problem size utilises 100\% of memory. But this is never actually achievable, since the operating system and benchmark software require memory to run. \href{https://www.netlib.org/benchmark/hpl/faqs.html}{HPL Frequently Asked Questions} suggests 80\% of total available memory as a good starting point, and this value was used for this project.
-
-For optimum benchmark performance the problem size N needs to be an integer multiple of the block size NB. This ensures every NB x NB sub-matrix is a full sub-matrix of the N x N problem size, i.e. there are no partially full NB x NB sub-matrices at N x N matrix boundaries.
-
-For each value of NB, the following formula is used to determine the problem size N, taking into account 80\% memory usage:
-
-\[N = \left[\left(0.8 \sqrt{\frac{\text{Memory in GB} \times 1024^3}{8}}\right) \div NB\right] \times NB\]
-
-The division by 8 in the inner parenthesis is the size in bytes of a double precision floating point number.
-
-
-The online tool \href{http://hpl-calculator.sourceforge.net}{HPL Calculator} by Mohammad Sindi automates the process of calculating the problem size N for block sizes NB in the range 96 to 256, and for memory usage 80\% to 100\%.
-
-The values of N determined using HPL Calculator were cross-checked with the formula above.
-
-The processor grid dimensions P and Q represent a P x Q grid of processor cores. For example, the Aerin cluster has 8 nodes, each with 4 cores, giving a total of 32 processor cores. These core can be organised in compute grids of 1 x 32, 2 x 16 and 4 x 8.
-
-The HPL algorithm favours P x Q grids as square as possible, i.e. with P almost equal to Q, but with P smaller than Q. So, for a single node with 4 cores, a processor grid of 1 x 4 gives better benchmark performance than 2 x 2.
-
-If the Aerin Cluster used a high speed interconnect between nodes, such as InfiniBand, as used on large HPC clusters, maximum performance would be expected to be achieved using a processor grid of 4 x 8. This is the ``squarest'' possible P x Q grid using 32 cores whilst maintaining P less than Q. However, as noted in \href{https://www.netlib.org/benchmark/hpl/faqs.html}{HPL Frequently Asked Questions}, Ethernet is not a high speed interconnect. An Ethernet network is simplistically a single wire connecting the nodes, with each node competing (using random transmission times) for access to the wire to transmit data. This physical limitation reduces potential maximum cluster performance, and the maximum achievable performance is seen using a flatter P x Q grid. This proved to be the case, and maximum cluster performance was observed using a processor grid of 2 x 16 for all 8 nodes. This phenomena was also observed using when using less than 8 nodes.
+The mathematical background of HPL is discussed in Chapter 3.
 
 
 %
@@ -279,9 +236,17 @@ If the Aerin Cluster used a high speed interconnect between nodes, such as Infin
 %
 \subsection{HPC Challenge (HPCC)}
 
-HPCC is a suite of benchmarks which test different aspects of cluster performance. These benchmarks include tests for processing performance, memory bandwidth, and network bandwidth and latency. HPCC is intended to give a broader view of cluster performance than HPL alone, which should reflect real-world application performance more closely. HPCC includes HPL as one of the suite of benchmarks.
+HPCC is a suite of benchmarks which test different aspects of computer system performance. The suite includes benchmarks for processing performance, memory bandwidth, and network bandwidth and latency. HPCC is intended to give a broader view of computer system performance than HPL alone.
 
-The HPCC suite consists of the following 7 benchmarks, where \emph{single} indicates the benchmark is run a single randomly selected node, \emph{star} indicates the benchmark in run independently on all nodes, and \emph{global} indicates the benchmark is run using all nodes in a coordinated manner. 
+HPCC uses the following terminology:
+
+\begin{itemize}
+\item \emph{Single} indicates the benchmark is run on a single randomly selected node.
+\item \emph{Star} indicates the benchmark in run independently on all nodes.
+\item \emph{Global} indicates the benchmark is run using all nodes in a coordinated manner.
+\end{itemize}
+
+The suite consists of the following benchmarks:
 
 
 %
@@ -289,7 +254,7 @@ The HPCC suite consists of the following 7 benchmarks, where \emph{single} indic
 %
 \subsubsection{HPL}
 
-HPL is a \emph{global} benchmark which solves a dense system of linear equations.
+HPL is a \emph{global} benchmark which solves a dense system of linear equations. This benchmark is discussed in more detail in Chapter 3.
 
 
 %
@@ -297,7 +262,8 @@ HPL is a \emph{global} benchmark which solves a dense system of linear equations
 %
 \subsubsection{DGEMM}
 
-The DGEMM benchmark tests double precision matrix-matrix multiplication performance in both \emph{single} and \emph{star} modes.
+The DGEMM benchmark tests double precision matrix-matrix multiplication performance in both \emph{single} and \emph{star} modes. This benchmark measures raw processing performance and should be closely correlated with the HPL benchmark.
+
 
  
 %
@@ -305,23 +271,21 @@ The DGEMM benchmark tests double precision matrix-matrix multiplication performa
 %
 \subsubsection{STREAM}
 
-The STREAM benchmark tests memory bandwidth, to and from memory, in both \emph{single} and \emph{star} modes.
-
+The STREAM benchmark measures sustained memory bandwidth in both \emph{single} and \emph{star} modes. The benchmark performs four vector operations, \emph{Copy}, \emph{Scale}, \emph{Sum} and \emph{Triad}, on vectors which are at least 4 times the size of the L2 cache. This ensures the benchmark is measuring sustained main memory access performance.
 
 %
 % SUB SECTION
 %
 \subsubsection{PTRANS}
 
-PTRANS, Parallel Matrix Transpose, is a \emph{global} benchmark which tests system performance in transposing a large matrix.
-
+PTRANS (Parallel Matrix Transpose) is a \emph{global} benchmark which measures system performance in transposing a large matrix. The benchmark measures inter-node communication performance.
 
 %
 % SUB SECTION
 %
 \subsubsection{RandomAccess}
 
-The RandomAccess benchmark tests the performance of random updates to a large table in memory, in \emph{single}, \emph{star}, and \emph{global} modes.
+The RandomAccess benchmark measures the performance of random updates to a large array in memory. The benchmark operates in \emph{single}, \emph{star}, and \emph{global} modes. The random selection of the elements to be updated is likely to result in cache misses. This benchmark therefore measures the performance of main memory lookup and subsequent access time. 
 
 
 %
@@ -329,7 +293,7 @@ The RandomAccess benchmark tests the performance of random updates to a large ta
 %
 \subsubsection{FFT}
 
-FFT tests the Fast Fourier Transform performance of a large vector, in \emph{single}, \emph{star}, and \emph{global} modes.
+The FFT benchmark measures the performance in computing the Discrete Fourier Transform of a large one-dimension vector in \emph{single}, \emph{star}, and \emph{global} modes.
 
 
 %
@@ -337,7 +301,8 @@ FFT tests the Fast Fourier Transform performance of a large vector, in \emph{sin
 %
 \subsubsection{Network Bandwidth and Latency}
 
-This benchmark measures network/communications bandwidth and latency in \emph{global} mode.
+The Network Bandwidth and Latency benchmark measures the time to send MPI messages between cluster processes. Latency is measured using 8 byte messages, and bandwidth is measured using 2,000,000 byte messages.
+
 
 
 %
@@ -345,13 +310,12 @@ This benchmark measures network/communications bandwidth and latency in \emph{gl
 %
 \subsection{High Performance Conjugate Gradients (HPCG)}
 
-HPCG is intended to be complementary to HPL, and to incentivise hardware manufacturers to improve computer architectures for modern HPC workloads. 
+The HPCG benchmark solves a sparse system of equations of the form $\mathbf{Ax} = \mathbf{b}$ resulting from a discretised three dimensional partial differential equation. The benchmark computes \emph{preconditioned Conjugate Gradient} iterations for the sparse system.
 
-Quoting the Super Computing 2019 HPCG Handout:
+This benchmark measures the performance of solving problems with a low computation to memory access ratio.
 
-\say{The HPC Conjugate Gradient (HPCG) benchmark uses a preconditioned conjugate gradient (PCG) algorithm to measure the performance of HPC platforms with respect to frequently observed, yet challenging, patterns of execution, memory access, and global communication.}
+The mathematical background to HPCG is discussed in Chapter 3.
 
-\say{The PCG implementation uses a regular 27-point stencil discretixation in 3 dimensions of an elliptic partial differential equation (PDE) with zero Dirichlet boundary condition. The 3-D domain is scaled to fill a 3-D virtual process grid of all available MPI process ranks. The CG iteration includes a local and symmetric Gauss-Seidel preconditioner, which computes a forward and a back solve with a triangular matrix. All of these features combined allow HPCG to deliver a more accurate performance metric for modern HPC architectures.}
 
 
 
