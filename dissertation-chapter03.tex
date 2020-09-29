@@ -210,7 +210,6 @@ A Krylov subspace method projects a higher dimensional problem into a lower dime
 %\end{align}
 
 
-
 %
 % SUB SECTION
 %
@@ -235,6 +234,15 @@ where at each iteration, $\mathbf{x}_i$ is the approximation to the solution, $\
 
 At each iteration the method contains one \emph{matrix-vector multiplication}. Since, we are considering a sparse matrix $\mathbf{A}$, the computational complexity of this may be as low as $\mathcal{O}(n)$ \cite{numerical-linear-algebra}.
 
+
+%
+% SUB SECTION
+%
+\subsection{Parallel \emph{matrix-vector} Multiplication}
+
+In section 3.3.1 it was stated that efficient \emph{matrix-vector multiplication} is a property of sparse matrices stored in CSR format. This is because for each \emph{dot-product} operation, the matrix column indices are used to index the required vector elements. This restricts the \emph{dot-product} to only non-zero multiplications.
+
+Furthermore, it is possible to parallelise the \emph{matrix-vector} multiplication. Each \emph{dot-product} is independent and can be therefore be computed in parallel on the same node, or distributed to other nodes for processing.
 
 
 
