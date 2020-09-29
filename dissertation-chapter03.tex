@@ -181,23 +181,34 @@ A sparse matrix is one in which most of the entries are zero. A sample sparse ma
 \label{fig:image2}
 \end{figure}
 
-It is not efficient to store the zero entries of a sparse matrix, so specific data formats have been developed to store sparse matrices.
+It is not efficient to store the zero entries of a sparse matrix. Therefore, specific data formats have been developed to store sparse matrices, the most common being CSR (Compressed Sparse Row). The CSR format consists of three one-dimensional vectors:
+
+\begin{itemize}
+\item \textbf{V} which stores the matrix non-zero entries in row order.
+\item \textbf{COL\_INDEX} which stores the column index of each entry in \textbf{V}.
+\item \textbf{ROW\_INDEX} which stores the start index of each row in \textbf{V}.
+\end{itemize}
+
+A property of the CSR format is that it supports efficient \emph{matrix-vector multiplication}, which is important for iterative methods such as Conjugate Gradient.
 
 
 %
-% SUB SECTION
-%
-\subsection{Matrix-Vector Product}
-
-The \emph{matrix-vector product} operation plays a significant role...
-
-
 %
 %
-%
-\subsection{Krylov Subspaces}
+\subsection{Krylov Subspace Methods}
 
-A \emph{Krylov Subspace}...
+A \emph{Krylov Subspace} is the subspace created by repeatedly applying a matrix $\mathbf{A}$ to a vector $\mathbf{v}$:
+
+\begin{align}
+\mathcal{K}_m(\mathbf{A}, \mathbf{v}) = \text{span\{}\mathbf{v}, \mathbf{A}\mathbf{v}, \mathbf{A}^2\mathbf{v}, ..., \mathbf{A}^{m-1}\mathbf{v}\text{\}}
+\end{align}
+
+A Krylov subspace method projects a higher dimensional problem into a lower dimensional Krylov Subspace.
+
+%\begin{align}
+%\mathcal{K}_m(\mathbf{A}, \mathbf{r}_0) = \text{span\{}\mathbf{r}_0, \mathbf{A}\mathbf{v}, \mathbf{A}%^2\mathbf{v}, ..., \mathbf{A}^{m-1}\mathbf{v}\text{\}}
+%\end{align}
+
 
 
 %
@@ -205,8 +216,24 @@ A \emph{Krylov Subspace}...
 %
 \subsection{The Conjugate Gradients Method}
 
-The Conjugate Gradient method is an iterative method for solving a system of equations with a \emph{symmetric positive-definite} matrix. It solves a $n \times n$ system in at most $n$ iterations.
- 
+The Conjugate Gradient method is a Krylov Subspace method for solving a system of equations $\mathbf{A}\mathbf{x}=\mathbf{b}$, where $\mathbf{A}$ \emph{symmetric positive definite} matrix. It solves a $n \times n$ system in at most $n$ iterations.
+
+At each step of the iteration the method minimises the A-Norm of the error.
+
+The method is as follows \cite{cg-without-pain}:
+
+\begin{align}
+\mathbf{d}_0 &= \mathbf{r}_0 = \mathbf{b} - \mathbf{A}\mathbf{x}_0 \\
+\alpha_i &= \frac{\mathbf{r}_i^{\mathbf{T}}\mathbf{r}_i}{\mathbf{d}_i^{\mathbf{T}}\mathbf{A}\mathbf{d}_i} \\
+\mathbf{x}_{i+1} &= \mathbf{x}_i + \alpha_i \mathbf{d}_i \\
+\mathbf{r}_{i+1} &= \mathbf{r}_i - \alpha_i \mathbf{A} \mathbf{d}_i \\
+\beta_{i+1} &= \frac{\mathbf{r}_{i+1}^\mathbf{T} \mathbf{r}_{i+1}}{\mathbf{r}_{i}^\mathbf{T} \mathbf{r}_{i}} \\
+\mathbf{d}_{i+1} &= \mathbf{r}_{i+1} + \beta_{i+1}\mathbf{d}_i
+\end{align}
+
+where at each iteration, $\mathbf{x}_i$ is the approximation to the solution, $\mathbf{r}_i$ is the residual, and $\mathbf{d}_i$ is the direction. 
+
+At each iteration the method contains one \emph{matrix-vector multiplication}. Since, we are considering a sparse matrix $\mathbf{A}$, the computational complexity of this may be as low as $\mathcal{O}(n)$ \cite{numerical-linear-algebra}.
 
 
 
