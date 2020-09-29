@@ -33,7 +33,7 @@ The $\mathcal{O}(n^3)$ complexity of \emph{matrix-matrix multiplication} plays a
 %
 \section{High Performance Linpack (HPL)}
 
-The High Performance Linpack (HPL) Benchmark \cite{linpack-ppf} measures the time taken to solve a dense system of linear of equations, and from this timing derives a performance metric stated in Gflops. 
+The HPL benchmark \cite{linpack-ppf} measures the time taken to solve a dense system of linear of equations, and from this timing derives a performance metric in Gflops. 
 
 The system of equations is of the form:
 
@@ -134,7 +134,7 @@ The system is solved by distributing the \emph{blocks} over a two dimensional $P
 In a pure MPI topology, each $P \times Q$ grid element represents a processor core. In a hybrid OpenMPI/OpenMP topology, each grid element represents a cluster node, and OpenMP is used to distributes data between the cores.   
 
 
-The LU factorisation progresses in columns of processes, of width $nb$.
+
 
 
 %
@@ -142,113 +142,60 @@ The LU factorisation progresses in columns of processes, of width $nb$.
 %
 \section{High Performance Conjugate Gradients (HPCG)}
 
-Like HPL, the HPCG benchmark, developed by Dongarra, Heroux and Luszczek \cite{hpcg-benchmark}, measures the time taken to solve a system of linear equations. And from this timing derives a performance metric stated in Gflops. The system of equations is also of the form:
+The motivation for developing the HPCG benchmark \cite{hpcg-benchmark} is that HPL does not indicate the likely performance of computer systems running modern HPC workloads.
 
-\begin{equation}
-\mathbf{Ax} = \mathbf{b},\text{ where }\mathbf{A} \in \mathbf{R}^{n\times n}\text{ and }\mathbf{x}, \mathbf{b} \in \mathbf{R}^n
-\end{equation} 
+HPL is a good indicator of the likely performance of problems with a high computation to memory access pattern, which Dongarra, Heroux and Luszczek refer to as a \emph{Type 2} \cite{hpcg-benchmark} data access pattern. But HPL is not a good indicator of the likely performance of problems with a low computation to memory access pattern, which Dongarra, Heroux and Luszczek refer to as \emph{Type 1} \cite{hpcg-benchmark}.
 
-This is where the similarity with HPL ends.
+Type 1 data access patterns are typified by the solving of large sparse systems arising from the discretisation of partial differential equations. In the case of HPCG, the system is generated from the discretisation of the Poisson differential equation on a three dimensional grid using a 27-point stencil. 
+
+The High Performance Conjugate Gradient (HPCG) benchmark \cite{hpcg-benchmark}, measures the time taken to solve such a system, and from this timing derives a performance metric in Gflops. The system of equations is of the form:
+
+\begin{align}
+\mathbf{Ax} = \mathbf{b},\text{ where } \mathbf{A} \text{ is a \emph{sparse} matrix}.
+\end{align}
+
+HPCG uses the Conjugate Gradient method with a symmetric Gauss-Seidel preconditioner to solve the system.
+
+
+%
+% SUB SECTION
+%
+
+\subsection{Sparse Matrices}
+
+A sparse matrix is one in which most of the entries are zero. A sample sparse matrix from the SuiteSparse Matrix Collection \cite{sparsesuite} is depicted in Figure 3.2.  
 
 \begin{figure}[]
 	\begin{subfigure}{1.0\textwidth}
 		\centering
 		\includegraphics[width=0.6\textwidth]{sparse-matrix-cvxbqp1.png}
-		\caption{\textbf{Sparse Matrix.} Sparse matrix \texttt{cvxbqp1} generated from a convex... quadratic programming proble.}
+		\caption{Sparse matrix \texttt{cvxbqp1}.}
 		\label{fig:subim1}
 	\end{subfigure}
 	\par\bigskip
 	\begin{subfigure}{1.0\textwidth}
 		\centering
 		\includegraphics[width=0.6\textwidth]{sparse-matrix-cvxbqp1-graph.png}
-		\caption{\textbf{Graph of Sparse Matrix cvxbqp1.}}
+		\caption{Visualisation of sparse matrix \texttt{cvxbqp1}.}
 		\label{fig:subim2}
 	\end{subfigure}
-\caption{\textbf{Sparse Matrix Collection...}}
+\caption{\textbf{Sample Sparse Matrix.} Sparse matrix \texttt{cvxbqp1} generated from a quadratic programming optimisation problem. Authored by N Gould, and curated by the SuiteSparse Matrix Collection \cite{sparsesuite}. The matrix has 50,000 rows and 50,000 columns, with 349,968 non-zero entries.}
 \label{fig:image2}
 \end{figure}
 
-The HPCG system of equations is a sparse system resulting from a discretised three dimensional partial differential equation model. The benchmark computes \emph{preconditioned Conjugate Gradient} iterations for the sparse system.
-
-The motivation for developing HPCG is that HPL no longer accurately indicates the likely performance of computer systems running modern HPC workloads. Historically, solving dense linear systems was the mainstay of HPC computing. This workload was predominantly the \emph{matrix-matrix multiplication} of locally aligned data, which was closely correlated with HPL benchmark preformance. This data access pattern, which represents a high computation to memory access ratio, is termed \emph{Type 2} by Dongarra, Heroux and Luszczek. HPCG address the need to measure the performance of \emph{distributed memory} computer systems when running a workload with a low computation to memory access pattern, which Dongarra, Heroux and Luszczek refer to as \emph{Type 1}. This is typified by the solving of sparse systems resulting from partial differential equations.
-
-HPCG uses the Conjugate Gradient method with a symmetric Gauss-Seidel preconditioner to solve the Poisson differential equation on a three dimensional grid discretised with a 27-point stencil \cite{hpcg-benchmark}.
-
-The Conjugate Gradient Method is a method for solving a system of equations with a \emph{symmetric positive-definite} matrix. When implemented as an iterative scheme, it solves a $n \times n$ system in at most $n$ iterations. The method will be introduced through a discussion of \emph{Quadratic Forms}, the \emph{Steepest Descent Method} and the \emph{Method of Conjugate Directions}. This broadly follows the description of the method by Shewchuck \cite{cg-without-pain}.
-
-And finally... discuss the blocking/implementation of HPCG... and why CG is used. 
-
-%
-% SUB SECTION
-%
-\subsection{Quadratic Forms and the Relationship to $\mathbf{A}\mathbf{x}=\mathbf{b}$}
-
-A \emph{quadratic form} is a quadratic function of a vector $\mathbf{x}$, whose return value is a scalar. It is of the form:
-
-\begin{equation}
-f(\mathbf{x}) = \frac{1}{2}\mathbf{x}^{\mathbf{T}}\mathbf{A}\mathbf{x} - \mathbf{x}^{\mathbf{T}}\mathbf{b} + c
-\end{equation}
-
-where $\mathbf{A}$ is a matrix, $\mathbf{b}$ is a vector and $c$ is a scalar.
-
-Consider the derivatives of (3.16):
-
-\begin{equation}
-\begin{split}
-\nabla f(\mathbf{x}) &= \mathbf{A}\mathbf{x} - \mathbf{b} \\
-\nabla^2 f(\mathbf{x}) &= \mathbf{A}
-\end{split}
-\end{equation}
-
-Equation (3.16) is minimised when $\nabla f(\mathbf{x}) = 0$, i.e. $\mathbf{A}\mathbf{x} = \mathbf{b}$, and $\mathbf{A}$ is symmetric positive-definite.
-
-So, finding the minimum of the quadratic form by an iterative method is equivalent to finding the solution of $\mathbf{A}\mathbf{x} = \mathbf{b}$ by a direct method. And, if a sparse system occupies all of the computer system memory, it will not be possible to solve the system by a direct method.
+It is not efficient to store the zero entries of a sparse matrix, so specific data formats have been developed to store sparse matrices.
 
 
 %
 % SUB SECTION
 %
-\subsection{Steepest Descent}
+\subsection{The Conjugate Gradients Method}
 
-The \emph{Steepest Descent} method is an iterative method for determining the minimum $\mathbf{x}$ of an \emph{objective function}. The name of the method is derived from the fact that at each iteration, the next step is taken in the direction of steepest descent.
-
-For example, starting at an arbitrary point $\mathbf{x}_0$, the first iteration generates the first approximation $\mathbf{x}_1$ of the exact (unknown) solution $\mathbf{x}$ as:
-
-\begin{equation}
-\mathbf{x}_1=\mathbf{x}_0 + \alpha_0 \mathbf{r}_0
-\end{equation}
-
-where $\mathbf{r}_0$ is the step direction and $\alpha_0$ is the step length.
-
-From (3.17) it can be seen that at each iteration the direction of steepest descent is:
-
-\begin{equation}
-\mathbf{r}_i = -\nabla f(\mathbf{x_i}) = \mathbf{b} - \mathbf{A}\mathbf{x_i}
-\end{equation}
-
-The step direction $\mathbf{r}_i$ is also termed the \emph{residual} and measures the difference between $\mathbf{b}$ the current value of $\mathbf{A}\mathbf{x}_i$.
-
-The step length $\alpha_i$ is chosen such that the directional derivative along the direction of steepest descent is \emph{zero}. This occurs when $\nabla f(\mathbf{x_{i+1}})^\mathbf{T}\mathbf{r_i} = 0$, i.e. when they are orthogonal. The result of this is that \emph{steepest descent} potentially takes many steps in the same direction as the iteration progresses towards the exact solution. This leads on to the \emph{conjugate directions} method which attempts to address this.
-
-
-%
-% SUB SECTION
-%
-\subsection{Conjugate Directions}
+The Conjugate Gradient method is an iterative method for solving a system of equations with a \emph{symmetric positive-definite} matrix. It solves a $n \times n$ system in at most $n$ iterations.
+ 
 
 
 
-%
-% SUB SECTION
-%
-\subsection{Conjugate Gradients}
-
-
-
-%
-% SUB SECTION
-%
-\subsection{Why use Conjugate }
 
 
 
