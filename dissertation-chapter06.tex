@@ -1,4 +1,4 @@
-This chapter summarises the progress made in achieving the project aims, and then draws some conclusions from the project as a whole.
+This chapter summarises the progress made in achieving the project aims, and then draws conclusions from the project as a whole.
 
 
 %
@@ -15,12 +15,17 @@ This chapter summarises the progress made in achieving the project aims, and the
 
 \subsubsection{HPL}
 
+The maximum HPL baseline performance of 103.41 Gflops was observed using the BLIS serial library. This is 53.86\% of the maximum theoretical performance ($R_{peak}$) of 192 Gflops. However, the Aerin Cluster was restricted to using 80\% of available memory. Taking this into account, 103.41 Gflops equates to 67.32\% of \emph{achievable} $R_{peak}$.
+
 
 \subsubsection{HPCC}
 
+The HPL and DGEMM results from the HPCC suite indicate similar performance to standalone HPL benchmark. This is to be expected. The STREAM sustained memory access benchmark suggests the Raspberry Pi 4 can utilise 80\% of the available memory bandwidth. And, the Network Bandwidth and Latency benchmark correlates closely with the performance observed when measuring node-to-node network bandwidth.
 
 
 \subsubsection{HPCG}
+
+Running the HPCG benchmark the Aerin Cluster achieved a maximum of 3.491 Gflops. In comparison, the 32 core Spaceborne Computer, onboard the International Space Station, achieved 34 Gflops. These HPCG benchmark results are 2.9\% and 1.8\% of $R_{peak}$ respectively.
 
 
 %
@@ -53,13 +58,18 @@ RPS was enabled and interrupt servicing was observed to be evenly distributed ac
 
 The default Linux kernel installed by Ubuntu 20.04 LTS uses the \emph{Voluntary Preemption} model. The suggested model for Scientific Computing workloads is the \emph{No Forced Preemption} model.
 
-A new kernel was compiled with No Forced Preemption. HPL benchmarks were then repeated with this kernel. Using 20\% of available memory an improvement in HPL performance was observed for OpenBLAS and BLIS in both serial and OpenMP versions. However, when using 80\% of memory an increase in HPL performance was only observed using the BLIS OpenMP library, a performance reduction was observed using the remaining BLAS libraries.
+A new kernel was built using the \emph{No Forced Preemption} model. HPL benchmarks were then repeated with this kernel. Using 20\% of available memory an improvement in HPL performance was observed for OpenBLAS and BLIS in both serial and OpenMP versions. However, when using 80\% of memory an increase in HPL performance was only observed using the BLIS OpenMP library, a performance reduction was observed using the remaining BLAS libraries.
 
 Therefore, the effect of using a No Forced Preemption kernel when solely running HPL benchmarks was inconclusive. This may not be the case for running other HPC workloads on the Aerin Cluster.
 
 
 \subsubsection{Jumbo Frames}
 
+With the default MTU of 1500 bytes, the Aerin Cluster node-to-node bandwidth was measured to be 922 Gbit/s, 92.2\% of the maximum theoretical bandwidth.
+
+By amending the Ethernet network driver and recompiling the kernel to support Jumbo Frames, the node-to-node bandwidth was increased to 991 Gbit/s, 99.1\% of the theoretical maximum, with an MTU of 9000 bytes. This 7.5\% improvement in bandwidth was observed to result in improved HPL performance of 6.76\% for \emph{flat} P x Q processor grids.
+
+However, amending the Ethernet network driver requires a high degree of network driver expertise. My  implementation of Jumbo Frames support proved to be insufficiently robust to use \emph{square} P x Q processor grids, where the maximum performance increase is likely to be observed.
 
 
 %
@@ -75,11 +85,13 @@ By measuring the power consumed by whilst running HPL benchmarks it was determin
 %
 \section{Conclusions}
 
-Whilst drawing any conclusions from this project it should be kept in mind that the Raspberry Pi is a low cost, single-board computer, designed for the education and \emph{Maker} market. It is not designed to be a HPC platform. Nevertheless, it is a very capable computer. And any design decisions to favour stability over exposing hardware intricacies (presumed) are the correct decisions for the intended markets.
+Whilst drawing any conclusions from this project it should be kept in mind that the Raspberry Pi is a low cost, single-board computer, designed for the education and \emph{Maker} markets. It is not designed to be a HPC platform. Nevertheless, it is a very capable computer. And any design decisions to favour stability over exposing hardware intricacies (presumed) are the correct decisions for the intended markets.
 
-The combination of the Raspberry Pi 4 Model B and Ubuntu 20.04 LTS 64-bit is a very stable computing platform. The Aerin Cluster was able to run HPC benchmarks, utilising almost 100\% of CPU capacity, for many hours each day, for a number of months. On no occasion was a system failure observed.
+\begin{itemize}
+\item The combination of the Raspberry Pi 4 Model B and Ubuntu 20.04 LTS 64-bit is a very stable computing platform. The Aerin Cluster was able to run HPC benchmarks, utilising almost 100\% of CPU capacity, for many hours each day, for a number of months. On no occasion was a system failure observed.
 
-The Raspberry Pi 4 is a relatively new computing platform. New features and enhancements are added regularly through updates to the EEPROM firmware. A recent addition is the ability to boot the Raspberry Pi 4 from a network, negating the need for local permanent storage. A firmware update in 2019 reduced the power consumption of the onboard memory and USB 3 controller. Such improvements in the future are likely to improve the performance and energy efficiency of the Raspberry Pi 4.
+\item The Raspberry Pi 4 is a relatively new computing platform. New features and enhancements are added regularly through updates to the EEPROM firmware. A recent addition is the ability to boot the Raspberry Pi 4 from a network, negating the need for local permanent storage. A firmware update in 2019 reduced the power consumption of the onboard memory and USB 3 controller. Such improvements in the future are likely to improve the performance and energy efficiency of the Raspberry Pi 4.
 
-The Raspberry Pi 4 Compute Module is due to be released in 2020/2021. With only the BCM2711 SoC, and no additional hardware such as USB controllers drawing power, it will be interesting to benchmark the Gflops/Watt of this platform. It is possible that this platform could form the basis of a viable large scale HPC cluster.
+\item The Raspberry Pi 4 Compute Module is due to be released in 2020/2021. With only the BCM2711 SoC, and no additional hardware such as USB controllers drawing power, it will be interesting to benchmark the Gflops/Watt of this platform. It is possible that this platform could form the basis of a viable large scale HPC cluster.
+\end{itemize}
 
