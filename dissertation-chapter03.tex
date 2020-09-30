@@ -240,16 +240,29 @@ At each iteration the method contains one \emph{matrix-vector multiplication}. S
 %
 \subsection{Parallel \emph{matrix-vector} Multiplication}
 
+Since the Conjugate Gradient method is dependent upon \emph{matrix-vector} multiplication, it is essential that this operation is conducted as efficiently as possible.
+
 In section 3.3.1 it was stated that efficient \emph{matrix-vector multiplication} is a property of sparse matrices stored in CSR format. This is because for each \emph{dot-product} operation, the matrix column indices are used to index the required vector elements. This restricts the \emph{dot-product} to only non-zero multiplications.
 
 Furthermore, it is possible to parallelise the \emph{matrix-vector} multiplication. Each \emph{dot-product} is independent and can be therefore be computed in parallel on the same node, or distributed to other nodes for processing.
 
 
+%
+% SUB SECTION
+%
+\subsection{Distributed \emph{matrix-vector} Multiplication}
 
+In a distributed memory computer system, the problem domain is partitioned into sub-domains which are mapped to the individual nodes of the system. Each node has a local matrix $\mathbf{A}_{loc}$ and local vector $\mathbf{x}_{loc}$ corresponding to the discretisation of a partial differential equation within its sub-domain \cite{saad}.
 
+Each node must be aware of the interface points between itself and neighbouring nodes. These interface points include the \emph{internal} interface points on its domain boundaries, and the \emph{external} interface points of the domain boundaries of its neighbouring nodes.
 
+To perform a \emph{global} \emph{matrix-vector} multiplication, each node must compute \cite{saad}:
 
+\begin{align}
+(\mathbf{Ax})_{loc} = \mathbf{A}_{loc} \mathbf{x}_{loc} + \mathbf{B}_{ext} \mathbf{x}_{ext}
+\end{align}
 
+where $\mathbf{B}_{ext}$ is a correction matrix applied to a vector $\mathbf{x}_{ext}$ of external interface points. Therefore, prior to computing equation (3.18), each node must \emph{scatter} its \emph{internal} interface points to its neighbours, and \emph{gather} its \emph{external} interface points from its neighbours \cite{saad}.
 
 
 
